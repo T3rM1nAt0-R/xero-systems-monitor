@@ -1,4 +1,18 @@
 # Public items per crate. A new public item adds a line here, so a growing API shows in review.
+xsm_collector::Backend trait
+xsm_collector::State struct
+xsm_collector::State.machines field
+xsm_collector::demo::DemoBackend use
+xsm_collector::history::History use
+xsm_collector::history::HistoryReply use
+xsm_collector::machines::MachineConfig use
+xsm_collector::machines::MachineKind use
+xsm_collector::machines::MachineList use
+xsm_collector::machines::SaveOutcome use
+xsm_collector::xsm_core::forecast::Forecast use
+xsm_collector::xsm_core::tracker::Event use
+xsm_collector::xsm_core::tracker::FinishedJob use
+xsm_collector::xsm_core::tracker::Snapshot use
 xsm_core::alerts mod
 xsm_core::alerts::Alert struct
 xsm_core::alerts::Alert.kind field

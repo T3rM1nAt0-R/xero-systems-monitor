@@ -10,3 +10,6 @@ node_modules/
 dist/
 target/
 *.log
+
+# Tauri generated schemas
+src-tauri/gen/
