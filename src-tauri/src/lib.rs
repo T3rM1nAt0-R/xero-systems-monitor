@@ -11,10 +11,21 @@ use std::sync::Arc;
 use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::{Builder as WindowState, StateFlags};
-use xsm_collector::DemoBackend;
+use xsm_collector::{Backend, DemoBackend, LiveBackend};
 
 /// Argument Windows passes at sign-in: start in the tray, window hidden.
 const HIDDEN_FLAG: &str = "--hidden";
+/// Set this environment variable to `1` to show made-up data instead of polling.
+const DEMO_VAR: &str = "XSM_DEMO";
+
+/// Live data by default; made-up data when `XSM_DEMO=1`. History lives in the app data folder.
+fn backend_for(app: &tauri::AppHandle) -> Result<Arc<dyn Backend>, Box<dyn std::error::Error>> {
+    if std::env::var(DEMO_VAR).is_ok_and(|v| v == "1") {
+        return Ok(Arc::new(DemoBackend::new()));
+    }
+    let data_dir = app.path().app_data_dir()?;
+    Ok(Arc::new(LiveBackend::start(&data_dir, None)?))
+}
 
 /// Window state to remember between runs: not whether it is visible (the tray decides that).
 fn remembered() -> StateFlags {
@@ -40,12 +51,12 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .manage(commands::BackendState(Arc::new(DemoBackend::new())))
         .manage(frame::Frame::default())
         .manage(tray::Checks::default())
         .manage(updates::Pending::default())
         .setup(|app| {
             let handle = app.handle();
+            app.manage(commands::BackendState(backend_for(handle)?));
             app.manage(prefs::PrefsStore::load(handle));
             tray::build(handle)?;
             if !std::env::args().any(|a| a == HIDDEN_FLAG) {

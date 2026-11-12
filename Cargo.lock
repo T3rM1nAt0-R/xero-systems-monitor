@@ -5531,6 +5531,9 @@ dependencies = [
  "serde",
  "serde_json",
  "xsm-core",
+ "xsm-settings",
+ "xsm-sources",
+ "xsm-store",
 ]
 
 [[package]]

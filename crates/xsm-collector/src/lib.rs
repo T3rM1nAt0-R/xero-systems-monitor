@@ -2,12 +2,17 @@
 //! the [`Backend`] trait has one method per data command of `docs/window-api.md`.
 #![deny(missing_docs)]
 
+mod config;
 mod demo;
 mod history;
+mod live;
 mod machines;
+mod poller;
 
+pub use config::alert_limits;
 pub use demo::DemoBackend;
 pub use history::{History, HistoryReply};
+pub use live::LiveBackend;
 pub use machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
 pub use xsm_core::forecast::Forecast;
