@@ -32,3 +32,7 @@ CI runs exactly this on Windows and Linux for every pull request and every push 
 ## Words
 
 Plain names, not codenames. If a name needs explaining, rename it.
+
+## Docs move with the code
+
+Every change a user can see updates, in the same pull request: `README.md` (what it does, install, how to use it), `CHANGELOG.md` under `[Unreleased]`, and any `docs/` page it touches (`window-api.md` for new commands, `architecture.md` for new blocks, `releasing.md` for release steps).

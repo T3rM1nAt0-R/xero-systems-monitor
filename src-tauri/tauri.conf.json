@@ -33,7 +33,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "REPLACE_WITH_PUBLIC_KEY_SEE_docs/releasing.md",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk1QUVEMEE2MTBGNzg2QTAKUldTZ2h2Y1FwdEN1bFNIZE01d1V5ZTY4Vjk0SEFyMXdTV3pTNWxIZnhTQU53aDYvWkxuRzFiVC8K",
       "endpoints": ["https://github.com/T3rM1nAt0-R/xero-systems-monitor/releases/latest/download/latest.json"]
     }
   }

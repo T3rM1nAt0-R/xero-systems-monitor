@@ -29,8 +29,11 @@ async fn find(app: &AppHandle) -> Result<Option<Update>, tauri_plugin_updater::E
     app.updater()?.check().await
 }
 
-/// Ask GitHub whether a newer version exists.
+/// Ask GitHub whether a newer version exists. The portable copy is updated by hand, so it never asks.
 pub async fn check(app: &AppHandle, pending: &Pending) -> Option<bool> {
+    if crate::portable_dir().is_some() {
+        return None;
+    }
     let found = find(app).await.ok()?;
     let waiting = found.is_some();
     pending.put(found);
@@ -39,6 +42,9 @@ pub async fn check(app: &AppHandle, pending: &Pending) -> Option<bool> {
 
 /// Download and install the waiting update (checking again when none is kept).
 pub async fn apply(app: &AppHandle, pending: &Pending) -> bool {
+    if crate::portable_dir().is_some() {
+        return false;
+    }
     let update = match pending.take() {
         Some(update) => update,
         None => match find(app).await {
