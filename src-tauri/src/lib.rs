@@ -18,12 +18,30 @@ const HIDDEN_FLAG: &str = "--hidden";
 /// Set this environment variable to `1` to show made-up data instead of polling.
 const DEMO_VAR: &str = "XSM_DEMO";
 
-/// Live data by default; made-up data when `XSM_DEMO=1`. History lives in the app data folder.
+/// A file with this name next to the program makes it portable.
+const PORTABLE_MARKER: &str = "portable.txt";
+/// In portable mode, settings and history live in this folder next to the program.
+const PORTABLE_DATA: &str = "data";
+
+/// The data folder next to the program when `portable.txt` sits beside it.
+pub(crate) fn portable_dir() -> Option<std::path::PathBuf> {
+    let dir = std::env::current_exe().ok()?.parent()?.to_path_buf();
+    dir.join(PORTABLE_MARKER)
+        .is_file()
+        .then(|| dir.join(PORTABLE_DATA))
+}
+
+/// Where settings and history live: next to the program when portable, else the app data folder.
+pub(crate) fn data_dir(app: &tauri::AppHandle) -> tauri::Result<std::path::PathBuf> {
+    portable_dir().map_or_else(|| app.path().app_data_dir(), Ok)
+}
+
+/// Live data by default; made-up data when `XSM_DEMO=1`. History lives in the data folder.
 fn backend_for(app: &tauri::AppHandle) -> Result<Arc<dyn Backend>, Box<dyn std::error::Error>> {
     if std::env::var(DEMO_VAR).is_ok_and(|v| v == "1") {
         return Ok(Arc::new(DemoBackend::new()));
     }
-    let data_dir = app.path().app_data_dir()?;
+    let data_dir = data_dir(app)?;
     Ok(Arc::new(LiveBackend::start(&data_dir, None)?))
 }
 

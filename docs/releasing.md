@@ -7,7 +7,7 @@ The installer comes from `cargo tauri build` (targets: NSIS and MSI, see `src-ta
 The updater only installs files signed with your key. The public half goes in the repo; the private half never does.
 
 1. Make a key pair once, on your own machine: `cargo tauri signer generate -w ~/.tauri/xsm.key`. Keep the private file and its password somewhere safe (a password manager). Never commit either.
-2. Put the **public** key (the text of `xsm.key.pub`) into `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. It currently holds the placeholder `REPLACE_WITH_PUBLIC_KEY_SEE_docs/releasing.md`; until it is replaced, update checks answer "could not check" and installs fail safely.
+2. Put the **public** key (the text of `xsm.key.pub`) into `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. The project key (id `95AED0A610F786A0`) is already there; replace it only if the key is lost.
 3. In the GitHub repository settings add two secrets for the release workflow: `TAURI_SIGNING_PRIVATE_KEY` (the private key text) and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
 4. Push a tag (see "Cutting a release"). The workflow builds the signed update files only when `TAURI_SIGNING_PRIVATE_KEY` is set. Without the secret it still builds both installers, logs a warning, and skips the `.sig` files and `latest.json`, so installed apps cannot update from that release.
 
@@ -18,6 +18,7 @@ The version lives in one place: `version` under `[workspace.package]` in `Cargo.
 1. Raise the version in `Cargo.toml` and `app/package.json`, move the `[Unreleased]` notes in `CHANGELOG.md` under the new version, and merge to `main`.
 2. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`.
    Or, without a tag: Actions > Release > Run workflow on `main`. The draft then carries the tag `v<version>`, which GitHub creates when you publish it.
+   The draft also gets a portable zip: the program plus `portable.txt`, which keeps settings and history in a `data` folder next to it and turns off in-app updates.
 3. `.github/workflows/release.yml` (windows-latest) checks the tag matches the version, builds the window, then runs `tauri-apps/tauri-action`. It creates a **draft** release named "Xero Systems Monitor v0.2.0" with the NSIS `.exe`, the MSI and, when signing is on, the `.sig` files and `latest.json`.
 4. Install the draft's `.exe` on a clean Windows PC, then press Publish on the release. The updater reads `latest.json` from the latest published release only.
 

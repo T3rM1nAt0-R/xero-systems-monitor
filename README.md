@@ -51,6 +51,10 @@ Windows first. Linux and macOS later.
 2. Run it. Windows SmartScreen may say "Windows protected your PC / unknown publisher". The installers are not code signed yet (signing is planned, see [docs/releasing.md](docs/releasing.md)). Choose **More info**, then **Run anyway**.
 3. Nothing else is needed: WebView2, which draws the window, is built into Windows 10 and 11.
 
+The installed app checks GitHub for new versions and updates itself (More > Check for updates). Each update is signed, and the app refuses one that is not.
+
+**Portable copy:** download `Xero.Systems.Monitor_<version>_x64_portable.zip`, unzip it anywhere (a USB stick works) and run `Xero Systems Monitor.exe`. The `portable.txt` file beside it keeps settings and history in a `data` folder next to the program. A portable copy does not update itself: download the new zip and copy your `data` folder across.
+
 ## Adding machines
 
 Add a Linux machine in the app by the **SSH host name** from your `~/.ssh/config` (the app runs your system `ssh`, so users, ports, jump hosts and keys work as they do in your terminal).

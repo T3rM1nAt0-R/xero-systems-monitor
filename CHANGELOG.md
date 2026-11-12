@@ -13,3 +13,6 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 - Windows installers (NSIS and MSI) built by a tag-triggered release workflow that drafts a GitHub Release.
 - One version number: the Cargo workspace version, checked against `app/package.json` by a wall.
 - Repository set up: licence, contributing, security and design notes.
+- Portable zip on every release: `portable.txt` next to the program keeps data beside it and turns off self-update.
+- Signed self-updates: the project's update key is built in.
+- The release can be started by hand from the Actions tab as well as by a tag.
