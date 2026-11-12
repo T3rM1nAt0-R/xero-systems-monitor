@@ -8,3 +8,10 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[dependencies]
+rusqlite = { version = "0.42.0", features = ["bundled", "backup"] }
+xsm-core = { version = "0.1.0", path = "../xsm-core" }
+
+
+[dev-dependencies]
+rusqlite = { version = "0.42.0", features = ["bundled", "backup"] }
