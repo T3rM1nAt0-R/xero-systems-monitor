@@ -310,6 +310,8 @@ mod tests {
         assert_eq!(src.try_latest(), None);
     }
 
+    // The fake far end is a POSIX shell script; real targets are Linux machines.
+    #[cfg(unix)]
     #[test]
     fn runs_the_real_probe_through_a_local_shell() {
         let probe = include_str!("../../../probes/probe.sh");
@@ -338,6 +340,8 @@ mod tests {
         assert_eq!(src.try_latest(), None);
     }
 
+    // The fake far end is a POSIX shell script; real targets are Linux machines.
+    #[cfg(unix)]
     #[test]
     fn drop_kills_the_child() {
         let file = std::env::temp_dir().join(format!("xsm-fake-ssh-{}", std::process::id()));
