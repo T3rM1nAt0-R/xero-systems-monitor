@@ -8,8 +8,8 @@ Every block has one job and may use only what this table allows. The `block_map`
 | `crates/xsm-settings` | pure | Reads the named-number settings files (`settings/*.json`) and the machine list. One front door: `Settings::from_json` (callers read the files and pass the text in). | `xsm-core`, `serde`, `serde_json` |
 | `crates/xsm-store` | edge | SQLite history, jobs table, daily backup, retention. | `xsm-core`, `rusqlite` (bundled) |
 | `crates/xsm-sources` | edge | Getting raw readings: this PC (`sysinfo`, NVML, Windows APIs), Linux machines over one long-lived `ssh` per machine running `probes/probe.sh`. | `xsm-core`, `xsm-settings`, `sysinfo`, `nvml-wrapper`, `windows` (Windows only) |
-| `crates/xsm-collector` | edge | The polling loop: sources to tracker to store, every N seconds; one snapshot for the window. | all blocks above |
-| `src-tauri` | shell | The desktop app: Tauri commands (the only front door the window sees), tray, autostart, mini window, single instance, updater. | `xsm-collector`, `xsm-settings`, `tauri` and its official plugins |
+| `crates/xsm-collector` | edge | The polling loop: sources to tracker to store, every N seconds; one snapshot for the window. Also the shell's front door: the `Backend` trait (one method per data command) and `DemoBackend`; it re-exports the `xsm-core` types the commands return, because the shell may not use `xsm-core` directly. | all blocks above, `serde`, `serde_json` |
+| `src-tauri` | shell | The desktop app: Tauri commands (the only front door the window sees), tray, autostart, mini window, single instance, updater. | `xsm-collector`, `xsm-settings`, `serde`, `serde_json`, `tauri` and its official plugins (`autostart`, `single-instance`, `updater`, `window-state`) |
 | `app/` | window | React + Vite window. Talks only through `app/src/api.js`, which wraps Tauri `invoke`. | `react`, `@tauri-apps/api` |
 | `probes/` | script | `probe.sh`, sent over SSH; prints one tagged line per fact. | POSIX sh only |
 | `crates/xsm-walls` | checks | The house rules, as tests. | `syn`, `walkdir`, `toml`, `regex` |

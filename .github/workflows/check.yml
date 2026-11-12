@@ -17,6 +17,19 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Linux libraries for the Tauri shell
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Window tests, lint and build (the shell embeds app/dist)
+        working-directory: app
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run lint
+          npm run build
       - name: Install the pinned Rust (rust-toolchain.toml)
         run: rustup show active-toolchain || rustup toolchain install
       - name: Format
@@ -25,13 +38,3 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Tests (includes the walls)
         run: cargo test --workspace
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
-      - name: Window tests, lint and build
-        working-directory: app
-        run: |
-          npm ci --no-audit --no-fund
-          npm test
-          npm run lint
-          npm run build

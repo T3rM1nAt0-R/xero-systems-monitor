@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Xero Systems Monitor",
+  "version": "0.1.0",
+  "identifier": "io.github.xerosystemsmonitor",
+  "build": {
+    "frontendDist": "../app/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm --prefix ../app run dev",
+    "beforeBuildCommand": "npm --prefix ../app run build"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Xero Systems Monitor",
+        "width": 980,
+        "height": 900,
+        "minWidth": 360,
+        "minHeight": 400,
+        "visible": false,
+        "backgroundColor": "#07080b"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "REPLACE_WITH_PUBLIC_KEY_SEE_docs/releasing.md",
+      "endpoints": ["https://github.com/T3rM1nAt0-R/xero-systems-monitor/releases/latest/download/latest.json"]
+    }
+  }
+}
