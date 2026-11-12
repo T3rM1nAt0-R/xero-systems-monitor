@@ -114,3 +114,30 @@ fn one_home() {
         &one_home::check(&rules, &collect(&root(), is_code)),
     );
 }
+
+#[test]
+fn one_version_number() {
+    let first_version = |text: &str, pattern: &str| {
+        regex::Regex::new(pattern)
+            .ok()
+            .and_then(|re| re.captures(text).map(|c| c[1].to_string()))
+    };
+    let read = |path: &str| read_text(&root(), path).unwrap();
+    let cargo = first_version(&read("Cargo.toml"), r#"(?m)^version\s*=\s*"([^"]+)""#);
+    let package = first_version(
+        &read("app/package.json"),
+        r#"(?m)^\s*"version"\s*:\s*"([^"]+)""#,
+    );
+    assert!(cargo.is_some(), "Cargo.toml has no workspace version");
+    assert_eq!(cargo, package, "app/package.json and Cargo.toml disagree");
+    let shell = read("src-tauri/Cargo.toml");
+    assert!(
+        shell.contains("version.workspace = true"),
+        "src-tauri must take the workspace version"
+    );
+    let tauri_conf = read("src-tauri/tauri.conf.json");
+    assert!(
+        first_version(&tauri_conf, r#"(?m)^\s*"version"\s*:\s*"([^"]+)""#).is_none(),
+        "tauri.conf.json must omit `version` so Tauri reads it from Cargo"
+    );
+}

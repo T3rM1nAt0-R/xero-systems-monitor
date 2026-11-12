@@ -33,6 +33,7 @@ pub struct LocalSource {
     networks: Networks,
     nvml: Option<Nvml>,
     polls: u32,
+    acpi_temp: Option<f64>,
     last_net: Option<(Instant, f64, f64)>,
     ping_ms: Option<f64>,
     top: Vec<TopProgram>,
@@ -56,6 +57,7 @@ impl LocalSource {
             networks: Networks::new_with_refreshed_list().map_err(why)?,
             nvml,
             polls: 0,
+            acpi_temp: None,
             last_net: None,
             ping_ms: None,
             top: Vec::new(),
@@ -76,6 +78,7 @@ impl LocalSource {
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
             self.ping_ms = ping_once();
         }
+        let poll_no = self.polls;
         self.polls = self.polls.wrapping_add(1);
         let disks = disk_readings(&self.disks);
         Reading {
@@ -83,7 +86,7 @@ impl LocalSource {
                 usage_pct: (!first).then(|| f64::from(self.sys.global_cpu_usage())),
                 ..CpuReading::default()
             }),
-            cpu_temp_c: cpu_temp(),
+            cpu_temp_c: cpu_temp(poll_no, &mut self.acpi_temp),
             memory: memory_reading(&self.sys),
             disk_used_pct: root_used_pct(&self.disks),
             disks,
