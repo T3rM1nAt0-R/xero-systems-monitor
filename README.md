@@ -1,8 +1,38 @@
 # Xero Systems Monitor
 
-A small, always-on-top desktop monitor for the machines you own: your Windows PC and the Linux boxes and home servers you reach over SSH. One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub Actions self-hosted runner jobs and Docker containers, with history you can scroll back through.
+A small, always-on-top monitor for the machines you own: your Windows PC and the Linux boxes you reach over SSH.
 
-## What it does
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/T3rM1nAt0-R/xero-systems-monitor?include_prereleases)](https://github.com/T3rM1nAt0-R/xero-systems-monitor/releases)
+[![Platform: Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-informational.svg)](#install)
+[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-orange.svg)](https://tauri.app)
+
+![The main window in the dark theme](docs/screenshots/main.png)
+
+The screenshots show made-up demo data, not a real machine.
+
+## Features
+
+One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub Actions self-hosted runner jobs and Docker containers, with history you can scroll back through.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/activity.png" alt="The activity drawer"></td>
+<td width="50%"><img src="docs/screenshots/machines.png" alt="The machines dialog"></td>
+</tr>
+<tr>
+<td valign="top">Activity drawer (press <b>E</b>): runner jobs, alerts and events, newest first.</td>
+<td valign="top">Machines dialog: add Linux machines by SSH host name, nothing installed on them.</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/compact.png" alt="The compact view"></td>
+<td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
+</tr>
+<tr>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>).</td>
+<td valign="top">Light and dark themes, or follow Windows.</td>
+</tr>
+</table>
 
 - This PC: CPU, memory, disk, network, ping, top programs, GPU (NVIDIA), CPU temperature
 - Remote Linux machines over your own SSH config, no agent to install on them
@@ -10,7 +40,7 @@ A small, always-on-top desktop monitor for the machines you own: your Windows PC
 - Docker containers and failed systemd services on remote machines
 - History from 5 minutes to 1 year, stored locally in SQLite
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
-- Compact and mini views, tray icon, autostart, light and dark themes
+- Tray icon, autostart
 - Updates itself from GitHub Releases (when you ask it to check)
 
 Windows first. Linux and macOS later.
