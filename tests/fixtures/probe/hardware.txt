@@ -1,0 +1,5 @@
+HW cpu Example CPU (4 threads)
+HW gpu
+HW os Example Linux 1.0
+HW board Example Board
+HW fan 3

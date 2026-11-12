@@ -1,0 +1,41 @@
+cpu
+cpu 1 2 3
+cpu a b c d e f g h
+MEM
+MEM 1000
+MEM x y
+MEM 1000 y
+MEM 0 0
+DISK
+DISK lots%
+DF
+DF /dev/sda1
+DF /dev/sda1 1000M
+DF /dev/sda1 big 400M 600M 40% /
+DF /dev/sda1 1000M 400 600M 40% /
+DF /dev/sda1 1000M 400M 600M 40%
+DF /dev/sda2 1000M 400M 600M 40% /run/user/1
+TEMPS
+TEMPS coretemp
+TEMPS coretemp hot
+TEMPS coretemp 1000
+TEMPS coretemp 200000
+GPU none
+GPU 1, 2, 3
+GPU 1, 2, 3, 0
+GPU 1, hot, 3, 4
+GPU [N/A], 2, 3, 4
+NET
+NET eth0 192.0.2.10 1000 1 2
+NET eth0 192.0.2.10 1000 x 2 3
+PING fast
+SVCF
+TOP
+TOP 1.0 2
+TOP x 2 3 name
+TOP 1.0 2 x name
+HW
+HW cpu
+NOTATAG some text
+!!! binary ~~ junk
+

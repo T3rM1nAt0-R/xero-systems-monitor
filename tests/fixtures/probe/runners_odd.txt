@@ -1,0 +1,8 @@
+RUNNER sshd -D
+RUNNER Runner.Worker
+RUNNER /Runner.Worker
+RUNNER /home/user/r1/binary/Runner.Worker
+RUNNER /home/user/r1/bin.x/Runner.Worker
+RUNNER /home/user/r 1/bin/Runner.Worker
+RUNNER /home/user/r2/bin/Runner.Helper
+RUNNER dotnet /home/user/r3/bin/Runner.Listener run

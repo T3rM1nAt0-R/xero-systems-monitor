@@ -1,0 +1,2 @@
+RUNNER /home/user/actions-runner-docs/bin.2.338.2/Runner.Worker spawnclient 1 2
+RUNNER /home/user/gdd/bin/Runner.Listener run

@@ -1,0 +1,9 @@
+JOB jc-1 Fast_check owner/example-repo refs/pull/7/merge feat-x
+JOB jc-2
+JOB
+JOBRES jc-1 12.5 800 2048
+JOBRES jc-2 3.0 100 -
+JOBRES jc-3 bad 100 -
+JRES jc-1 Succeeded Worker_9.log
+JRES jc-1 Succeeded
+JRES jc-4 Failed Worker_10.log

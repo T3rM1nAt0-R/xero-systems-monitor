@@ -1,0 +1,16 @@
+cpu 100 0 100 700 100 0 0 0
+MEM 1000 250
+DISK 42%
+HW cpu Test CPU (8 threads)
+HW os Ubuntu
+TEMPS acpitz 40000
+TEMPS coretemp 61000
+TEMPS coretemp 55000
+DF /dev/sda1 1000M 400M 600M 40% /
+DF /dev/loop0 10M 10M 0M 100% /snap/core
+GPU 12, 40, 4096, 8192
+JOB jc-1 Fast_check owner/example-repo refs/pull/7/merge feat-x
+RUNNER /home/user/r/jc-1/bin/Runner.Listener
+RUNNER /home/user/r/jc-1/bin/Runner.Worker
+RUNNER /home/user/r/jc-2/bin/Runner.Listener
+PING 12.5

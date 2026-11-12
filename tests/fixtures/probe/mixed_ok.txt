@@ -1,0 +1,9 @@
+cpu 100 0 100 700 100 0 0 0
+MEM 1000 250
+NET eth0 - -1 500 600 30.25
+GPU none
+DF /dev/sda1 1000M 400M 600M 40% /
+DF /dev/sda1 1000M 999M 1M 99% /mnt/again
+DF /dev/sdb1 2000M 1000M 1000M 50% /mnt/data disk
+TEMPS acpitz 40000
+TEMPS nvme 70000
