@@ -35,7 +35,7 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
             <div className="seg"><button className={snoozeUntil > Date.now() && snoozeUntil - Date.now() <= 3600000 ? "on" : ""} onClick={() => setSnoozeUntil(Date.now() + 3600000)}>1 h</button>
               <button className={snoozeUntil - Date.now() > 3600000 ? "on" : ""} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); setSnoozeUntil(+d); }}>Till 8 AM</button>
               <button disabled={!(snoozeUntil > Date.now())} onClick={() => setSnoozeUntil(0)}>Off</button></div></div>
-          <Row onClick={close(() => notify({ key: "test" + Date.now(), title: "Xero Monitor", body: "Notifications work." }))}>Send a test notification</Row>
+          <Row onClick={close(() => notify({ key: "test" + Date.now(), title: "Xero Systems Monitor", body: "Notifications work." }))}>Send a test notification</Row>
         </div>}
 
         <hr /><Head>Look</Head>

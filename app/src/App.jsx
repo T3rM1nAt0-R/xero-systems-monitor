@@ -59,7 +59,7 @@ export default function App() {
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <div className="bar top">
-        {!effCompact && <span className="brand"><b>XERO</b> MONITOR</span>}
+        {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
         <span className="live"><i className={"dot" + (err ? " off" : "")} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" />
         {!effCompact && <span className="live hide-s clock"><Clock /></span>}
