@@ -1,0 +1,12 @@
+# Local data and secrets
+*.db
+*.db-*
+*.bak
+.env
+.env.*
+config.local.*
+# Build output
+node_modules/
+dist/
+target/
+*.log

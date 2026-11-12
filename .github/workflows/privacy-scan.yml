@@ -1,0 +1,26 @@
+name: Privacy scan
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Personal data (private IPs, Windows user paths)
+        run: |
+          # Fails on private-range IPs and personal paths. Examples must use 192.0.2.x (TEST-NET).
+          if git grep -nIE '\b(10\.[0-9]+\.[0-9]+\.[0-9]+|192\.168\.[0-9]+\.[0-9]+|172\.(1[6-9]|2[0-9]|3[01])\.[0-9]+\.[0-9]+)\b|[A-Z]:\\Users\\[A-Za-z]' -- . ':!.github/workflows/privacy-scan.yml'; then
+            echo "::error::Private IP or personal path found. Replace with 192.0.2.x / example paths."; exit 1
+          fi
