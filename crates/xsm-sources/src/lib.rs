@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 
 pub mod local;
+pub mod sensors;
 pub mod ssh;
 
 use std::process::Command;

@@ -100,8 +100,9 @@ xsm_sources::local mod
 xsm_sources::local::LocalSource struct
 xsm_sources::local::LocalSource::new fn
 xsm_sources::local::LocalSource::poll fn
-xsm_sources::local::parse_lhm_cpu_temp fn
-xsm_sources::local::parse_ping_ms fn
+xsm_sources::sensors mod
+xsm_sources::sensors::parse_lhm_cpu_temp fn
+xsm_sources::sensors::parse_ping_ms fn
 xsm_sources::ssh mod
 xsm_sources::ssh::ConnState enum
 xsm_sources::ssh::ConnState::Connected variant
