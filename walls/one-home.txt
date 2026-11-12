@@ -1,0 +1,3 @@
+# job | home file | regex that may match only in the home file
+reading settings JSON | crates/xsm-settings/src/lib.rs | serde_json::from_str
+reading text files from disk | crates/xsm-walls/src/files.rs | fs::read_to_string

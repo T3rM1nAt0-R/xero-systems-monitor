@@ -1,0 +1,6 @@
+{
+  "poll_seconds": 3,
+  "history_days": 365,
+  "ssh_reconnect_seconds": 10,
+  "offline_after_misses": 3
+}

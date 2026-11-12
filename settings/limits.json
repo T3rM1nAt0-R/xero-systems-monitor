@@ -1,0 +1,7 @@
+{
+  "cpu_pct": 90,
+  "mem_pct": 90,
+  "disk_pct": 90,
+  "gpu_temp_c": 85,
+  "cpu_temp_c": 90
+}

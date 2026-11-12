@@ -1,0 +1,9 @@
+# Mirrors the "May use" column of docs/architecture.md.
+# A new block, or a new dependency, is added to the doc first and then here.
+[blocks]
+xsm-core = ["serde", "serde_json"]
+xsm-settings = ["xsm-core", "serde", "serde_json"]
+xsm-store = ["xsm-core", "rusqlite"]
+xsm-sources = ["xsm-core", "xsm-settings", "sysinfo", "nvml-wrapper", "windows"]
+xsm-collector = ["xsm-core", "xsm-settings", "xsm-store", "xsm-sources"]
+xsm-walls = ["syn", "walkdir", "toml", "regex"]

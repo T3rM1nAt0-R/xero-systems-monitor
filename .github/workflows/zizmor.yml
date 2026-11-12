@@ -1,0 +1,19 @@
+name: Workflow security
+on:
+  pull_request:
+    paths: [".github/workflows/**"]
+  push:
+    branches: [main]
+    paths: [".github/workflows/**"]
+permissions:
+  contents: read
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Audit workflows
+        run: pipx run zizmor==1.* --offline .github/workflows
