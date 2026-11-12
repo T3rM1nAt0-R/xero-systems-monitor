@@ -1,9 +1,12 @@
 name: Release
 # Pushing a tag like v0.1.0 builds the Windows installers and opens a DRAFT GitHub Release.
+# It can also be started by hand (Actions > Release > Run workflow); then the tag is
+# v<version from Cargo.toml>, made when the draft is published.
 # Publish the draft by hand after trying the installer. See docs/releasing.md.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 permissions: {}
 jobs:
   windows:
@@ -16,14 +19,18 @@ jobs:
         with:
           persist-credentials: false
       - name: Tag must match the app version
+        id: tag
         shell: bash
         env:
-          TAG: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref_name }}
         run: |
           version=$(sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml | head -n 1)
-          if [ "$TAG" != "v$version" ]; then
-            echo "::error::Tag $TAG does not match the version $version in Cargo.toml"; exit 1
+          tag="v$version"
+          if [ "$EVENT" = "push" ] && [ "$REF" != "$tag" ]; then
+            echo "::error::Tag $REF does not match the version $version in Cargo.toml"; exit 1
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
@@ -59,7 +66,7 @@ jobs:
         with:
           tauriScript: cargo tauri
           projectPath: .
-          tagName: ${{ github.ref_name }}
+          tagName: ${{ steps.tag.outputs.tag }}
           releaseName: "Xero Systems Monitor v__VERSION__"
           releaseBody: "Installers for Windows 10 and 11. Windows shows an unknown-publisher warning until the app is code signed."
           releaseDraft: true
