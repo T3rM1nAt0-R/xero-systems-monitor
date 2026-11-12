@@ -41,3 +41,22 @@ pub enum HistoryReply {
     /// An unknown machine.
     Unknown {},
 }
+
+impl From<xsm_store::History> for History {
+    /// The one place the store's history becomes the window's `[t, value][]` series.
+    fn from(h: xsm_store::History) -> Self {
+        Self {
+            cpu: h.cpu,
+            ram: h.ram,
+            disk: h.disk,
+            temp: h.temp,
+            gpu: h.gpu,
+            vram: h.vram,
+            gtemp: h.gtemp,
+            down: h.down,
+            up: h.up,
+            ping: h.ping,
+            loss: h.loss,
+        }
+    }
+}

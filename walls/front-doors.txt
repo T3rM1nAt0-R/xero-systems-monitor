@@ -2,9 +2,11 @@
 xsm_collector::Backend trait
 xsm_collector::State struct
 xsm_collector::State.machines field
+xsm_collector::config::alert_limits use
 xsm_collector::demo::DemoBackend use
 xsm_collector::history::History use
 xsm_collector::history::HistoryReply use
+xsm_collector::live::LiveBackend use
 xsm_collector::machines::MachineConfig use
 xsm_collector::machines::MachineKind use
 xsm_collector::machines::MachineList use
