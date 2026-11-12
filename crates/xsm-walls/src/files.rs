@@ -25,8 +25,8 @@ impl SourceFile {
     }
 }
 
-/// Directories that are never checked.
-const SKIPPED_DIRS: [&str; 3] = ["target", ".git", "node_modules"];
+/// Directories that are never checked (build output and downloaded packages).
+const SKIPPED_DIRS: [&str; 4] = ["target", ".git", "node_modules", "dist"];
 
 /// The repo root: two levels above this crate.
 #[must_use]
