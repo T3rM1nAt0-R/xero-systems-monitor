@@ -5,7 +5,7 @@ Every block has one job and may use only what this table allows. The `block_map`
 | Block | Kind | One job | May use |
 | --- | --- | --- | --- |
 | `crates/xsm-core` | pure | The reading model, probe-text parsing, tracking events and jobs, alerts, disk-full forecast. No I/O, no clock (time is passed in), no threads. | `serde`, `serde_json` |
-| `crates/xsm-settings` | pure | Reads the named-number settings files (`settings/*.json`) and the machine list. One front door: `Settings::load`. | `xsm-core`, `serde`, `serde_json` |
+| `crates/xsm-settings` | pure | Reads the named-number settings files (`settings/*.json`) and the machine list. One front door: `Settings::from_json` (callers read the files and pass the text in). | `xsm-core`, `serde`, `serde_json` |
 | `crates/xsm-store` | edge | SQLite history, jobs table, daily backup, retention. | `xsm-core`, `rusqlite` (bundled) |
 | `crates/xsm-sources` | edge | Getting raw readings: this PC (`sysinfo`, NVML, Windows APIs), Linux machines over one long-lived `ssh` per machine running `probes/probe.sh`. | `xsm-core`, `xsm-settings`, `sysinfo`, `nvml-wrapper`, `windows` (Windows only) |
 | `crates/xsm-collector` | edge | The polling loop: sources to tracker to store, every N seconds; one snapshot for the window. | all blocks above |
