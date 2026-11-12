@@ -17,6 +17,7 @@ The version lives in one place: `version` under `[workspace.package]` in `Cargo.
 
 1. Raise the version in `Cargo.toml` and `app/package.json`, move the `[Unreleased]` notes in `CHANGELOG.md` under the new version, and merge to `main`.
 2. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`.
+   Or, without a tag: Actions > Release > Run workflow on `main`. The draft then carries the tag `v<version>`, which GitHub creates when you publish it.
 3. `.github/workflows/release.yml` (windows-latest) checks the tag matches the version, builds the window, then runs `tauri-apps/tauri-action`. It creates a **draft** release named "Xero Systems Monitor v0.2.0" with the NSIS `.exe`, the MSI and, when signing is on, the `.sig` files and `latest.json`.
 4. Install the draft's `.exe` on a clean Windows PC, then press Publish on the release. The updater reads `latest.json` from the latest published release only.
 
