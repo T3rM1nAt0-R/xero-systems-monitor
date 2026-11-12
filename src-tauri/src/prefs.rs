@@ -54,7 +54,7 @@ pub struct PrefsStore {
 impl PrefsStore {
     /// Read the file (a missing or broken file means the defaults).
     pub fn load(app: &AppHandle) -> Self {
-        let path = app.path().app_data_dir().unwrap_or_default().join(FILE);
+        let path = crate::data_dir(app).unwrap_or_default().join(FILE);
         let stored = std::fs::read(&path)
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok())

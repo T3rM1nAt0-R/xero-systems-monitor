@@ -72,3 +72,16 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ steps.updater.outputs.args }}
+      - name: Portable zip (the program plus portable.txt; data stays next to it)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          $dir = "Xero Systems Monitor"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item target/release/xero-systems-monitor.exe "$dir/Xero Systems Monitor.exe"
+          Set-Content "$dir/portable.txt" "This copy is portable: settings and history are kept in the data folder next to it. Delete this file to use the normal app data folder instead. Needs Microsoft Edge WebView2, which Windows 10 and 11 already have."
+          $zip = "Xero.Systems.Monitor_$($env:TAG.TrimStart('v'))_x64_portable.zip"
+          Compress-Archive -Path $dir -DestinationPath $zip -Force
+          gh release upload $env:TAG $zip --clobber --repo $env:GITHUB_REPOSITORY
