@@ -7,7 +7,7 @@ The installer comes from `cargo tauri build` (targets: NSIS and MSI, see `src-ta
 The updater only installs files signed with your key. The public half goes in the repo; the private half never does.
 
 1. Make a key pair once, on your own machine: `cargo tauri signer generate -w ~/.tauri/xsm.key`. Keep the private file and its password somewhere safe (a password manager). Never commit either.
-2. Put the **public** key (the text of `xsm.key.pub`) into `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. It currently holds the placeholder `REPLACE_WITH_PUBLIC_KEY_SEE_docs/releasing.md`; until it is replaced, update checks answer "could not check" and installs fail safely.
+2. Put the **public** key (the text of `xsm.key.pub`) into `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. The project key (id `95AED0A610F786A0`) is already there; replace it only if the key is lost.
 3. In the GitHub repository settings add two secrets for the release workflow: `TAURI_SIGNING_PRIVATE_KEY` (the private key text) and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
 4. Push a tag (see "Cutting a release"). The workflow builds the signed update files only when `TAURI_SIGNING_PRIVATE_KEY` is set. Without the secret it still builds both installers, logs a warning, and skips the `.sig` files and `latest.json`, so installed apps cannot update from that release.
 
