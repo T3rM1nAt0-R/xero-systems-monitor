@@ -1,4 +1,4 @@
-//! CPU temperature (system sensors, `LibreHardwareMonitor`) and the system `ping`.
+//! CPU temperature (system sensors, `LibreHardwareMonitor`, Windows thermal zone) and the system `ping`.
 
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
@@ -14,14 +14,23 @@ const LHM_ADDR: ([u8; 4], u16) = ([127, 0, 0, 1], 8085);
 const LHM_TIMEOUT_MS: u64 = 500;
 /// `LibreHardwareMonitor` sensor names that hold the CPU temperature, best first.
 const LHM_CPU_SENSORS: [&str; 2] = ["Core (Tctl/Tdie)", "CPU Package"];
+/// The Windows thermal zone (a slow PowerShell call) is read on the 1st poll and every this many polls.
+const ACPI_EVERY_POLLS: u32 = 30;
+/// The one PowerShell command that lists the ACPI thermal zones (tenths of Kelvin, one per line).
+const ACPI_COMMAND: &str = "(Get-CimInstance -Namespace root/wmi -ClassName MSAcpi_ThermalZoneTemperature).CurrentTemperature";
+/// Tenths of Kelvin per Kelvin.
+const TENTHS: f64 = 10.0;
+/// Zero degrees Celsius in Kelvin.
+const KELVIN_AT_0C: f64 = 273.15;
 /// Sensor labels (lower case) that belong to the CPU.
 const CPU_LABELS: [&str; 5] = ["cpu", "core", "tctl", "tdie", "package"];
 /// Temperatures outside this range (degrees Celsius) are broken sensors.
 const SENSOR_RANGE_C: std::ops::RangeInclusive<f64> = 5.0..=120.0;
 
-/// Hottest CPU sensor: the system sensors, or `LibreHardwareMonitor` on Windows.
-/// TODO: WMI thermal-zone fallback on Windows when `LibreHardwareMonitor` is not running.
-pub(crate) fn cpu_temp() -> Option<f64> {
+/// Hottest CPU sensor: the system sensors, then on Windows `LibreHardwareMonitor`, then the
+/// ACPI thermal zone. `polls` counts polls so far and `acpi_cache` keeps the last thermal-zone
+/// answer between the rare calls that ask Windows.
+pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>) -> Option<f64> {
     let from_system = Components::new_with_refreshed_list()
         .ok()
         .and_then(|components| {
@@ -38,7 +47,37 @@ pub(crate) fn cpu_temp() -> Option<f64> {
                     Some(best.map_or(t, |b| b.max(t)))
                 })
         });
-    from_system.or_else(|| if cfg!(windows) { lhm_cpu_temp() } else { None })
+    if !cfg!(windows) {
+        return from_system;
+    }
+    from_system.or_else(lhm_cpu_temp).or_else(|| {
+        if polls.is_multiple_of(ACPI_EVERY_POLLS) {
+            *acpi_cache = acpi_cpu_temp();
+        }
+        *acpi_cache
+    })
+}
+
+/// Ask Windows (WMI, through one hidden PowerShell) for the ACPI thermal zones.
+fn acpi_cpu_temp() -> Option<f64> {
+    let mut cmd = Command::new("powershell");
+    cmd.args(["-NoProfile", "-Command", ACPI_COMMAND]);
+    crate::hide_window(&mut cmd);
+    let out = cmd.output().ok()?;
+    parse_acpi_temps(&String::from_utf8_lossy(&out.stdout))
+}
+
+/// Hottest sane temperature in degrees Celsius from the thermal-zone output: one number per
+/// line in tenths of Kelvin (e.g. `3182` is 45.05 C). Values outside the sane range are dropped.
+#[must_use]
+pub fn parse_acpi_temps(text: &str) -> Option<f64> {
+    text.lines()
+        .filter_map(|line| line.trim().parse::<f64>().ok())
+        .map(|tenths| tenths / TENTHS - KELVIN_AT_0C)
+        .filter(|c| SENSOR_RANGE_C.contains(c))
+        .fold(None, |best: Option<f64>, t| {
+            Some(best.map_or(t, |b| b.max(t)))
+        })
 }
 
 /// Ask `LibreHardwareMonitor`'s local web server; `None` when it is not running.
@@ -138,6 +177,17 @@ mod tests {
         );
         assert_eq!(parse_lhm_cpu_temp(r#"{"Text":"Core (Tctl/Tdie)"}"#), None);
         assert_eq!(parse_lhm_cpu_temp("not json"), None);
+    }
+
+    #[test]
+    fn reads_acpi_thermal_zones() {
+        let t = parse_acpi_temps("3182\r\n3032\r\n").unwrap_or_default();
+        assert!((t - 45.05).abs() < 1e-6, "{t}");
+        assert!(parse_acpi_temps("2732\n").is_none(), "0 C is a broken zone");
+        assert_eq!(parse_acpi_temps("0\n99999\n"), None);
+        assert_eq!(parse_acpi_temps("2732\n3182\n").map(f64::round), Some(45.0));
+        assert_eq!(parse_acpi_temps("Get-CimInstance : denied\n"), None);
+        assert_eq!(parse_acpi_temps(""), None);
     }
 
     #[test]

@@ -105,7 +105,7 @@ fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
-/// A running connection to one machine. Dropping it kills ssh and stops the thread.
+/// A running connection to one machine. Dropping it kills ssh and tells the thread to stop.
 pub struct SshSource {
     shared: Arc<Mutex<Shared>>,
     child: Arc<Mutex<Option<Child>>>,
@@ -183,9 +183,10 @@ impl Drop for SshSource {
             let _ = c.kill();
             let _ = c.wait();
         }
-        if let Some(t) = self.thread.take() {
-            let _ = t.join();
-        }
+        // Not joined: on Windows a child of ssh (or of a fake shell) can keep the
+        // output pipe open after ssh is killed, and joining would hang the caller.
+        // The thread holds only shared handles and ends once that pipe closes.
+        drop(self.thread.take());
     }
 }
 
@@ -309,6 +310,8 @@ mod tests {
         assert_eq!(src.try_latest(), None);
     }
 
+    // The fake far end is a POSIX shell script; real targets are Linux machines.
+    #[cfg(unix)]
     #[test]
     fn runs_the_real_probe_through_a_local_shell() {
         let probe = include_str!("../../../probes/probe.sh");
@@ -337,6 +340,8 @@ mod tests {
         assert_eq!(src.try_latest(), None);
     }
 
+    // The fake far end is a POSIX shell script; real targets are Linux machines.
+    #[cfg(unix)]
     #[test]
     fn drop_kills_the_child() {
         let file = std::env::temp_dir().join(format!("xsm-fake-ssh-{}", std::process::id()));
