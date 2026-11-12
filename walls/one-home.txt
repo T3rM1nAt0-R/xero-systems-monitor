@@ -3,3 +3,4 @@ reading settings JSON | crates/xsm-settings/src/lib.rs | serde_json::from_str
 reading text files from disk | crates/xsm-walls/src/files.rs | fs::read_to_string
 talking to the backend | app/src/api.js | invoke\(|fetch\(
 parsing probe lines | crates/xsm-core/src/parse/mod.rs | fn split_tag
+opening the database | crates/xsm-store/src/db.rs | Connection::open
