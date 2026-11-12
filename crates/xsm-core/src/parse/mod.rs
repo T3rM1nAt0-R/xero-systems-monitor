@@ -18,13 +18,18 @@ const PERCENT: f64 = 100.0;
 /// Bytes in a kibibyte (`/proc/meminfo` counts in these).
 const BYTES_PER_KIB: u64 = 1024;
 /// Bytes in a mebibyte (`df`, `nvidia-smi` and the process list count in these).
-const BYTES_PER_MIB: u64 = 1024 * BYTES_PER_KIB;
+pub(crate) const BYTES_PER_MIB: u64 = 1024 * BYTES_PER_KIB;
 
-/// `part` as a percent of `whole`; `None` when `whole` is 0.
+/// A byte count as f64.
 // reason: byte counts stay far below 2^53, where f64 is exact
 #[allow(clippy::cast_precision_loss)]
-fn percent_of(part: u64, whole: u64) -> Option<f64> {
-    (whole > 0).then(|| PERCENT * part as f64 / whole as f64)
+pub(crate) fn to_f64(n: u64) -> f64 {
+    n as f64
+}
+
+/// `part` as a percent of `whole`; `None` when `whole` is 0.
+pub(crate) fn percent_of(part: u64, whole: u64) -> Option<f64> {
+    (whole > 0).then(|| PERCENT * to_f64(part) / to_f64(whole))
 }
 
 /// The tag and the rest of a probe line. The one place that splits lines.

@@ -157,6 +157,35 @@ pub struct ContainerState {
     pub running_for: String,
 }
 
+/// Status text of a container that exited, up to its code.
+const EXITED_PREFIX: &str = "Exited (";
+
+impl ContainerState {
+    /// True for a container that fell over: restarting, dead, exited with a non-zero
+    /// code, or failing its health check. A clean exit (code 0) is not a failure.
+    #[must_use]
+    pub fn is_failing(&self) -> bool {
+        let code = self
+            .status
+            .strip_prefix(EXITED_PREFIX)
+            .and_then(|rest| rest.split_once(')'))
+            .map(|(code, _)| code)
+            .filter(|c| !c.is_empty() && c.bytes().all(|b| b.is_ascii_digit()));
+        matches!(self.state.as_str(), "restarting" | "dead")
+            || self.status.contains("(unhealthy)")
+            || (self.state == "exited" && code.is_some_and(|c| c != "0"))
+    }
+}
+
+impl JobLine {
+    /// True while the job runs: it has a name, or no result yet. A line that carries
+    /// only a result is a job that just ended.
+    #[must_use]
+    pub fn is_running(&self) -> bool {
+        self.result.is_none() || !self.name.is_empty()
+    }
+}
+
 /// A systemd unit in the failed state.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct FailedService {
