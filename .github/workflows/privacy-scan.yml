@@ -14,10 +14,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Secrets (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Secrets (gitleaks, whole history)
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 git /repo --no-banner --redact
       - name: Personal data (private IPs, Windows user paths)
         run: |
           # Fails on private-range IPs and personal paths. Examples must use 192.0.2.x (TEST-NET).
