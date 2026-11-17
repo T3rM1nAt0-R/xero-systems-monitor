@@ -1,11 +1,14 @@
-//! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor` and the system `ping`.
+//! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor`, the system `ping` and CI runners.
 
+use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, ping_once};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
-use std::time::Instant;
-use sysinfo::{Disks, Motherboard, Networks, ProcessesToUpdate, System};
+use std::time::{Instant, SystemTime};
+use sysinfo::{
+    Disks, Motherboard, Networks, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
+};
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
     TopProgram,
@@ -38,6 +41,7 @@ pub struct LocalSource {
     ping_ms: Option<f64>,
     top: Vec<TopProgram>,
     hardware: HardwareInfo,
+    runners: RunnerWatch,
 }
 
 impl LocalSource {
@@ -62,6 +66,7 @@ impl LocalSource {
             ping_ms: None,
             top: Vec::new(),
             hardware,
+            runners: RunnerWatch::default(),
         })
     }
 
@@ -72,9 +77,19 @@ impl LocalSource {
         self.sys.refresh_memory();
         self.disks.refresh(true);
         self.networks.refresh(true);
+        self.sys.refresh_processes_specifics(
+            ProcessesToUpdate::All,
+            true,
+            ProcessRefreshKind::nothing()
+                .with_cpu()
+                .with_memory()
+                .with_exe(UpdateKind::OnlyIfNotSet),
+        );
         if self.polls.is_multiple_of(TOP_EVERY_POLLS) {
-            self.top = top_programs(&mut self.sys);
+            self.top = top_programs(&self.sys);
         }
+        let ci =
+            xsm_core::parse::parse_frame(&self.runners.lines(&self.sys, SystemTime::now()), None);
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
             self.ping_ms = ping_once();
         }
@@ -95,6 +110,8 @@ impl LocalSource {
             ping_ms: self.ping_ms,
             top: self.top.clone(),
             hardware: self.hardware.clone(),
+            runners: ci.runners,
+            jobs: ci.jobs,
             ..Reading::default()
         }
     }
@@ -190,11 +207,10 @@ fn root_used_pct(disks: &Disks) -> Option<f64> {
     (total > 0).then(|| PERCENT * total.saturating_sub(d.available_space()) as f64 / total as f64)
 }
 
-/// Busiest programs by CPU, processes of one name added together.
+/// Busiest programs by CPU, processes of one name added together (processes already refreshed).
 // reason: byte counts stay far below 2^53; the cpu count is tiny
 #[allow(clippy::cast_precision_loss)]
-fn top_programs(sys: &mut System) -> Vec<TopProgram> {
-    sys.refresh_processes(ProcessesToUpdate::All, true);
+fn top_programs(sys: &System) -> Vec<TopProgram> {
     let threads = sys.cpus().len().max(1) as f64;
     let mut by_name: HashMap<String, TopProgram> = HashMap::new();
     for p in sys.processes().values() {
