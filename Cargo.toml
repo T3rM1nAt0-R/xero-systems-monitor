@@ -14,7 +14,7 @@ members = [
 edition = "2021"
 license = "MIT"
 publish = false
-version = "0.1.0"
+version = "0.1.1"
 
 [workspace.dependencies]
 regex = "1"

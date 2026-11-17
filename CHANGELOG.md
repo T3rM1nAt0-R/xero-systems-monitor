@@ -4,7 +4,12 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-17
+
 - Runners on this PC: Windows self-hosted runners (`Runner.Listener` / `Runner.Worker`) now show on This PC's card like on Linux machines, with the job name from the runner's worker log, its CPU and memory, and the result when it ends.
+
+## [0.1.0] - 2026-11-12
+
 - README screenshots.
 - Desktop app (Tauri 2 shell with a React window): always-on-top monitor with compact and mini views, tray icon, autostart, single instance and remembered window position.
 - This PC: CPU, memory, disk, network, ping, top programs, NVIDIA GPU and hardware names.
