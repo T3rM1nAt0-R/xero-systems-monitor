@@ -17,8 +17,8 @@ pub struct Prefs {
     pub close_to_tray: bool,
     /// Start with Windows (hidden, in the tray).
     pub login: bool,
-    /// True for an installed build, false for a development run.
-    pub packaged: bool,
+    /// True when this copy can update itself: an installed build that is not the portable copy.
+    pub updates: bool,
 }
 
 /// The part of `set_prefs` that can change.
@@ -92,7 +92,7 @@ pub fn get(app: &AppHandle) -> Result<Prefs, String> {
     Ok(Prefs {
         close_to_tray: store.close_to_tray(),
         login: app.autolaunch().is_enabled().map_err(|e| e.to_string())?,
-        packaged: !cfg!(debug_assertions),
+        updates: !cfg!(debug_assertions) && crate::portable_dir().is_none(),
     })
 }
 

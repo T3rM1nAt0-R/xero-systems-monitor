@@ -2,7 +2,7 @@
 import { demoMachine, demoEvents, finishedJobs, forecast, history } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
-const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, packaged: false }, mode: "full", pinned: true };
+const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, updates: true }, mode: "full", pinned: true };
 const clock = () => Date.now() / 1000;
 const ok = async () => null;
 const named = n => store.machines.find(m => m.name === n);
@@ -35,7 +35,7 @@ const commands = {
     return {};
   },
   get_prefs: () => ({ ...store.prefs }),
-  set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { packaged: false }) && { ...store.prefs },
+  set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },
   set_window_mode: ({ mode }) => (store.mode = mode),
   set_pinned: ({ on }) => (store.pinned = !!on),
   set_theme: ok, set_mini_height: ok, restart_collector: ok, relaunch: ok, quit: ok, stop_everything: ok,
