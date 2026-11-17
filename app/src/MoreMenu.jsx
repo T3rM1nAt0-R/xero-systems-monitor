@@ -46,7 +46,7 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
           <Row on={prefs.login} onClick={() => api.setPrefs({ login: !prefs.login }).then(setPrefs)}>Start with Windows, hidden</Row></>}
         <Row hint="M" onClick={close(onMini)}>Mini corner view</Row>
 
-        {!prefs?.packaged && <><hr /><Head>Updates</Head>
+        {prefs?.updates && <><hr /><Head>Updates</Head>
           <Row hint={upText} disabled={!!busy} onClick={onCheck}>Check for updates</Row>
           <Row on={auto} onClick={() => setAuto(!auto)}>Update by itself</Row></>}
 

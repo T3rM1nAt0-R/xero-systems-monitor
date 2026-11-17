@@ -77,5 +77,5 @@ MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: 
           // `was` is the old name after a rename, so the collector moves the history over
           // save_machines checks: at least one machine; names unique, non-empty, without "|"; every ssh machine has a host
 
-Prefs = { closeToTray: boolean, login: boolean, packaged: boolean }
+Prefs = { closeToTray: boolean, login: boolean, updates: boolean }  // updates: the More menu shows Check for updates (installed, not portable)
 ```
