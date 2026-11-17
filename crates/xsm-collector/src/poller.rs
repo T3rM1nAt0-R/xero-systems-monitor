@@ -88,7 +88,8 @@ impl Slot {
     fn new(m: &MachineConfig, offline_after_misses: u32) -> Self {
         let rules = Rules {
             offline_after_misses,
-            has_runners: m.runner == Some(true),
+            // This PC is always checked for runners: it costs nothing when none run.
+            has_runners: m.runner == Some(true) || m.kind == MachineKind::Local,
         };
         Self {
             name: m.name.clone(),
