@@ -5511,7 +5511,7 @@ dependencies = [
 
 [[package]]
 name = "xero-systems-monitor"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5526,7 +5526,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-collector"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5538,7 +5538,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5546,7 +5546,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-settings"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5554,7 +5554,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-sources"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "nvml-wrapper",
  "sysinfo",
@@ -5563,7 +5563,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-store"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "rusqlite",
  "xsm-core",
@@ -5571,7 +5571,7 @@ dependencies = [
 
 [[package]]
 name = "xsm-walls"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "regex",
  "syn 2.0.119",
