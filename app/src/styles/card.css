@@ -21,6 +21,7 @@
 .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:var(--sp-12);padding:var(--sp-12)}
 .grid>.card{break-inside:avoid;margin-bottom:var(--sp-8)}
 .detail{padding-bottom:var(--sp-12);display:flex;flex-direction:column;gap:var(--sp-6)}
+.tabpanel{display:flex;flex-direction:column;gap:var(--sp-6)}
 .meter.crit i{background:var(--crit)}
 @media (min-width:1500px){.spark{height:var(--sz-32)}}
 .card.full{padding:var(--sp-9);gap:var(--sp-6)}
@@ -52,7 +53,7 @@
 .detail .tl{gap:var(--sp-3)}
 .detail .lane{grid-template-columns:62px 1fr;gap:var(--sp-6)}
 .detail .lane>.tick{font-size:var(--fs-11)}
-@container (min-width:860px){.detail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.detail .grp.runners,.detail .grp.full{grid-column:1/-1}}
+@container (min-width:860px){.tabpanel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.detail .grp.runners,.detail .grp.full{grid-column:1/-1}}
 .grp h5:hover{color:var(--fg)}
 .grp h5 .chev{font-weight:400;color:var(--dim);width:var(--sz-10);display:inline-block;font-size:var(--fs-11)}
 .grp h5 em{font-style:normal;text-transform:none;letter-spacing:0;margin-left:var(--sp-10);font-size:var(--fs-13);font-weight:500;color:var(--fg)}
@@ -73,7 +74,7 @@
 .card.dragging{opacity:.5}
 .card.dropto{outline:2px dashed var(--acc);outline-offset:2px}
 .chips .chip{flex:none}
-@container (min-width:860px){.detail{display:grid}}
+@container (min-width:860px){.tabpanel{display:grid}}
 .chead .up{color:var(--dim2);font-size:var(--fs-11-5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .chead .restart{color:var(--warn);font-size:var(--fs-11-5);white-space:nowrap;flex:none}
 .zchip{align-self:flex-start;margin:0 0 var(--sp-8);padding:var(--sp-2) var(--sp-10);font-size:var(--fs-12);border-radius:var(--r-999)}
