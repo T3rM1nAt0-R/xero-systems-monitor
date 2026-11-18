@@ -1,4 +1,4 @@
-/* Runners tab: the runner list and the queue (headings and hairlines, no boxes), and the mini window columns. */
+/* Runners tab: the runner list and the queue (headings and hairlines, no boxes). */
 .rlist{display:flex;flex-direction:column}
 .rrow.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-12);align-items:center;padding:var(--sp-8) 0;border-top:1px solid var(--hair);font-size:var(--fs-12)}
 .rrow.q span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
