@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SECTIONS, activeSection } from "./find.js";
 import { Find } from "./controls.jsx";
@@ -14,7 +14,7 @@ import { themeTitle } from "../theme/presets.js";
 import usePick from "./usePick.js";
 const BODY = { theme: ThemeSection, colors: ColoursSection, text: TextSection, shape: ShapeSection, surfaces: SurfacesSection, graphs: GraphsSection, layout: LayoutSection, motion: MotionSection };
 const NOTES = { theme: "holds colours, text, glass, graphs, layout, motion", colors: "3 base colours", shape: "style, corners, borders, depth", surfaces: "glass, background, grain" };
-const SPY_PAD = 24, PICK_PAD = 80;
+const SPY_PAD = 24, PICK_PAD = 80, HOLD_MS = 700;   // how long after a change the edited row is held in place
 // Ctrl+Z belongs to the text box while someone types in one (search, a name, pasted code); everywhere else it undoes the last change.
 const typing = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && ["text", "search"].includes(el.type));
 const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -32,6 +32,22 @@ export default function Customize({ c, onClose, start = "", full = true }) {
     };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   }, [onClose, undo, redo, picking]);
+  // Keep the row you are changing where it is. A change can reflow things (a section grows, a fold opens); the scroll position is put back so the row under the
+  // cursor does not move. `held` is the row (by its setting id), where it was, and until when it is held; every further change by the same row extends it.
+  const held = useRef(null);
+  const mark = e => {
+    const id = e.target.closest?.("[data-setting]")?.dataset.setting, row = id && body.current?.querySelector(`[data-setting="${id}"]`); if (!row) { held.current = null; return; }   // a press anywhere else (the scrollbar) is the person scrolling
+    const now = performance.now(), h = held.current;
+    held.current = h && h.id === id && now < h.until ? { ...h, until: now + HOLD_MS } : { id, top: row.getBoundingClientRect().top, until: now + HOLD_MS };
+  };
+  const release = () => { held.current = null; };   // scrolling by hand, or a jump, ends the hold
+  const keep = useCallback(() => {
+    const h = held.current, sc = body.current, row = h && sc?.querySelector(`[data-setting="${h.id}"]`);
+    if (!row || performance.now() > h.until) return;
+    const d = row.getBoundingClientRect().top - h.top; if (Math.abs(d) >= 1) sc.scrollTop += d;
+  }, []);
+  useLayoutEffect(keep);
+  useEffect(() => { const sc = body.current; if (!sc || typeof ResizeObserver === "undefined") return; const ro = new ResizeObserver(keep); sc.querySelectorAll(".csec").forEach(el => ro.observe(el)); return () => ro.disconnect(); }, [keep]);
   const spy = useCallback(() => {
     cancelAnimationFrame(raf.current);
     raf.current = requestAnimationFrame(() => {
@@ -43,14 +59,14 @@ export default function Customize({ c, onClose, start = "", full = true }) {
   // A click in pick mode: scroll the panel to that setting and flash it.
   const toSetting = useCallback(id => {
     const el = body.current?.querySelector(`[data-setting="${id}"]`); if (!el) return;
-    setQ(""); setPicking(false);
+    setQ(""); setPicking(false); release();
     const top = el.getBoundingClientRect().top - body.current.getBoundingClientRect().top + body.current.scrollTop - PICK_PAD;
     body.current.scrollTo({ top, behavior: reduced() ? "auto" : "smooth" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }, []);
   useEffect(() => { if (start && start !== "theme") requestAnimationFrame(() => toSetting(start)); }, []);   // eslint-disable-line react-hooks/exhaustive-deps -- once: opened from a command that names a setting
   const pick = usePick(picking, toSetting);
-  const jump = id => { const el = body.current?.querySelector("#csec-" + id); if (el) body.current.scrollTo({ top: el.offsetTop - 4, behavior: reduced() ? "auto" : "smooth" }); };
+  const jump = id => { release(); const el = body.current?.querySelector("#csec-" + id); if (el) body.current.scrollTo({ top: el.offsetTop - 4, behavior: reduced() ? "auto" : "smooth" }); };
   const hold = on => ({ onPointerDown: () => setComparing(true), onPointerUp: () => setComparing(false), onPointerLeave: () => setComparing(false), onBlur: () => setComparing(false), onKeyDown: e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); setComparing(true); } }, onKeyUp: e => { if (e.key === " " || e.key === "Enter") setComparing(false); }, "aria-pressed": on });
   return createPortal(
     <>
@@ -67,7 +83,7 @@ export default function Customize({ c, onClose, start = "", full = true }) {
         <nav className="cchips" aria-label="Sections">{SECTIONS.map(([id, label]) => <button key={id} className={"chip" + (active === id ? " on" : "")} aria-current={active === id} onClick={() => jump(id)}>{label}</button>)}</nav>
       </header>
       <Find.Provider value={q}>
-        <div className={"cscroll" + (q ? " searching" : "")} ref={body} onScroll={spy}>
+        <div className={"cscroll" + (q ? " searching" : "")} ref={body} onScroll={spy} onWheel={release} onTouchMove={release} onPointerDownCapture={mark} onKeyDownCapture={mark} onInputCapture={mark} onChangeCapture={mark}>
           {SECTIONS.map(([id, label]) => { const Body = BODY[id]; return <section key={id} id={"csec-" + id} className="csec"><h4 className="csh"><span>{label}</span><em>{NOTES[id]}</em></h4><Body c={c} full={full} /></section>; })}
           <p className="cnone">Nothing matches that. Try a shorter word.</p>
         </div>

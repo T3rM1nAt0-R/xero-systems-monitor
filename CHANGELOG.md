@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Fixed: the Customize panel jumped around when you changed spacing or text size (for example Compact to Spacious). The panel, menus, dialogs, Ctrl+K, toasts, tooltips and the top bar were sized with the same text-size and density tokens as the cards, so every change reflowed the very panel you were using, the scroll position stayed put while the rows moved under the cursor, and the scroll-spy chips changed under you. They now use one fixed size (fonts and colours still follow your look), and the row you are editing is held in place whenever a change reflows anything else.
+
 - Changed: the 24 h and 7 d chips are gone from the Overview outage strip and the Runners table; both now follow the "Graphs show" range at the bottom, like every graph.
 - Fixed: the C key and Ctrl+K "Compact view" now work from Mini (they leave Mini for Compact). Fold all and Unfold all are offered only in the Full view, and the label comes from the cards' real state (so it is right after a restart or after folding cards one by one). The "Graphs show" chips are hidden in Compact and Mini, and Customize says "Applies in Full view" on Layout and Graphs while you are in Compact or Mini.
 - Changed: Customize is the one place for the look. The Theme row (Dark, Light, Windows) and Large text are gone from the More menu and from Ctrl+K, which now offer one "Open Customize" command. Your old theme and Large text choice move into Customize once (Light becomes the Light theme, Windows becomes Match Windows, Large becomes a 116% text size), so nobody loses their look.

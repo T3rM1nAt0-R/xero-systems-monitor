@@ -34,6 +34,11 @@
   --dur: 180ms; --ease: cubic-bezier(.2,.7,.2,1);   /* open and close motion; keep --dur in step with MOTION_MS in src/motion.js */
   --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
   --size-number: calc(16px * var(--scale)); --size-label: calc(13px * var(--scale)); --size-small: calc(11px * var(--scale));
+}
+/* The scaled sizes: font sizes, spacing, radii and fixed sizes are the pixel value times --scale (and spacing times --dens). They are declared again on the window's own
+   chrome (the Customize panel, menus, dialogs, Ctrl+K, toasts, tooltips and the top bar), where --scale and --dens are 1: the chrome keeps one fixed size whatever the
+   look's text size and density are, so changing those never reflows the panel you are changing them in. Fonts, colours and corner shape still follow the look. */
+:root, .cpanel, .menu, .modal, .toasts, .xmtip, .top, .pickbanner, .pickbox {
   /* font sizes */
   --fs-9: calc(9px * var(--scale));
   --fs-9-5: calc(9.5px * var(--scale));
@@ -117,6 +122,7 @@
   --sz-276: calc(276px * var(--scale));
   --sz-280: calc(280px * var(--scale));
 }
+.cpanel, .menu, .modal, .toasts, .xmtip, .top, .pickbanner, .pickbox { --scale: 1; --dens: 1; }
 :root[data-theme="light"] {
   --bg:#f3f4f7; --s1:#ffffff; --s2:#eceff4; --line:#e0e4ea; --line2:#c9cfda;
   --fg:#14171c; --mid:#454d5b; --dim:#555d6b; --dim2:#7e8590;
