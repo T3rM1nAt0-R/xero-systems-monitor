@@ -8,7 +8,7 @@ export const FULL = "full";
 export const TAB_PARTS = {
   overview: [["cpu", "graphs"], ["gpu", "graphs"], ["net", "graphs"], ["disk", "graphs"], ["run", "compact"], ["svc", "failing"]],
   hardware: [["cpu", "hardware"], ["gpu", "programs"], ["bat", FULL]],
-  processes: [["cpu", "processes"]],
+  processes: [["proc", FULL]],
   disks: [["disk", FULL]],
   network: [["net", FULL]],
   services: [["svc", FULL]],

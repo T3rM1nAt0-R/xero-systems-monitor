@@ -8,7 +8,7 @@ use crate::demo_waves::{
 };
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 use crate::scan::{ScanReply, Scans};
-use crate::{Action, Backend, BusyReply, HistoryReply, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, Ranking, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::drives::{biggest, DiskIo, Folder};
@@ -116,6 +116,7 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             vram_used_pct: wave(VRAM, phase, t),
         });
     }
+    r.processes = demo_extras::processes(cpu_pct);
     if m.runner == Some(true) {
         r.runners = RUNNERS
             .iter()
@@ -219,6 +220,15 @@ impl Backend for DemoBackend {
             Some(m) => BusyReply::of(whole(t), &reading(&m, t).top),
             None => BusyReply::Nothing {},
         })
+    }
+
+    fn get_busiest(&self, machine: &str, range_s: f64) -> Result<Ranking, String> {
+        let r = self.named(machine)?.map(|m| reading(&m, now_s()));
+        Ok(demo_extras::ranking(r.as_ref(), range_s))
+    }
+
+    fn end_task(&self, machine: &str, _pid: u32, name: &str) -> Result<String, String> {
+        demo_extras::end_task(self.named(machine)?.is_some(), name)
     }
 
     fn get_events(&self, since: f64, n: usize) -> Result<Vec<Event>, String> {

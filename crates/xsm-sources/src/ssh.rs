@@ -24,7 +24,7 @@ const ALIVE_MAX_MISSES: &str = "2";
 /// The probe runs full (hardware names) on the 1st and every this many frames.
 const FULL_EVERY: u32 = 100;
 /// The probe lists the busiest programs on the 1st and every this many frames.
-const TOP_EVERY: u32 = 5;
+const TOP_EVERY: u32 = 3;
 /// Docker stats are asked on the first frame and then every this many frames; other frames reuse them.
 const DOCKER_EVERY: u32 = 3;
 /// Bytes read from ssh at a time.

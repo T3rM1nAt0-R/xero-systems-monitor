@@ -13,6 +13,7 @@ import "./styles/customize.css";
 import "./styles/view.css";
 import "./styles/disks.css";
 import "./styles/hardware.css";
+import "./styles/processes.css";
 import "./styles/terminal.css";
 import "./styles/network.css";
 import { installTips } from "./tooltip.js";

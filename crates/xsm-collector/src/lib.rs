@@ -14,7 +14,7 @@ mod machines;
 mod poller;
 mod scan;
 
-pub use busy::{Busy, BusyReply};
+pub use busy::{Busy, BusyReply, Ranking};
 pub use config::alert_limits;
 pub use demo::DemoBackend;
 pub use history::{History, HistoryReply};
@@ -55,6 +55,19 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when the programs cannot be read.
     fn get_busy_at(&self, machine: &str, t: f64) -> Result<BusyReply, String>;
+
+    /// What one machine was busy with over the last `range_s` seconds: programs ranked by average CPU.
+    ///
+    /// # Errors
+    /// Text for the window when the programs cannot be read.
+    fn get_busiest(&self, machine: &str, range_s: f64) -> Result<Ranking, String>;
+
+    /// Ask one process of a machine to end (`kill` on a Linux machine, a plain end on This PC).
+    /// `name` must still be the process's name, so a reused id is never hit.
+    ///
+    /// # Errors
+    /// Plain text for the window: unknown machine, protected process, already gone, or not allowed.
+    fn end_task(&self, machine: &str, pid: u32, name: &str) -> Result<String, String>;
 
     /// At most `n` events at or after `since` (unix seconds), newest first.
     ///

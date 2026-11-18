@@ -74,10 +74,20 @@ export function busyAt(m, t) {
 }
 export const forecast = m => (kindOf(m) === "server" ? { per_day: 0.4, days: 95 } : { per_day: null, days: null });
 
+// Made-up processes: [pid, name, share of the CPU use, MB]. The server shows who runs each (This PC does not report users).
+const PROCS = [["browser", 0.3, 1800], ["browser", 0.1, 650], ["editor", 0.2, 900], ["build_tool", 0.15, 600], ["video_call", 0.12, 700], ["backup", 0.08, 300], ["indexer", 0.05, 250], ["sync_tool", 0.02, 120], ["browser", 0.02, 410], ["shell", 0, 20]];
+const procs = (cpu, kind) => PROCS.map(([name, w, mb], i) => [1000 + i * 37, name, +(cpu * w).toFixed(1), mb, kind === "pc" ? "" : i % 3 ? "user" : "root"]);
+// What was busy over a range: the same programs, ranked by their average CPU and how many minutes each was among the busiest.
+export function busiest(m, range, now) {
+  const minutes = Math.max(0, Math.floor(range / 60)), cpu = metric(kindOf(m), seedOf(m.name), "cpu", now, now), seen = new Map();
+  for (const [, name, c, mb] of procs(cpu, kindOf(m))) { const e = seen.get(name) || [name, 0, 0, minutes]; e[1] += c; e[2] = Math.max(e[2], mb); seen.set(name, e); }
+  return { minutes, top: [...seen.values()].map(([n, c, mb, k], i) => [n, +c.toFixed(1), mb, Math.max(1, Math.round(k * (1 - i * 0.07)))]).sort((a, b) => b[1] - a[1]) };
+}
 const snap = (m, now) => {
   const kind = kindOf(m), seed = seedOf(m.name), v = k => metric(kind, seed, k, now, now), gpu = kind === "pc";
   const d = { cpu: v("cpu"), temp: v("temp"), ram: v("ram"), disk: v("disk"), down: v("down"), up: v("up"), ping: v("ping"), uptime: 3 * DAY + 5400, restart: gpu, restart_pkgs: gpu ? 2 : undefined, updates: gpu ? 5 : 0, ip: gpu ? "192.0.2.20" : "192.0.2.10", speed: 1000, hw: HW[kind],
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
+    procs: procs(v("cpu"), kind),
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
   d.io = driveNames(m).map((n, i) => [n, Math.round(v("down") * 0.4 / (i + 1)), Math.round(v("up") * 0.6 / (i + 1))]);   // drive speeds, bytes per second
   if (gpu) Object.assign(d, { adapters: [["Ethernet", true, 1000, "192.0.2.20"], ["Wi-Fi", true, 866, "192.0.2.21"], ["VPN", false, null, null]], wifi: ["Example Wi-Fi", 82], inet: [true, 14, 38 + Math.round(hash(Math.floor(now / 60)) * 20)], pings: [["example-server", 3.4], ["example-nas", 240], ["example-laptop", null]] });
