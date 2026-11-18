@@ -1,0 +1,30 @@
+# Publish a draft release made by release.yml, so the in-app updater offers it.
+# Run it from Actions > Publish release > Run workflow, with the tag (for example v0.2.0).
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag of the draft release to publish, for example v0.2.0"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # turn the draft into a published release and create its tag
+    steps:
+      - name: Publish the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          case "$TAG" in v[0-9]*.[0-9]*.[0-9]*) ;; *) echo "Tag must look like v1.2.3"; exit 1 ;; esac
+          gh release view "$TAG" --json isDraft,assets --jq '"draft: \(.isDraft), files: \([.assets[].name] | join(", "))"'
+          gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx latest.json || { echo "The draft has no latest.json, so the updater would not see it."; exit 1; }
+          gh release edit "$TAG" --draft=false --latest
