@@ -130,7 +130,6 @@ fn snapshot_has_the_window_shape() {
             os: Some("Linux".into()),
             ..HardwareInfo::default()
         },
-        docker_error: None,
         sensors: Some(SensorDetail {
             fans_rpm: vec![900.0],
             cpu_clock_mhz: Some(3500.0),
@@ -146,6 +145,7 @@ fn snapshot_has_the_window_shape() {
             restart_packages: Some(2),
             pending: Some(7),
         },
+        ..Reading::default()
     };
     t.observe(r, 1000);
     let v = serde_json::to_value(t.snapshot()).unwrap();

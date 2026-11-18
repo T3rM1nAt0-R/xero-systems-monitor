@@ -7,10 +7,12 @@ mod config;
 mod demo;
 mod demo_extras;
 mod demo_jobs;
+mod demo_waves;
 mod history;
 mod live;
 mod machines;
 mod poller;
+mod scan;
 
 pub use busy::{Busy, BusyReply};
 pub use config::alert_limits;
@@ -18,6 +20,7 @@ pub use demo::DemoBackend;
 pub use history::{History, HistoryReply};
 pub use live::LiveBackend;
 pub use machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
+pub use scan::ScanReply;
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
 pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
@@ -70,6 +73,24 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when the forecast cannot be made.
     fn get_forecast(&self, machine: &str) -> Result<Forecast, String>;
+
+    /// Start looking for the biggest folders under `path` on one machine (in the background); returns the number to ask about.
+    ///
+    /// # Errors
+    /// Text for the window when the machine is unknown or the path is not usable.
+    fn find_big_folders(&self, machine: &str, path: &str) -> Result<u64, String>;
+
+    /// How the search `job` is going: running, done with the folders, cancelled or failed.
+    ///
+    /// # Errors
+    /// Text for the window when the search is no longer there.
+    fn get_big_folders(&self, job: u64) -> Result<ScanReply, String>;
+
+    /// Ask the search `job` to stop. It only reads; nothing is ever deleted.
+    ///
+    /// # Errors
+    /// Text for the window when it cannot be stopped.
+    fn cancel_big_folders(&self, job: u64) -> Result<(), String>;
 
     /// The machine list.
     ///

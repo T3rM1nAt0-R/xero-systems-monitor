@@ -18,6 +18,10 @@ export const getForecast = machine => call("get_forecast", { machine });
 // Open a job on GitHub in the browser. Only https://github.com/ addresses go through.
 export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : Promise.resolve(null));
 export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
+// The biggest-folders search of the Disks tab: start it, ask how far it is, stop it. It only reads.
+export const findBigFolders = (machine, path) => call("find_big_folders", { machine, path });   // resolves to a job number
+export const getBigFolders = job => call("get_big_folders", { job });   // { state: "running", seen } | { state: "done", folders: [{ path, bytes }] } | { state: "cancelled" } | { state: "failed", error }
+export const cancelBigFolders = job => call("cancel_big_folders", { job });
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });

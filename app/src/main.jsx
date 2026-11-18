@@ -11,6 +11,7 @@ import "./styles/menus.css";
 import "./styles/motion.css";
 import "./styles/customize.css";
 import "./styles/view.css";
+import "./styles/disks.css";
 import "./styles/hardware.css";
 import "./styles/terminal.css";
 import { installTips } from "./tooltip.js";

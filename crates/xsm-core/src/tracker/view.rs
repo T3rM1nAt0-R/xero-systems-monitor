@@ -75,6 +75,28 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
         .map(|d| (&d.mount, gib(d.used_bytes), gib(d.total_bytes)))
         .collect();
     put_some(&mut m, "storage", disks);
+    let io: Vec<_> = r
+        .disk_io
+        .iter()
+        .map(|d| (&d.name, d.read_bytes_per_s, d.write_bytes_per_s))
+        .collect();
+    put_some(&mut m, "io", io);
+    let health: Vec<_> = r
+        .drive_health
+        .iter()
+        .map(|d| {
+            (
+                &d.name,
+                &d.model,
+                d.ok,
+                d.temp_c,
+                d.power_on_hours,
+                d.wear_pct,
+            )
+        })
+        .collect();
+    put_some(&mut m, "smart", health);
+    put(&mut m, "smart_note", r.health_note.as_ref());
     if let Some(s) = &r.sensors {
         put(&mut m, "mhz", s.cpu_clock_mhz);
         put(&mut m, "cpu_w", s.cpu_power_w);
