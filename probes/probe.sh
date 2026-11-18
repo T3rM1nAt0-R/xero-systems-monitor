@@ -28,6 +28,7 @@
 #   DISKIO dev read_bps write_bps       speed of each whole drive since the last frame (needs the scratch folder T; none on the first frame)
 #   SMART dev|model|health|temp|hours|wear    drive health from smartctl (ok or warning; empty = unknown), read every 10 minutes and repeated from a cache
 #   SMARTNOTE missing | denied   no smartctl installed, or it needs more rights than this user has
+#   ADAPTER name|state|mbps|ip   one per network adapter (only when F=1); state is up or down, "-" = unknown
 #   NET iface ip speed_mbps rx_bytes tx_bytes uptime_s  default route; "-" when no ip, -1 when no speed
 #   PING ms                    round trip to a public resolver
 #   RUNNER <ps args>           a GitHub Actions Runner.Listener or Runner.Worker process
@@ -161,6 +162,16 @@ if [ -n "$gpusamp" ]; then
 fi
 [ -n "$n" ] || n=$(nvq utilization.gpu,temperature.gpu,memory.used,memory.total)
 echo "GPU ${n:-none}"
+
+if [ -n "$F" ]; then
+  addrs=$(ip -o -4 addr show 2>/dev/null | awk '{split($4,a,"/"); print $2, a[1]}')
+  for n in /sys/class/net/*; do
+    b=${n##*/}
+    case $b in lo|veth*|docker*|br-*) continue;; esac
+    sp=$(cat "$n/speed" 2>/dev/null || echo -1)
+    echo "ADAPTER $b|$(cat "$n/operstate" 2>/dev/null)|$sp|$(echo "$addrs" | awk -v n="$b" '$1==n{print $2; exit}')"
+  done
+fi
 
 d=$(awk '$2=="00000000"{print $1; exit}' /proc/net/route 2>/dev/null)
 if [ -n "$d" ]; then

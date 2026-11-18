@@ -22,6 +22,7 @@ export const containerAction = (machine, action, name) => call("container_action
 export const findBigFolders = (machine, path) => call("find_big_folders", { machine, path });   // resolves to a job number
 export const getBigFolders = job => call("get_big_folders", { job });   // { state: "running", seen } | { state: "done", folders: [{ path, bytes }] } | { state: "cancelled" } | { state: "failed", error }
 export const cancelBigFolders = job => call("cancel_big_folders", { job });
+export const setInternetHost = url => call("set_internet_host", { url });   // the address the internet check uses; only a plain https:// address, anything else means the default
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });
