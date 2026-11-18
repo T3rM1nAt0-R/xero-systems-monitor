@@ -61,6 +61,9 @@ mod imp {
 
     /// What `ShellExecuteW` returns at most when it failed (a real start gives a number above this).
     const SHELL_EXECUTE_FAILED_UP_TO: usize = 32;
+    /// Byte sizes handed to the calls (a `TOKEN_ELEVATION` and a `DWORD` are one 32-bit value each).
+    const TOKEN_ELEVATION_BYTES: u32 = 4;
+    const DWORD_BYTES: u32 = 4;
     /// `ERROR_CANCELLED`: the UAC question was answered no.
     const ERROR_CANCELLED: u32 = 1223;
 
@@ -68,13 +71,13 @@ mod imp {
         let mut token = HANDLE::default();
         // reason: asks Windows for this process's own token; `token` is a valid out value and is closed below
         #[allow(unsafe_code)]
-        let opened = unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) };
+        let opened = unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &raw mut token) };
         if opened.is_err() {
             return false;
         }
         let mut info = TOKEN_ELEVATION::default();
         let mut got = 0u32;
-        let size = size_of::<TOKEN_ELEVATION>() as u32;
+        let size = TOKEN_ELEVATION_BYTES;
         // reason: `info` is a TOKEN_ELEVATION of exactly `size` bytes and lives for the call
         #[allow(unsafe_code)]
         let read = unsafe {
@@ -83,7 +86,7 @@ mod imp {
                 TokenElevation,
                 Some(core::ptr::from_mut(&mut info).cast::<c_void>()),
                 size,
-                &mut got,
+                &raw mut got,
             );
             let _ = CloseHandle(token);
             r
@@ -93,7 +96,7 @@ mod imp {
 
     pub(super) fn sudo_setting() -> Option<u32> {
         let mut value = 0u32;
-        let mut size = size_of::<u32>() as u32;
+        let mut size = DWORD_BYTES;
         // reason: `value` is a 4-byte DWORD and `size` says so; both live for the call
         #[allow(unsafe_code)]
         let err = unsafe {
@@ -104,7 +107,7 @@ mod imp {
                 RRF_RT_REG_DWORD,
                 None,
                 Some(core::ptr::from_mut(&mut value).cast::<c_void>()),
-                Some(&mut size),
+                Some(&raw mut size),
             )
         };
         err.is_ok().then_some(value)
