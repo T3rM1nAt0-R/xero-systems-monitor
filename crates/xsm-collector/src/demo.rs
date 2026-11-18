@@ -3,7 +3,7 @@
 
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Backend, HistoryReply, State};
+use crate::{Backend, BusyReply, HistoryReply, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
@@ -266,6 +266,13 @@ impl Backend for DemoBackend {
         Ok(match self.named(machine)? {
             Some(m) => HistoryReply::Known(Box::new(history(&m, now_s(), range_s))),
             None => HistoryReply::Unknown {},
+        })
+    }
+
+    fn get_busy_at(&self, machine: &str, t: f64) -> Result<BusyReply, String> {
+        Ok(match self.named(machine)? {
+            Some(m) => BusyReply::of(whole(t), &reading(&m, t).top),
+            None => BusyReply::Nothing {},
         })
     }
 

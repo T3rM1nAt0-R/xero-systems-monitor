@@ -1,4 +1,5 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useState, useEffect, useCallback, memo, useMemo } from "react";
+import BusyPopover from "./BusyPopover.jsx";
 import { setJobsAt } from "./hoverGroup.js";
 import Chart from "./Chart.jsx";
 import Timeline from "./Timeline.jsx";
@@ -26,12 +27,14 @@ function Grp({ id, color, title, sub, summary, def = true, cls = "", children })
     </section>);
 }
 // One graph card. Module-level and memoised so charts keep their state between polls.
-const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group }) {
+const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, busy }) {
   const series = useMemo(() => [{ name: name || title, pts, color: C[k] }], [name, title, pts, k]);
+  const [pop, setPop] = useState(null), shut = useCallback(() => setPop(null), []), pick = useCallback((t, x, y) => setPop({ t, x, y }), []);
   return (
     <div className="panel" style={{ "--c": C[k] }}>
       <div className="ph"><h4>{title}</h4>{nv != null && <span className={"now" + (warn ? " warn" : "")}>{nv}</span>}{sm && <span className="sum">{sm}</span>}</div>
-      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} />
+      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} onPick={busy ? pick : undefined} />
+      {pop && <BusyPopover machine={group} {...pop} range={range} onClose={shut} />}
     </div>);
 });
 // One machine's stack of groups: CPU, GPU, Network, Disk, Runners. Each group is a row of graphs.
@@ -52,9 +55,9 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone, limits =
   return (
     <div className="detail inline">
       <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
-        <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
+        <Pn title="CPU" k="cpu" busy now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
         <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
-        <Pn title="Memory" k="ram" now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
+        <Pn title="Memory" k="ram" busy now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
       {d.top?.length > 0 && <div className="procs"><h4>Busiest programs now</h4>{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</div>}</Grp>
       {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">

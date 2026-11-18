@@ -1,5 +1,5 @@
 // The stand-in for the Tauri shell when the window runs in a plain browser. `handle(command, args)` answers every command in docs/window-api.md with demo data of the documented shape.
-import { demoMachine, demoEvents, finishedJobs, forecast, history } from "./fakeData.js";
+import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
 const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, updates: true }, mode: "full", pinned: true };
@@ -24,7 +24,8 @@ export function checkMachines(list) {
 const commands = {
   get_state: () => ({ machines: store.machines.map(m => demoMachine(m, clock())) }),
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
-  get_events: ({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
+  get_busy_at: ({ machine, t }) => (named(machine) ? busyAt(named(machine), t) : {}),
+  get_events:({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
   get_jobs: ({ since }) => finishedJobs(store.machines, since, clock()),
   get_forecast: ({ machine }) => (named(machine) ? forecast(named(machine)) : { per_day: null, days: null }),
   get_machines: () => ({ machines: store.machines.map(m => ({ ...m })) }),

@@ -2,6 +2,7 @@
 //! the [`Backend`] trait has one method per data command of `docs/window-api.md`.
 #![deny(missing_docs)]
 
+mod busy;
 mod config;
 mod demo;
 mod history;
@@ -9,6 +10,7 @@ mod live;
 mod machines;
 mod poller;
 
+pub use busy::{Busy, BusyReply};
 pub use config::alert_limits;
 pub use demo::DemoBackend;
 pub use history::{History, HistoryReply};
@@ -40,6 +42,13 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when the history cannot be read.
     fn get_history(&self, machine: &str, range_s: f64) -> Result<HistoryReply, String>;
+
+    /// The busiest programs of one machine around time `t` (unix seconds): `{}` when
+    /// nothing was kept for that time.
+    ///
+    /// # Errors
+    /// Text for the window when the programs cannot be read.
+    fn get_busy_at(&self, machine: &str, t: f64) -> Result<BusyReply, String>;
 
     /// At most `n` events at or after `since` (unix seconds), newest first.
     ///

@@ -51,6 +51,14 @@ export const demoEvents = (machines, since, now, n) => {
   }
   return rows.filter(r => r[0] >= since).sort((a, b) => b[0] - a[0]).slice(0, n);
 };
+// What was busy around time t (the stored minute nearest to it): a few made-up programs that share the machine's CPU at that moment.
+const PROGRAMS = ["browser", "editor", "build_tool", "video_call", "backup", "indexer"];
+export function busyAt(m, t) {
+  const minute = Math.floor(t / 60) * 60, kind = kindOf(m), seed = seedOf(m.name), cpu = metric(kind, seed, "cpu", minute, minute);
+  const share = PROGRAMS.map((name, i) => ({ name, w: hash(Math.floor(minute / 600) * 11 + i + seed) + 0.1 })), sum = share.reduce((a, s) => a + s.w, 0);
+  const top = share.map((s, i) => [s.name, +(cpu * 0.9 * s.w / sum).toFixed(1), Math.round(300 + 1500 * hash(i + seed)), 1 + Math.floor(hash(i * 5 + seed) * 5)]);
+  return { t: minute, top: top.sort((a, b) => b[1] - a[1]) };
+}
 export const forecast = m => (kindOf(m) === "server" ? { per_day: 0.4, days: 95 } : { per_day: null, days: null });
 
 const snap = (m, now) => {

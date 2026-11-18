@@ -413,3 +413,12 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .menu .quiettimes small,.menu .mutedlist .mlabel{color:var(--dim2)}
 .mutebtn{margin-left:8px;padding:0 6px;font-size:11px;opacity:.6}.dev:hover .mutebtn{opacity:1}
 .dev:has(.mutebtn){grid-template-columns:68px 8px minmax(0,1fr) auto}
+
+/* What was busy then? (BusyPopover.jsx): opens where a CPU or memory graph is clicked */
+.chart.pick{cursor:pointer}
+.busypop{position:fixed;z-index:9000;width:270px;padding:8px 10px;background:#12151c;border:1px solid var(--line2);border-radius:8px;box-shadow:0 8px 24px #000a;font-size:12px;color:var(--fg)}
+.busypop .bp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.busypop .bp-h button{background:none;border:0;color:var(--dim);font-size:15px;line-height:1;cursor:pointer;padding:0 2px}
+.busypop .bp-r{display:grid;grid-template-columns:minmax(0,1fr) 46px 62px;gap:8px;padding:2px 0}
+.busypop .bp-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.busypop .bp-r em{font-style:normal;text-align:right;color:var(--dim)}

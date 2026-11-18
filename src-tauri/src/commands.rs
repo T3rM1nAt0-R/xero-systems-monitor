@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 19. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -9,8 +9,8 @@ use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
-    Backend, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList, SaveOutcome,
-    State as Readings,
+    Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList,
+    SaveOutcome, State as Readings,
 };
 
 /// The collector the commands talk to.
@@ -30,6 +30,15 @@ pub async fn get_history(
     range: f64,
 ) -> Reply<HistoryReply> {
     backend.0.get_history(&machine, range)
+}
+
+#[tauri::command]
+pub async fn get_busy_at(
+    backend: State<'_, BackendState>,
+    machine: String,
+    t: f64,
+) -> Reply<BusyReply> {
+    backend.0.get_busy_at(&machine, t)
 }
 
 #[tauri::command]

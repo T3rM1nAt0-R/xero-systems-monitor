@@ -4,7 +4,7 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
-use crate::{Backend, HistoryReply, State};
+use crate::{Backend, BusyReply, HistoryReply, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -109,6 +109,14 @@ impl Backend for LiveBackend {
             .history(machine, range, now_s())
             .map_err(text)?;
         Ok(HistoryReply::Known(Box::new(History::from(h))))
+    }
+
+    fn get_busy_at(&self, machine: &str, t: f64) -> Result<BusyReply, String> {
+        // reason: unix seconds fit an i64 (NaN becomes 0)
+        #[allow(clippy::cast_possible_truncation)]
+        let t = t as i64;
+        let found = lock(&self.store).busiest_at(machine, t).map_err(text)?;
+        Ok(found.map_or(BusyReply::Nothing {}, |b| BusyReply::of(b.t, &b.programs)))
     }
 
     fn get_events(&self, since: f64, n: usize) -> Result<Vec<Event>, String> {

@@ -39,6 +39,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)
 - Docker containers and failed systemd services on remote machines
 - History from 5 minutes to 1 year, stored locally in SQLite
+- "What was busy then?": click a point on a CPU or memory graph to see the busiest programs at that moment (kept once a minute for 3 days)
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
 - Your own limits per machine (CPU %, CPU and GPU temperature, disk % and "full in N days"), quiet hours (11 PM to 8 AM by default; pop-ups wait except "machine offline"), and a Mute button on each alert in the Activity drawer
 - Tray icon, autostart
