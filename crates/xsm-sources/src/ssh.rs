@@ -25,6 +25,8 @@ const ALIVE_MAX_MISSES: &str = "2";
 const FULL_EVERY: u32 = 100;
 /// The probe lists the busiest programs on the 1st and every this many frames.
 const TOP_EVERY: u32 = 5;
+/// Docker stats are asked on the first frame and then every this many frames; other frames reuse them.
+const DOCKER_EVERY: u32 = 3;
 /// Bytes read from ssh at a time.
 const READ_CHUNK: usize = 4096;
 
@@ -74,8 +76,9 @@ pub fn next_backoff(current: Duration, cap: Duration) -> Duration {
 /// The shell loop sent on stdin: runs `probe` every `interval_s` seconds and prints [`FRAME_END`] after each.
 fn loop_script(probe: &str, interval_s: u32) -> String {
     format!(
-        "n=0\nwhile :; do\nn=$((n+1))\nif [ $((n % {FULL_EVERY})) = 1 ]; then F=1; else F=; fi\n\
-         if [ $((n % {TOP_EVERY})) = 1 ]; then P=1; else P=; fi\nexport F P\n\
+        "T=$(mktemp -d 2>/dev/null)\ntrap 'rm -rf $T' EXIT\nn=0\nwhile :; do\nn=$((n+1))\nif [ $((n % {FULL_EVERY})) = 1 ]; then F=1; else F=; fi\n\
+         if [ $((n % {TOP_EVERY})) = 1 ]; then P=1; else P=; fi\n\
+         if [ $((n % {DOCKER_EVERY})) = 1 ]; then D=1; else D=; fi\nexport F P D T\n\
          (\n{}\n) </dev/null 2>/dev/null\necho {FRAME_END}\nsleep {interval_s}\ndone\n",
         probe.replace('\r', "")
     )
@@ -301,6 +304,14 @@ mod tests {
         let s10 = Duration::from_secs(10);
         assert_eq!(next_backoff(s10, cap), Duration::from_secs(20));
         assert_eq!(next_backoff(Duration::from_secs(40), cap), cap);
+    }
+
+    #[test]
+    fn the_loop_hands_the_probe_its_switches_and_scratch_folder() {
+        let script = loop_script("echo hi", 3);
+        assert!(script.contains("export F P D T"));
+        assert!(script.contains("mktemp -d"));
+        assert!(script.contains("trap 'rm -rf $T' EXIT"));
     }
 
     #[test]

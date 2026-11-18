@@ -11,6 +11,8 @@ use xsm_core::container::{docker_args, failure_text, success_text, timeout_text,
 const TIMEOUT: Duration = Duration::from_secs(20);
 /// Pause between looks at the running command.
 const POLL: Duration = Duration::from_millis(50);
+/// Most bytes of one stream kept for the window; the rest is read and thrown away.
+const MAX_OUTPUT: u64 = 64 * 1024;
 
 /// Run `docker <action> <name>` on `host` and return the text for the window.
 ///
@@ -24,7 +26,9 @@ pub fn run_container_action(host: &str, action: Action, name: &str) -> Result<St
 fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
     thread::spawn(move || {
         let mut bytes = Vec::new();
-        let _ = pipe.read_to_end(&mut bytes);
+        let _ = pipe.by_ref().take(MAX_OUTPUT).read_to_end(&mut bytes);
+        // Keep emptying the pipe so the far end is never stuck writing.
+        let _ = std::io::copy(&mut pipe, &mut std::io::sink());
         String::from_utf8_lossy(&bytes).into_owned()
     })
 }
@@ -91,6 +95,17 @@ mod tests {
     fn logs_join_both_streams() {
         let r = run_command(sh("echo out; echo err >&2"), LONG, Action::Logs, "w");
         assert_eq!(r.unwrap(), "out\nerr\n");
+    }
+
+    #[test]
+    fn long_output_is_cut_short() {
+        let r = run_command(
+            sh("head -c 300000 /dev/zero | tr '\\0' x"),
+            LONG,
+            Action::Logs,
+            "w",
+        );
+        assert!(r.unwrap().len() as u64 <= 2 * MAX_OUTPUT);
     }
 
     #[test]

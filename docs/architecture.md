@@ -11,7 +11,7 @@ Every block has one job and may use only what this table allows. The `block_map`
 | `crates/xsm-collector` | edge | The polling loop: sources to tracker to store, every N seconds; one snapshot for the window. Also the shell's front door: the `Backend` trait (one method per data command) and `DemoBackend`; it re-exports the `xsm-core` types the commands return, because the shell may not use `xsm-core` directly. | all blocks above, `serde`, `serde_json` |
 | `src-tauri` | shell | The desktop app: Tauri commands (the only front door the window sees), tray, autostart, mini window, single instance, updater. | `xsm-collector`, `xsm-settings`, `serde`, `serde_json`, `tauri` and its official plugins (`autostart`, `opener`, `single-instance`, `updater`, `window-state`) |
 | `app/` | window | React + Vite window. Talks only through `app/src/api.js`, which wraps Tauri `invoke`. | `react`, `@tauri-apps/api` |
-| `probes/` | script | `probe.sh`, sent over SSH; prints one tagged line per fact. The `GPU` line carries the peak use and peak memory of a few quick samples (`GPU_SAMPLES`, `GPU_GAP` at the top of the script); the line format is unchanged. The store keeps the peak, not the average, for the `gpu` and `vram` series when it thins history. | POSIX sh only |
+| `probes/` | script | `probe.sh`, sent over SSH; prints one tagged line per fact. The `GPU` line carries the peak use and peak memory of the samples one background `nvidia-smi -lms` took while the frame ran (`GPU_GAP_MS` at the top of the script), so nothing sleeps for it. Job resources use the change since the last frame (no sleep), and `docker stats` run only every third frame (`D=1`), the other frames reuse the last answer; the sender keeps a scratch folder (`T`) for the whole connection for this. The line format is unchanged. The store keeps the peak, not the average, for the `gpu` and `vram` series when it thins history. | POSIX sh only |
 | `crates/xsm-walls` | checks | The house rules, as tests. | `syn`, `walkdir`, `toml`, `regex` |
 | `helpers/sensors/` | later | Optional C# CPU-temperature helper (LibreHardwareMonitorLib). | not built yet |
 
@@ -30,3 +30,5 @@ probe.sh / local APIs  ->  xsm-sources (raw text or struct)
 ## One home per job
 
 `walls/one-home.txt` names each job and the one file allowed to do it (for example: formatting bytes for display = `app/src/format.js`; parsing probe lines = `crates/xsm-core/src/parse/`; opening the database = `crates/xsm-store/src/db.rs`). The `one_home` wall fails when another file does that job.
+
+Commands that wait on the database or on `ssh` (history, busy-at, events, jobs, forecast, save machines, container actions, restart, stop) run through `spawn_blocking` in `src-tauri/src/commands.rs`, so a slow one cannot starve the shared async runtime. The window's reads use their own read-only-in-practice SQLite connection (WAL), so a long history read never holds up the poller's writes.
