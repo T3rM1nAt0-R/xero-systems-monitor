@@ -28,6 +28,15 @@ pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
 use serde::Serialize;
 
+/// The size of one runner's `_work` folder (`get_work_size`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct WorkSize {
+    /// The runner's name (its folder name).
+    pub runner: String,
+    /// Bytes in its work folder; `None` when it could not be measured in time.
+    pub bytes: Option<u64>,
+}
+
 /// The answer of `get_state`: one snapshot per machine, in list order.
 #[derive(Debug, Clone, Serialize)]
 pub struct State {
@@ -129,6 +138,12 @@ pub trait Backend: Send + Sync {
     /// Plain text for the window: not an ssh machine, a bad name, docker or ssh failing, or a timeout.
     fn container_action(&self, machine: &str, action: Action, name: &str)
         -> Result<String, String>;
+
+    /// The size of each runner's work folder on one machine (slow, so only on demand).
+    ///
+    /// # Errors
+    /// Plain text for the window: unknown machine, ssh failing, or a timeout.
+    fn get_work_size(&self, machine: &str) -> Result<Vec<WorkSize>, String>;
 
     /// Restart polling.
     ///

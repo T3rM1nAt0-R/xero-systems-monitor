@@ -49,7 +49,7 @@ pub(crate) fn wait_for(child: &mut Child, timeout: Duration) -> Option<bool> {
     }
 }
 
-fn text_of(handle: Option<JoinHandle<String>>) -> String {
+pub(crate) fn text_of(handle: Option<JoinHandle<String>>) -> String {
     handle.and_then(|h| h.join().ok()).unwrap_or_default()
 }
 

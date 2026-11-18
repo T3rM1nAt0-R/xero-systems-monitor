@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: the Runners tab is the full runners view: one row per runner (name, status, current job, time in the job), the queue of jobs waiting for this machine's runners, and a "Check work folder sizes" button (over ssh with `du` and a time limit on Linux, walked on This PC); the timeline, last 7 days, busy heatmap and job history sit below. Overview keeps the compact runners block with the timeline. New command `get_work_size`.
+- Added: the mini window can be resized by dragging its edges; its content flows into 1, 2 or 3 columns by width, and the size is remembered (the Fit button forgets it). New command `set_mini_size`.
 - Added: choose your graphs. The ⋯ menu on a machine card lists its graphs with show/hide on Overview, a size (S, M, L) and a pin (a pinned graph always shows and comes first). Remembered per machine.
 - Added: small markers on graphs for restarts, runner jobs starting and ending (failed ones red), container restarts and going offline or back online; hover one for what happened at a 12-hour time.
 - Added: "Unusual for this time" chip on a CPU, memory or GPU graph that is far above what that machine usually does at this hour over the last 7 days ("normally ~X%"); the threshold is in `app/src/unusual.json`.

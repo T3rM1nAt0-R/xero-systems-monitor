@@ -17,6 +17,7 @@ import "./styles/hardware.css";
 import "./styles/processes.css";
 import "./styles/terminal.css";
 import "./styles/network.css";
+import "./styles/runners.css";
 import { installTips } from "./tooltip.js";
 installTips();
 createRoot(document.getElementById("root")).render(<App />);

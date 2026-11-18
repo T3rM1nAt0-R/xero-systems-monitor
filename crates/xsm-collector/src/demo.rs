@@ -8,7 +8,7 @@ use crate::demo_waves::{
 };
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 use crate::scan::{ScanReply, Scans};
-use crate::{Action, Backend, BusyReply, HistoryReply, Ranking, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, Ranking, State, WorkSize};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::drives::{biggest, DiskIo, Folder};
@@ -26,6 +26,9 @@ const MIB: u64 = 1_048_576;
 pub(crate) const RUNNERS: [&str; 2] = ["runner-1", "runner-2"];
 const FORECAST_PER_DAY: f64 = 0.4;
 const FORECAST_DAYS: f64 = 95.0;
+
+/// Made-up work-folder sizes of the two demo runners.
+const DEMO_WORK_BYTES: [u64; 2] = [3_400_000_000, 812_000_000];
 
 fn is_pc(m: &MachineConfig) -> bool {
     m.kind == MachineKind::Local
@@ -295,6 +298,17 @@ impl Backend for DemoBackend {
 
     fn set_internet_host(&self, _url: &str) -> Result<(), String> {
         Ok(())
+    }
+
+    fn get_work_size(&self, _machine: &str) -> Result<Vec<WorkSize>, String> {
+        Ok(["runner-1", "runner-2"]
+            .iter()
+            .zip(DEMO_WORK_BYTES)
+            .map(|(runner, bytes)| WorkSize {
+                runner: (*runner).to_owned(),
+                bytes: Some(bytes),
+            })
+            .collect())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {
