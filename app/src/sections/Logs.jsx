@@ -33,6 +33,7 @@ export default function Logs({ m }) {
       {s.err && <div className="svcnote" role="alert">Could not read the log: {s.err}</div>}
       {!s.err && <div className="logrows" role="log" aria-label="System log">
         {rows.map((r, i) => <div className={"logrow" + (r.level ? " " + r.level : "")} key={i}><time>{logTime(r.t)}</time><b data-tip={r.unit}>{r.unit}</b><span>{r.msg}</span></div>)}
+        {s.loading && !rows.length && <div className="skelrows" aria-busy="true" aria-label="Loading"><i /><i /><i /><i /><i /><i /></div>}
         {!s.loading && !rows.length && <div className="quiet">No log lines match.</div>}
       </div>}
       {containers.length > 0 && <div className="logcont"><span className="sub">Container logs:</span>{containers.map(c => <button key={c[0]} className="fchip" onClick={() => setBox(c[0])}>{c[0]}</button>)}</div>}

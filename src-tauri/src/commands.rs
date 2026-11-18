@@ -213,8 +213,13 @@ pub fn set_theme(app: AppHandle, theme: String) -> Reply<()> {
 }
 
 #[tauri::command]
-pub fn set_tray_status(app: AppHandle, status: String, tooltip: String) -> Reply<()> {
-    crate::tray::set_status(&app, &status, &tooltip)
+pub fn set_tray_status(
+    app: AppHandle,
+    status: String,
+    tooltip: String,
+    pulse: Option<bool>,
+) -> Reply<()> {
+    crate::tray::set_status(&app, &status, &tooltip, pulse.unwrap_or(false))
 }
 
 #[tauri::command]

@@ -28,6 +28,13 @@ export function peakOf(seriesPts, t0, t1) {
   seriesPts.forEach((pts, i) => { for (const [t, v] of pts) if (t >= t0 && t <= t1 && (!best || v > best.v)) best = { t, v, i }; });
   return best;
 }
+// The two blends of a big number's colour, as css variables: amber builds from 70% of its limit up to the limit, red from the limit up to 110% of it.
+const AMBER_FROM = 0.7, RED_TO = 1.1;
+export function nearStyle(v, thr) {
+  if (!Number.isFinite(v) || !(thr > 0)) return null;
+  const pct = x => Math.round(Math.min(1, Math.max(0, x)) * 100) + "%";
+  return { "--amber": pct((v - thr * AMBER_FROM) / (thr * (1 - AMBER_FROM))), "--red": pct((v - thr) / (thr * (RED_TO - 1))) };
+}
 // The newest point inside [t0, t1] of one series, or null.
 export function newest(pts, t0, t1) {
   for (let i = pts.length - 1; i >= 0; i--) if (pts[i][0] <= t1) return pts[i][0] >= t0 ? { t: pts[i][0], v: pts[i][1] } : null;

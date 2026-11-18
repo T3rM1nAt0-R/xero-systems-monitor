@@ -45,7 +45,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/customized.png" alt="The window with a customized look"></td>
 </tr>
 <tr>
-<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a font, size and weight for each kind of text (12 bundled fonts), every colour, graph style, sizes, glass and motion (Full, Subtle, Off), and themes, with a live preview. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point.</td>
+<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a font, size and weight for each kind of text (12 bundled fonts), every colour, graph style, sizes, glass and motion (Full, Subtle, Off), and themes, with a live preview. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point; cards glide, tabs slide, toasts confirm saves and copies, and risky actions (stop or restart a container, end a task, stop everything) need a hold.</td>
 <td valign="top">The same window with the Midnight theme, other fonts, filled smooth graphs and a purple tint for one machine.</td>
 </tr>
 <tr>

@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { toast } from "../toast.js";
 import { allThemes } from "../theme/presets.js";
 // Themes tab: choose a built-in or saved theme, save the current look as a new one, rename, delete, export and import.
 export default function CustomThemes({ c }) {
   const [name, setName] = useState(""), [renaming, setRenaming] = useState(null), [text, setText] = useState(""), [msg, setMsg] = useState(null), [copied, setCopied] = useState(false);
   const save = () => { c.saveAs(name || "My theme"); setName(""); };
   const doImport = () => { const r = c.importText(text); setMsg(r.ok ? { ok: true, t: `Added "${r.theme.name}".` } : { ok: false, t: r.error }); if (r.ok) setText(""); };
-  const copy = () => navigator.clipboard?.writeText(c.exportText()).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {});
+  const copy = () => navigator.clipboard?.writeText(c.exportText()).then(() => { toast("Copied"); setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {});
   return (
     <div className="ctab">
       <div className="cthemes" role="listbox" aria-label="Themes">

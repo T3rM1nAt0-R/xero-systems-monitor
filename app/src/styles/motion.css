@@ -51,6 +51,7 @@ html[data-motion="off"] .loadbar i,html[data-motion="off"] .panel.skel .chart::a
 html[data-motion="subtle"]{--dur:120ms}
 html[data-motion="subtle"] .fx{display:none}
 @media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important}
   .collapse,.tabs button,.grp h5 .pin,.loadbar{transition:none}
   .tabpanel,.menu,.busypop,.dlg,.modal,.loadbar i,.panel.skel .chart::after,.chart path.cmp,.card.edge-glow::after{animation:none}
 }

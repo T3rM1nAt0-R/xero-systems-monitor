@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fxKind, heatStops, peakOf, newest, rollDir } from "../src/chartFx.js";
+import { fxKind, heatStops, peakOf, newest, rollDir, nearStyle } from "../src/chartFx.js";
 import { motionLevel, motionFull, motionMs, MOTION_MS } from "../src/motion.js";
 
 test("graph motion: first draw, slide, stretch on a range change, nothing otherwise", () => {
@@ -46,4 +46,14 @@ test("the Motion setting: system reduced motion wins; Off and Subtle are read fr
   assert.equal(motionLevel(true, "full"), "off");
   assert.equal(motionFull("full"), true); assert.equal(motionFull("subtle"), false);
   assert.equal(motionMs(false, "off"), 0); assert.equal(motionMs(false, "subtle"), MOTION_MS); assert.equal(motionMs(true), 0);
+});
+
+test("a big number turns amber from 70% of its limit and red from the limit", () => {
+  assert.deepEqual(nearStyle(50, 100), { "--amber": "0%", "--red": "0%" });
+  assert.deepEqual(nearStyle(85, 100), { "--amber": "50%", "--red": "0%" });
+  assert.deepEqual(nearStyle(100, 100), { "--amber": "100%", "--red": "0%" });
+  assert.deepEqual(nearStyle(105, 100), { "--amber": "100%", "--red": "50%" });
+  assert.deepEqual(nearStyle(150, 100), { "--amber": "100%", "--red": "100%" });
+  assert.equal(nearStyle(NaN, 100), null);
+  assert.equal(nearStyle(5, 0), null);
 });

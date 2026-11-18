@@ -1,4 +1,5 @@
 import { useState } from "react";
+import HoldButton from "./HoldButton.jsx";
 import { since } from "./format.js";
 import { ALERTS } from "./alerts.js";
 import { notify } from "./useAlerts.js";
@@ -59,7 +60,7 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
         <Row hint="?" onClick={close(onHelp)}>Keyboard shortcuts</Row>
         <Row disabled={!!busy} onClick={close(onRestart)}>{busy === "r" ? "Reconnecting…" : "Restart the collector"}</Row>
         <div className="mgap" />
-        <Row danger onClick={close(onStop)}>Stop everything…</Row>
+        <div className="mhold"><HoldButton label="Stop everything" title="Keep holding to close the monitor and its collector until you open it again" onDone={close(onStop)} /></div>
         {ver && <div className="mver" data-tip={ver.date ? new Date(ver.date * 1000).toLocaleString("en-US") : ""}>Version {ver.version}{ver.date ? ` · updated ${since(ver.date)} ago` : ""}{ready ? " · restart to finish" : ""}</div>}
       </div>}
     </div>);
