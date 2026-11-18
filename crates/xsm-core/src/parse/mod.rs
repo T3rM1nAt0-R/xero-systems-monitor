@@ -10,6 +10,7 @@ mod net;
 mod runners;
 mod services;
 mod top;
+mod updates;
 
 use crate::reading::{HardwareInfo, Reading};
 
@@ -60,6 +61,7 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
             "SVCF" => services::line(&mut r, rest),
             "TOP" => top::line(&mut r, rest),
             "HW" => hardware::line(&mut r, rest),
+            "REBOOT" | "UPDATES" => updates::line(tag, &mut r, rest),
             _ => None,
         };
     }
@@ -76,6 +78,9 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
         }
         if r.hardware == HardwareInfo::default() {
             r.hardware = p.hardware.clone();
+        }
+        if r.updates.pending.is_none() {
+            r.updates.pending = p.updates.pending;
         }
     }
     r

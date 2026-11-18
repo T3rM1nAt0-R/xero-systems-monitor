@@ -30,7 +30,7 @@ const SENSOR_RANGE_C: std::ops::RangeInclusive<f64> = 5.0..=120.0;
 /// Hottest CPU sensor: the system sensors, then on Windows `LibreHardwareMonitor`, then the
 /// ACPI thermal zone. `polls` counts polls so far and `acpi_cache` keeps the last thermal-zone
 /// answer between the rare calls that ask Windows.
-pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>) -> Option<f64> {
+pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>, lhm: Option<&str>) -> Option<f64> {
     let from_system = Components::new_with_refreshed_list()
         .ok()
         .and_then(|components| {
@@ -50,12 +50,14 @@ pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>) -> Option<f64> 
     if !cfg!(windows) {
         return from_system;
     }
-    from_system.or_else(lhm_cpu_temp).or_else(|| {
-        if polls.is_multiple_of(ACPI_EVERY_POLLS) {
-            *acpi_cache = acpi_cpu_temp();
-        }
-        *acpi_cache
-    })
+    from_system
+        .or_else(|| lhm.and_then(parse_lhm_cpu_temp))
+        .or_else(|| {
+            if polls.is_multiple_of(ACPI_EVERY_POLLS) {
+                *acpi_cache = acpi_cpu_temp();
+            }
+            *acpi_cache
+        })
 }
 
 /// Ask Windows (WMI, through one hidden PowerShell) for the ACPI thermal zones.
@@ -80,8 +82,11 @@ pub fn parse_acpi_temps(text: &str) -> Option<f64> {
         })
 }
 
-/// Ask `LibreHardwareMonitor`'s local web server; `None` when it is not running.
-fn lhm_cpu_temp() -> Option<f64> {
+/// Ask `LibreHardwareMonitor`'s local web server for its JSON text; `None` off Windows or when it is not running.
+pub(crate) fn lhm_text() -> Option<String> {
+    if !cfg!(windows) {
+        return None;
+    }
     let timeout = Duration::from_millis(LHM_TIMEOUT_MS);
     let mut s = TcpStream::connect_timeout(&SocketAddr::from(LHM_ADDR), timeout).ok()?;
     s.set_read_timeout(Some(timeout)).ok()?;
@@ -89,7 +94,7 @@ fn lhm_cpu_temp() -> Option<f64> {
         .ok()?;
     let mut text = String::new();
     s.read_to_string(&mut text).ok()?;
-    parse_lhm_cpu_temp(&text)
+    Some(text)
 }
 
 /// The text of the string value that follows `"key"` in JSON text, from `from` on.
@@ -149,6 +154,29 @@ pub(crate) fn ping_once() -> Option<f64> {
     parse_ping_ms(&String::from_utf8_lossy(&out.stdout))
 }
 
+/// Registry keys Windows creates while a restart is waiting (Update and servicing).
+const RESTART_KEYS: [&str; 2] = [
+    r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+    r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+];
+
+/// Whether Windows waits for a restart, read with the built-in `reg query` (the key either
+/// exists or not). `None` off Windows, or when `reg` itself cannot run.
+#[must_use]
+pub fn windows_restart_needed() -> Option<bool> {
+    if !cfg!(windows) {
+        return None;
+    }
+    let mut found = false;
+    for key in RESTART_KEYS {
+        let mut cmd = Command::new("reg");
+        cmd.args(["query", key]);
+        crate::hide_window(&mut cmd);
+        found |= cmd.output().ok()?.status.success();
+    }
+    Some(found)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -157,6 +185,11 @@ mod tests {
         {"id":2,"Text":"Temperatures","Children":[
         {"id":3,"Text":"Core #1","Value":"41,0 °C","Children":[]},
         {"id":4,"Text":"Core (Tctl/Tdie)","Min":"30,0 °C","Value":"45,5 °C","Max":"70,0 °C"}]}]}]}"#;
+
+    #[test]
+    fn restart_is_unknown_off_windows() {
+        assert_eq!(windows_restart_needed().is_some(), cfg!(windows));
+    }
 
     #[test]
     fn reads_lhm_temperature() {

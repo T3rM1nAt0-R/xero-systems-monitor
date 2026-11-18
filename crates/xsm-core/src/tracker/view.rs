@@ -50,6 +50,9 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
     put(&mut m, "speed", net.and_then(|n| n.link_speed_mbps));
     put(&mut m, "uptime", net.map(|n| n.uptime_s));
     put(&mut m, "ip", net.and_then(|n| n.ip.clone()));
+    put(&mut m, "restart", r.updates.restart_needed);
+    put(&mut m, "restart_pkgs", r.updates.restart_packages);
+    put(&mut m, "updates", r.updates.pending);
     let pair = |used: u64, total: u64| [gib(used), gib(total)];
     put(
         &mut m,
@@ -72,6 +75,13 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
         .map(|d| (&d.mount, gib(d.used_bytes), gib(d.total_bytes)))
         .collect();
     put_some(&mut m, "storage", disks);
+    if let Some(s) = &r.sensors {
+        put(&mut m, "mhz", s.cpu_clock_mhz);
+        put(&mut m, "cpu_w", s.cpu_power_w);
+        put(&mut m, "gpu_w", s.gpu_power_w);
+        put_some(&mut m, "fans", &s.fans_rpm);
+        put_some(&mut m, "cores", &s.core_load_pct);
+    }
     lists(r, &mut m);
     Value::Object(m).serialize(s)
 }

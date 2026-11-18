@@ -6,6 +6,7 @@ mod history;
 
 pub use history::{History, Points};
 
+use history::MERGE;
 use rusqlite::{params, Connection};
 use std::path::Path;
 use xsm_core::reading::Reading;
@@ -253,13 +254,13 @@ impl Store {
     }
 }
 
-/// Average the rows of `from` older than `before` into `step`-second rows of `to`, then delete them.
+/// Merge (average, or peak for the GPU series) the rows of `from` older than `before` into `step`-second rows of `to`, then delete them.
 /// The cut is rounded down to a whole row so no row is split between two tables.
 fn roll(conn: &Connection, from: &str, to: &str, step: i64, before: i64) -> Result<()> {
     let cut = before.div_euclid(step) * step;
     conn.execute(
         &format!(
-            "INSERT OR REPLACE INTO {to} SELECT machine, key, ts / ?1 * ?1, avg(v) FROM {from}
+            "INSERT OR REPLACE INTO {to} SELECT machine, key, ts / ?1 * ?1, {MERGE} FROM {from}
              WHERE ts < ?2 GROUP BY machine, key, 3"
         ),
         params![step, cut],
