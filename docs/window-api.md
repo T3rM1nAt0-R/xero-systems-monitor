@@ -93,8 +93,10 @@ BusyAt = { t: number, top: [name, cpu_percent, ram_mb, count][] }
 Event = [t, machine, message]
 Job = [machine, runner, start, end, result, label]   // result "" when unknown; label "PR #7 · branch · Build (owner/name)" (the last part is the repository, which the window turns into a GitHub link)
 
-MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: boolean, was?: string }
+MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: boolean, was?: string, paused?: boolean }
           // `was` is the old name after a rename, so the collector moves the history over
+          // `paused: true` keeps the machine in the list but the collector does not poll it (it is missing from get_state until resumed);
+          //   the window sets it from "Hidden machines > Pause monitoring". Which machines are *hidden* is only a window setting.
           // save_machines checks: at least one machine; names unique, non-empty, without "|"; every ssh machine has a host
 
 Prefs = { closeToTray: boolean, login: boolean, updates: boolean }  // updates: the More menu shows Check for updates (installed, not portable)

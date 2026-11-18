@@ -86,7 +86,7 @@ impl LiveBackend {
         let mut engine = lock(&self.engine);
         *engine = None;
         *engine = Some(Engine::spawn(Plan {
-            machines: lock(&self.machines).clone(),
+            machines: MachineConfig::polled(&lock(&self.machines)),
             settings: self.settings.collector.clone(),
             make_ssh: Arc::clone(&self.make_ssh),
             store: Arc::clone(&self.store),

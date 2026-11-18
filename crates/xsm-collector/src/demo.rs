@@ -192,6 +192,7 @@ impl DemoBackend {
             host: None,
             runner: None,
             was: None,
+            paused: None,
         };
         let server = MachineConfig {
             name: "example-server".to_owned(),
@@ -199,6 +200,7 @@ impl DemoBackend {
             host: Some("192.0.2.10".to_owned()),
             runner: Some(true),
             was: None,
+            paused: None,
         };
         Self {
             machines: Mutex::new(vec![pc, server]),
