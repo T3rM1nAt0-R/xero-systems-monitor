@@ -1,4 +1,5 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useState, useEffect, useContext, memo, useMemo } from "react";
+import { GroupLayout, onReveal } from "./groupPrefs.js";
 import { setJobsAt } from "./hoverGroup.js";
 import Chart from "./Chart.jsx";
 import Timeline from "./Timeline.jsx";
@@ -16,8 +17,11 @@ const lk = k => { const v = load("col." + k, null); return v == null ? null : v 
 function Grp({ id, color, title, sub, summary, def = true, cls = "", children }) {
   const [open, setOpen] = useState(() => lk(id) ?? def);
   const flip = () => { setOpen(o => { save("col." + id, o ? 0 : 1); return !o; }); };
+  const lay = useContext(GroupLayout), gk = id.slice(id.lastIndexOf(".") + 1);   // this machine's chosen group order and hidden groups
+  useEffect(() => onReveal(w => { if (w === id) { setOpen(true); save("col." + id, 1); setTimeout(() => document.getElementById("g-" + id)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60); } }), [id]);
+  if (lay?.hidden.includes(gk)) return null;
   return (
-    <section className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color }}>
+    <section id={"g-" + id} className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color, order: lay ? lay.order.indexOf(gk) : undefined }}>
       <h5 onClick={flip} role="button" tabIndex={0} aria-expanded={open} onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), flip())}>
         <b className="chev">{open ? "▾" : "▸"}</b>{title}{sub && <span>{sub}</span>}{!open && summary && <em>{summary}</em>}
       </h5>

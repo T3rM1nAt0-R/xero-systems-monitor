@@ -4,6 +4,11 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: a machines strip at the top of the main window, one small tile per machine (This PC first) with status, CPU, memory, GPU, temperature and a tiny CPU line. Offline tiles go grey with the time last seen. Click a tile to jump to that machine's card.
+- Added: Ctrl+K search. Jump to a machine or one of its groups, or change a setting or the time range, from the keyboard.
+- Added: drag a machine card by its header to reorder; a "Groups..." option on each card hides groups you never use and moves the rest up or down. Both are remembered.
+- Changed: tighter spacing between groups, larger folded summaries, and the runner chips scroll sideways on one line.
+
 ## [0.1.2] - 2026-11-17
 
 - Fixed: the installed app now shows Updates (Check for updates, Update by itself) in the More menu; it was hidden in installed builds and shown only in development runs. The portable copy still hides it.

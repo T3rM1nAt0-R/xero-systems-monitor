@@ -1,10 +1,13 @@
 import { memo } from "react";
 import MachineBody from "./Detail.jsx";
+import GroupsMenu from "./GroupsMenu.jsx";
+import { GroupLayout, useGroupPrefs } from "./groupPrefs.js";
+import { groupsFor } from "./order.js";
 import { gb, uptime, isWarn, hm, hotMin, WATCH } from "./format.js";
 const GENERIC = /^(system product name|to be filled|default string|not specified|unknown|none|o\.?e\.?m)/i;
 const hwLine = d => d.hw && [GENERIC.test(d.hw.board || "") ? "" : d.hw.board, d.hw.os].filter(Boolean).join(" · ");
 function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, onOpen: open, onTry }) {
-  const d = m.d || {};
+  const d = m.d || {}, [groups, setGroups] = useGroupPrefs(m.name);
   const off = !!m.err;
   const warnings = WATCH.filter(k => !off && isWarn(k, d[k]));
   const state = off ? `Offline` : hot.cpu ? `Working hard for ${hotMin(hot.cpu, now * 1000)} min` : warnings.length ? "Needs a look" : d.uptime != null ? `All calm · on for ${uptime(d.uptime)}` : "All calm";
@@ -19,8 +22,8 @@ function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, onOpen: open, onT
   return (
     <article className={"card full" + (bad ? " warn" : "")} id={"m-" + m.name}>
       <div className="chead"><i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
-        <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span></div>
-      <MachineBody m={m} h={h} rows={rows} fc={fc} range={range} now={now} gone={gone} />
+        <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span><GroupsMenu name={m.name} g={groups} set={setGroups} avail={groupsFor(d)} /></div>
+      <GroupLayout.Provider value={groups}><MachineBody m={m} h={h} rows={rows} fc={fc} range={range} now={now} gone={gone} /></GroupLayout.Provider>
     </article>
   );
 }
