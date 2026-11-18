@@ -59,6 +59,8 @@ fn result_line(runner: &str, result: &str, log: &str) -> JobLine {
 }
 
 #[test]
+// reason: one reading with every field set, checked against the whole window shape
+#[allow(clippy::too_many_lines)]
 fn snapshot_has_the_window_shape() {
     let mut t = tracker(true);
     let r = Reading {
