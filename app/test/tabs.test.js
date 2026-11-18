@@ -7,11 +7,11 @@ import { motionMs, MOTION_MS } from "../src/motion.js";
 import { hwFacts } from "../src/hwStrip.js";
 
 const bare = { d: { cpu: 5 } };
-const rich = { d: { cpu: 5, top: [["node", 4, 100, 1]], runners: { r1: true }, jobs: {}, docker: [["web", "running", "Up 2 hours", "img", "", ""], ["db", "restarting", "Restarting", "img", "", ""]], hw: { cpu: "Example CPU", os: "Example OS" }, cores: [10, 20] } };
+const rich = { d: { cpu: 5, top: [["node", 4, 100, 1]], procs: [[7, "node", 4, 100, "user"]], runners: { r1: true }, jobs: {}, docker: [["web", "running", "Up 2 hours", "img", "", ""], ["db", "restarting", "Restarting", "img", "", ""]], hw: { cpu: "Example CPU", os: "Example OS" }, cores: [10, 20] } };
 
 test("tab parts only name known tabs and known sections", () => {
   assert.deepEqual(Object.keys(TAB_PARTS), TAB_IDS);
-  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "net", "disk", "run", "svc", "term"].includes(id) && v);
+  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "term"].includes(id) && v);
 });
 
 test("a bare machine shows Overview, Network and Disks only; Terminal always shows, Logs has no content yet", () => {

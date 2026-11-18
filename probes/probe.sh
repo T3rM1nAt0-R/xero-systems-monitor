@@ -4,7 +4,7 @@
 # It is sent over one long-lived ssh connection and run in a loop by the sender,
 # which ends every frame with a line "@@END". Nothing here reads stdin.
 # Switches come in through the environment: F=1 on the first frame and every 100th
-# (hardware names change rarely), P=1 on the first frame and every 5th (the process
+# (hardware names change rarely), P=1 on the first frame and every 3rd (the process
 # list costs about half a second), D=1 on the first frame and every 3rd (docker stats
 # are slow, so the other frames reuse the last ones). T is a scratch folder the sender
 # keeps for the whole connection (GPU samples, the last process snapshot, the last docker
@@ -35,7 +35,8 @@
 #   DOCKON                     docker is installed
 #   DOCK name|state|status|image|ports|running_for    one per container
 #   DOCKERR text               docker is installed but did not answer
-#   TOP cpu_pct ram_mb count name    busiest programs (cpu_pct is of the whole machine)
+#   PROC pid cpu_pct ram_mb user name   the 50 busiest single processes (only when P=1; user is "-" when unknown)
+#   TOP cpu_pct ram_mb count name    the busiest programs, then the biggest (cpu_pct is of the whole machine)
 #   HW cpu|gpu|os|board text   hardware names (only when F=1)
 #   REBOOT 0 | REBOOT 1 count  Debian/Ubuntu only: /var/run/reboot-required exists, and how many packages asked
 #   UPDATES n                  updates waiting, from apt-check (only when F=1, only where it is installed; no root needed)
@@ -266,7 +267,7 @@ if [ -n "$P" ] && command -v nvidia-smi >/dev/null; then
   echo "GPUAPP -"
 fi
 
-# TOP: the six busiest programs over 0.5 s, grouped by process name.
+# TOP: the six busiest programs over 0.5 s, plus up to six that hold the most memory, grouped by process name.
 [ -n "$P" ] && python3 - <<'PY' 2>/dev/null
 import os, time
 def snap():
@@ -280,11 +281,27 @@ def snap():
     return d
 a = snap(); t0 = time.time(); time.sleep(0.5); b = snap(); dt = time.time() - t0
 hz = os.sysconf("SC_CLK_TCK"); nc = os.cpu_count() or 1; page = os.sysconf("SC_PAGE_SIZE")
+try:
+    import pwd
+except Exception:
+    pwd = None
+def who(p):
+    try:
+        u = os.stat("/proc/%d" % p).st_uid
+        return pwd.getpwuid(u).pw_name if pwd else str(u)
+    except Exception:
+        return "-"
+rows = sorted(((((t - a[p][1]) / hz / dt * 100 / nc if p in a else 0), r * page / 1048576, p, n) for p, (n, t, r) in b.items()), key=lambda x: (-x[0], -x[1]))[:50]
+for c, r, p, n in rows:
+    print("PROC %d %.1f %.0f %s %s" % (p, c, r, who(p).replace(" ", "_"), n.replace(" ", "_")))
 agg = {}
 for p, (n, t, r) in b.items():
     c = (t - a[p][1]) / hz / dt * 100 / nc if p in a else 0
     e = agg.setdefault(n, [0.0, 0.0, 0]); e[0] += c; e[1] += r * page / 1048576; e[2] += 1
-for n, (c, r, k) in sorted(agg.items(), key=lambda x: -(x[1][0] * 1000 + x[1][1]))[:6]:
+pick = sorted(agg.items(), key=lambda x: -(x[1][0] * 1000 + x[1][1]))[:6]
+for x in sorted(agg.items(), key=lambda x: -x[1][1])[:6]:
+    if x not in pick: pick.append(x)
+for n, (c, r, k) in pick:
     print("TOP %.1f %.0f %d %s" % (c, r, k, n.replace(" ", "_")))
 PY
 exit 0

@@ -6,7 +6,7 @@ mod history;
 mod top;
 
 pub use history::{History, Points};
-pub use top::{Busiest, TOP_KEPT};
+pub use top::{Busiest, RangeBusy, Ranked, TOP_KEPT};
 
 use history::MERGE;
 use rusqlite::{params, Connection};
@@ -182,6 +182,14 @@ impl Store {
     /// When `SQLite` fails.
     pub fn add_top(&self, machine: &str, t: i64, top: &[TopProgram]) -> Result<()> {
         top::add(&self.conn, machine, t, top)
+    }
+
+    /// What was busy between `from` and `to` (unix seconds): programs ranked by average CPU.
+    ///
+    /// # Errors
+    /// When `SQLite` fails.
+    pub fn busiest_between(&self, machine: &str, from: i64, to: i64) -> Result<RangeBusy> {
+        top::between(&self.conn, machine, from, to)
     }
 
     /// The busiest programs nearest to time `t`, if a stored minute lies close enough.

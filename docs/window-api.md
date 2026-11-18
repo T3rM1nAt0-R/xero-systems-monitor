@@ -16,6 +16,8 @@ Rules for every command:
 | `get_state` | none | `{ machines: Machine[] }` |
 | `get_history` | `machine: string`, `range: number` (seconds, 1 to 400 days) | `History` |
 | `get_busy_at` | `machine: string`, `t: number` (unix seconds) | `BusyAt`, or `{}` when no programs were kept near `t` |
+| `get_busiest` | `machine: string`, `range: number` (seconds) | `Ranking = { minutes: number, top: [name, avg_cpu_percent, ram_mb, minutes_seen][] }`: what was busy over the range, highest CPU first. `minutes` is how many stored minutes the range has (0 when nothing was kept). History keeps, per minute, the 5 busiest programs by CPU and the 5 biggest by memory |
+| `end_task` | `machine: string`, `pid: number`, `name: string` (the process name as listed; refused if the process now has another name) | a short sentence. On This PC the process is ended; on a Linux machine one `kill <pid>` (the polite TERM signal, never sudo) runs over its own `ssh` (20 second limit). Process ids 0 and 1 are refused. A failure is a plain-words error |
 | `get_events` | `since: number`, `n: number` | `Event[]`, newest first, at most `n` |
 | `get_jobs` | `since: number` | `Job[]`, oldest first, finished jobs that ended at or after `since` |
 | `get_forecast` | `machine: string` | `{ per_day: number or null, days: number or null }` |
@@ -78,6 +80,7 @@ Reading = {                       // every field optional; absent means "not mea
   storage: [name, used_gb, total_gb][],
   hw: { board?, os?, cpu?, gpu? },
   top: [name, cpu_percent, ram_mb, count][],
+  procs: [pid, name, cpu_percent, ram_mb, user][],   // the 50 busiest single processes (user is "" when not known; This PC does not report it); refreshed every 3rd poll
   conns: [name, connections][],   // This PC on Windows only: open TCP connections plus UDP sockets per program, most first, at most 8, refreshed about every 10 s (counts, not data: bytes per program need administrator rights)
   runners: { [runner]: boolean }, // present only on machines with runners; true = busy
   jobs: { [runner]: [workflow, _, ref, repo] },

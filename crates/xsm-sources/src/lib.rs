@@ -5,6 +5,7 @@ mod connections;
 pub mod container;
 mod gpu_apps;
 pub mod local;
+pub mod process_list;
 pub mod runners;
 pub mod sensors;
 pub mod ssh;

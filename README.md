@@ -62,6 +62,10 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/terminal.png" alt="The Terminal tab with two demo shells"></td>
 <td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/processes.png" alt="The Processes tab"></td>
+<td valign="top">The Processes tab: the busiest processes, sortable and filterable. <b>End task</b> needs a press-and-hold, so it cannot happen by accident (Linux machines get a plain <code>kill</code> over ssh, never sudo). Below it, "What was busy" ranks the programs of the last hour, 6 hours or 24 hours by CPU or memory.</td>
+</tr>
 </table>
 
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V

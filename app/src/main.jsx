@@ -12,6 +12,7 @@ import "./styles/motion.css";
 import "./styles/customize.css";
 import "./styles/view.css";
 import "./styles/hardware.css";
+import "./styles/processes.css";
 import "./styles/terminal.css";
 import { installTips } from "./tooltip.js";
 installTips();

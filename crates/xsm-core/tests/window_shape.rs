@@ -4,7 +4,7 @@
 use serde_json::json;
 use xsm_core::reading::{
     BatteryReading, ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuApp,
-    GpuReading, HardwareInfo, JobLine, MemoryReading, NetReading, Reading, RunnerState,
+    GpuReading, HardwareInfo, JobLine, MemoryReading, NetReading, ProcessRow, Reading, RunnerState,
     SensorDetail, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Rules, Tracker};
@@ -139,6 +139,13 @@ fn snapshot_has_the_window_shape() {
             core_load_pct: vec![5.0, 15.0],
             core_temp_c: Vec::new(),
         }),
+        processes: vec![ProcessRow {
+            pid: 42,
+            name: "prog".into(),
+            cpu_pct: 7.0,
+            ram_bytes: 5 * 1024 * 1024,
+            user: "user".into(),
+        }],
         battery: None,
         gpu_apps: None,
         updates: UpdateInfo {
@@ -157,7 +164,7 @@ fn snapshot_has_the_window_shape() {
             "mhz": 3500.0, "cpu_w": 30.0, "fans": [900.0], "cores": [5.0, 15.0],
             "restart": true, "restart_pkgs": 2, "updates": 7,
             "ram_gb": [2.0, 8.0], "vram_gb": [1.0, 4.0], "storage": [["/", 40.0, 100.0]],
-            "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]],
+            "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]], "procs": [[42, "prog", 7.0, 5.0, "user"]],
             "runners": {"r1": true},
             "jobs": {"r1": ["Build", "", "refs/pull/7/merge", "o/example-repo"]},
             "jobres": {"r1": [40.0, 3000.0, 10.0, null]},

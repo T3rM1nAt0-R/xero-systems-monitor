@@ -1,13 +1,12 @@
 //! Made-up readings for two machines, so the shell runs end to end before the real collector exists.
 //! The numbers follow the same smooth waves as `app/src/fakeData.js`; nothing here is measured.
 
-use crate::demo_extras;
+use crate::demo_extras::{self, bytes, now_s};
 use crate::demo_jobs::jobs;
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Action, Backend, BusyReply, HistoryReply, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, Ranking, State};
 use std::sync::Mutex;
-use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
@@ -20,7 +19,6 @@ const DAY_S: f64 = 86_400.0;
 const SERIES_POINTS: f64 = 400.0;
 const MIN_STEP_S: f64 = 3.0;
 const OFFLINE_AFTER: u32 = 3;
-const GIB: f64 = 1_073_741_824.0;
 const MIB: u64 = 1_048_576;
 pub(crate) const RUNNERS: [&str; 2] = ["runner-1", "runner-2"];
 const FORECAST_PER_DAY: f64 = 0.4;
@@ -50,13 +48,6 @@ fn is_pc(m: &MachineConfig) -> bool {
 fn phase_of(name: &str) -> f64 {
     name.bytes()
         .fold(7.0, |a, b| (a * 31.0 + f64::from(b)) % 1000.0)
-}
-
-fn bytes(gib: f64) -> u64 {
-    // reason: whole bytes are enough for a demo and the input is never negative
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let n = (gib * GIB) as u64;
-    n
 }
 
 fn reading(m: &MachineConfig, t: f64) -> Reading {
@@ -132,6 +123,7 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             vram_used_pct: wave(VRAM, phase, t),
         });
     }
+    r.processes = demo_extras::processes(cpu_pct);
     if m.runner == Some(true) {
         r.runners = RUNNERS
             .iter()
@@ -224,12 +216,6 @@ impl DemoBackend {
     }
 }
 
-fn now_s() -> f64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0.0, |d| d.as_secs_f64())
-}
-
 // reason: unix seconds fit an i64 for the next 292 billion years
 #[allow(clippy::cast_possible_truncation)]
 fn whole(t: f64) -> i64 {
@@ -265,6 +251,15 @@ impl Backend for DemoBackend {
             Some(m) => BusyReply::of(whole(t), &reading(&m, t).top),
             None => BusyReply::Nothing {},
         })
+    }
+
+    fn get_busiest(&self, machine: &str, range_s: f64) -> Result<Ranking, String> {
+        let r = self.named(machine)?.map(|m| reading(&m, now_s()));
+        Ok(demo_extras::ranking(r.as_ref(), range_s))
+    }
+
+    fn end_task(&self, machine: &str, _pid: u32, name: &str) -> Result<String, String> {
+        demo_extras::end_task(self.named(machine)?.is_some(), name)
     }
 
     fn get_events(&self, since: f64, n: usize) -> Result<Vec<Event>, String> {

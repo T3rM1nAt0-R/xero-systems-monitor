@@ -91,6 +91,8 @@ pub fn run() {
             commands::get_state,
             commands::get_history,
             commands::get_busy_at,
+            commands::get_busiest,
+            commands::end_task,
             commands::get_events,
             commands::get_jobs,
             commands::get_forecast,

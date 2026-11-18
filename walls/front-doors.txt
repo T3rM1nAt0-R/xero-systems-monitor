@@ -354,3 +354,17 @@ xsm_terminal::sessions::Sessions::close_all fn
 xsm_terminal::sessions::Sessions::open fn
 xsm_terminal::sessions::Sessions::resize fn
 xsm_terminal::sessions::Sessions::write fn
+xsm_collector::busy::Ranking use
+xsm_core::reading::ProcessRow struct
+xsm_core::reading::ProcessRow.cpu_pct field
+xsm_core::reading::ProcessRow.name field
+xsm_core::reading::ProcessRow.pid field
+xsm_core::reading::ProcessRow.ram_bytes field
+xsm_core::reading::ProcessRow.user field
+xsm_core::reading::Reading.processes field
+xsm_sources::process_list mod
+xsm_sources::process_list::end_local fn
+xsm_sources::process_list::end_remote fn
+xsm_store::Store::busiest_between fn
+xsm_store::top::RangeBusy use
+xsm_store::top::Ranked use
