@@ -1,0 +1,13 @@
+/* Hardware tab: each CPU core, the battery, and the programs using the graphics card. */
+.corelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--sz-270),1fr));gap:var(--sp-2) var(--sp-16);font-size:var(--fs-12)}
+.corerow{display:grid;grid-template-columns:var(--sz-56) minmax(var(--sz-40),1fr) var(--sz-40) var(--sz-46);gap:var(--sp-8);align-items:center;padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5);color:var(--mid)}
+.corerow:hover{background:var(--s2)}
+.corerow b{font-weight:500;color:var(--fg)}
+.corerow span:nth-child(n+3){text-align:right}
+.battery{display:flex;flex-direction:column;gap:var(--sp-8);padding:var(--sp-4) var(--sp-2)}
+.batnum{display:flex;align-items:baseline;gap:var(--sp-10)}
+.batnum b{font-size:var(--fs-20);font-weight:600;color:var(--fg)}
+.batnum span{font-size:var(--fs-12);color:var(--mid)}
+.battery .meter{height:var(--sz-8)}
+.prow.gpurow{grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) 70px}
+.fsub .quiet{margin:0;padding:var(--sp-4);font-size:var(--fs-12);color:var(--dim)}

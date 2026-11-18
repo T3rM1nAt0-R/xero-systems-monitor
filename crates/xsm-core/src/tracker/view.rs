@@ -80,10 +80,31 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
         put(&mut m, "cpu_w", s.cpu_power_w);
         put(&mut m, "gpu_w", s.gpu_power_w);
         put_some(&mut m, "fans", &s.fans_rpm);
-        put_some(&mut m, "cores", &s.core_load_pct);
+        put_some(&mut m, "ctemps", &s.core_temp_c);
     }
+    cores_battery_gpu_apps(r, &mut m);
     lists(r, &mut m);
     Value::Object(m).serialize(s)
+}
+
+/// Per-core load (from the sensors, else from the load counters), the battery and the programs using the GPU.
+fn cores_battery_gpu_apps(r: &Reading, m: &mut Map<String, Value>) {
+    let usage = r.cpu.as_ref().map(|c| &c.core_usage_pct);
+    let loads = r.sensors.as_ref().map(|s| &s.core_load_pct);
+    let cores = loads.filter(|l| !l.is_empty()).or(usage);
+    put_some(m, "cores", cores.map_or(&[][..], |c| &c[..]));
+    let bat = r.battery.as_ref();
+    put(
+        m,
+        "bat",
+        bat.map(|b| (b.charge_pct, b.plugged_in, b.minutes_left)),
+    );
+    let apps = r.gpu_apps.as_ref().map(|a| {
+        a.iter()
+            .map(|g| (&g.name, mib(g.vram_bytes), g.processes))
+            .collect::<Vec<_>>()
+    });
+    put(m, "gpuapps", apps);
 }
 
 /// The list-shaped fields: hardware, programs, runners, jobs, containers, failed units.

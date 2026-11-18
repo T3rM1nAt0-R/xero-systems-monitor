@@ -3,8 +3,9 @@
 
 use serde_json::json;
 use xsm_core::reading::{
-    ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuReading, HardwareInfo,
-    JobLine, MemoryReading, NetReading, Reading, RunnerState, SensorDetail, TopProgram, UpdateInfo,
+    BatteryReading, ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuApp,
+    GpuReading, HardwareInfo, JobLine, MemoryReading, NetReading, Reading, RunnerState,
+    SensorDetail, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Rules, Tracker};
 
@@ -65,6 +66,7 @@ fn snapshot_has_the_window_shape() {
             usage_pct: Some(12.5),
             idle_ticks: 1.0,
             total_ticks: 2.0,
+            ..CpuReading::default()
         }),
         cpu_temp_c: Some(55.0),
         memory: Some(MemoryReading {
@@ -133,7 +135,18 @@ fn snapshot_has_the_window_shape() {
             cpu_power_w: Some(30.0),
             gpu_power_w: None,
             core_load_pct: vec![5.0, 15.0],
+            core_temp_c: vec![50.0, 52.0],
         }),
+        battery: Some(BatteryReading {
+            charge_pct: 80.0,
+            plugged_in: false,
+            minutes_left: Some(95),
+        }),
+        gpu_apps: Some(vec![GpuApp {
+            name: "game".into(),
+            vram_bytes: 2 * 1024 * 1024,
+            processes: 1,
+        }]),
         updates: UpdateInfo {
             restart_needed: Some(true),
             restart_packages: Some(2),
@@ -147,7 +160,7 @@ fn snapshot_has_the_window_shape() {
         "d": {
             "cpu": 12.5, "temp": 55.0, "ram": 25.0, "disk": 40.0, "gpu": 3.0, "gtemp": 40.0, "vram": 25.0,
             "down": 10.0, "up": 5.0, "ping": 11.0, "speed": 1000, "uptime": 99.0, "ip": "192.0.2.5",
-            "mhz": 3500.0, "cpu_w": 30.0, "fans": [900.0], "cores": [5.0, 15.0],
+            "mhz": 3500.0, "cpu_w": 30.0, "fans": [900.0], "cores": [5.0, 15.0], "ctemps": [50.0, 52.0], "bat": [80.0, false, 95], "gpuapps": [["game", 2.0, 1]],
             "restart": true, "restart_pkgs": 2, "updates": 7,
             "ram_gb": [2.0, 8.0], "vram_gb": [1.0, 4.0], "storage": [["/", 40.0, 100.0]],
             "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]],

@@ -4,6 +4,7 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: the Hardware tab now lists every CPU core with its load and temperature (Linux machines too, read from /proc/stat and the coretemp sensor), fans and clock on Linux, the battery (charge, charging or not, time left) on any machine that has one, and which programs are using the NVIDIA graphics card with the memory each holds. The Linux probe reads the extra facts without adding commands to every frame; the GPU program list is asked only on the process-list frames.
 - Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs and Terminal are ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
 - Added: a pin on every section header pins that section (whole) to Overview; click again to unpin.
 - Changed: the machine card header is one status line (name, status, uptime, restart needed); board, system and address moved to a hover tooltip on an (i) icon.

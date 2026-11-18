@@ -17,6 +17,10 @@ const POWERS: &str = "Powers";
 const LOAD: &str = "Load";
 /// Sensor name part (lower case) of one processor core in the load and clock lists.
 const CORE: &str = "core #";
+/// Category node holding temperatures.
+const TEMPERATURES: &str = "Temperatures";
+/// Sensor name part (lower case) of a margin to the limit, which is not a temperature.
+const MARGIN: &str = "distance";
 /// Sensor names (lower case) that hold the package power of a processor.
 const CPU_PACKAGE: [&str; 2] = ["cpu package", "package"];
 
@@ -58,6 +62,15 @@ fn cores(hardware: &Value, category: &str) -> Vec<f64> {
         .collect()
 }
 
+/// The temperatures of the sensors that name a core (not the margin to the limit), in file order.
+fn core_temps(hardware: &Value) -> Vec<f64> {
+    sensors(hardware, TEMPERATURES)
+        .into_iter()
+        .filter(|(n, _)| n.to_lowercase().contains(CORE) && !n.to_lowercase().contains(MARGIN))
+        .map(|(_, v)| v)
+        .collect()
+}
+
 /// Average of a list, `None` when it is empty.
 fn average(list: &[f64]) -> Option<f64> {
     let n = f64::from(u32::try_from(list.len()).unwrap_or(u32::MAX));
@@ -76,6 +89,7 @@ fn collect(node: &Value, out: &mut SensorDetail) {
             .find(|(n, _)| CPU_PACKAGE.contains(&n.to_lowercase().as_str()))
             .map(|(_, w)| w);
         out.core_load_pct = cores(node, LOAD);
+        out.core_temp_c = core_temps(node);
     } else if GPU_ICONS.iter().any(|g| icon.contains(g)) {
         out.gpu_power_w = sensors(node, POWERS).first().map(|(_, w)| *w);
     }
