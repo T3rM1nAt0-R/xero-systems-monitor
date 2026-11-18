@@ -9,8 +9,6 @@ export function buildCommands(a) {
     for (const k of a.groupsOf(m)) add("Group", `${m.name} > ${groupLabel(k)}`, () => a.goGroup(m.name, k), "group");
   }
   for (const [l, s] of a.ranges) add("Time range", `Show ${l}`, () => a.setRange(s), "range graphs time");
-  for (const [k, l] of [["dark", "Dark"], ["light", "Light"], ["system", "Windows"]]) add("Setting", `Theme: ${l}`, () => a.look.setTheme(k), "theme colours");
-  for (const [k, l] of [["normal", "Normal"], ["large", "Large"]]) add("Setting", `Text size: ${l}`, () => a.look.setSize(k), "text size font");
   for (const r of a.refreshOptions) add("Setting", `Refresh every ${r < 60 ? r + " s" : "1 min"}`, () => a.setRefresh(r), "refresh rate");
   const flip = (label, on, set, words) => add("Setting", `${label}: turn ${on ? "off" : "on"}`, () => set(!on), words);
   flip("Always on top", a.pin, a.setPin, "pin top");
@@ -21,7 +19,11 @@ export function buildCommands(a) {
   add("Setting", "Snooze alerts for 1 hour", a.snooze1h, "mute notifications");
   if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");
   add("Setting", "Machines…", a.onMachines, "add remove edit");
-  if (a.onCustomize) add("Setting", "Customize…", a.onCustomize, "look fonts colours theme graph style size density appearance");
+  if (a.onCustomize) {   // the one place for the look: the theme (dark, light, Windows), text size and everything else
+    add("Setting", "Customize…", () => a.onCustomize(), "look fonts colours graph style density appearance");
+    add("Setting", "Customize theme…", () => a.onCustomize("theme"), "theme dark light windows colours palette");
+    add("Setting", "Customize text size…", () => a.onCustomize("scale"), "text size large bigger smaller font zoom");
+  }
   if (a.onLimits) add("Setting", "Limits…", a.onLimits, "thresholds warn");
   for (const n of a.hiddenNames || []) add("Machine", `Show hidden machine ${n}`, () => a.showMachine(n), "unhide hidden machine");
   add("Setting", "Check for updates", a.onCheck, "update version");

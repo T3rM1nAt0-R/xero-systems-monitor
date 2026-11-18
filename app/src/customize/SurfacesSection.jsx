@@ -20,6 +20,6 @@ export default function SurfacesSection({ c }) {
         {msg && <span className="chint" role="status">{msg}</span>}</Row>
       <Row id="surface.grain" label="Grain" keys="noise film texture" c={c}><Range value={v("grain")} min={0} max={100} label="Grain" ends={["None", "Heavy"]} show={x => (x ? x + "%" : "Off")} onChange={set("grain")} /></Row>
       <Row id="surface.os" label="Match Windows" keys="system accent dark light follow os windows" c={c} hint="Follow the system dark or light setting, and use the system accent colour where the window can read it.">
-        <Toggle on={v("os")} onChange={x => c.edit(["surface", "os"], x || undefined)} label="Match Windows" /></Row>
+        <Toggle on={v("os")} onChange={x => c.edit(["surface", "os"], x)} label="Match Windows" /></Row>
     </>);
 }

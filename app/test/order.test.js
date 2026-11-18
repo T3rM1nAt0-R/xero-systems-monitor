@@ -45,14 +45,14 @@ test("search: every word must match, starts rank first, empty keeps order", () =
   assert.equal(scoreItem({ label: "x" }, "  "), 0);
 });
 
-const acts = extra => ({ machines: [{ name: "Hoarder", d: {} }], groupsOf: () => ["cpu", "gpu"], goMachine: () => {}, goGroup: () => {}, ranges: [["5 min", 300]], setRange: () => {}, look: { setTheme: () => {}, setSize: () => {} },
+const acts = extra => ({ machines: [{ name: "Hoarder", d: {} }], groupsOf: () => ["cpu", "gpu"], goMachine: () => {}, goGroup: () => {}, ranges: [["5 min", 300]], setRange: () => {},
   refreshOptions: [3, 60], setRefresh: () => {}, pin: true, setPin: () => {}, compact: false, setCompact: () => {}, toggleMini: () => {}, alertPrefs: { offline: true }, setAlert: () => {}, snooze1h: () => {}, onMachines: () => {}, onCheck: () => {}, ...extra });
 test("commands: machines, groups, ranges, settings; optional ones only when given", () => {
   const labels = buildCommands(acts()).map(c => c.label);
-  for (const l of ["Go to Hoarder", "Hoarder > GPU", "Show 5 min", "Theme: Light", "Text size: Large", "Refresh every 1 min", "Always on top: turn off", "Compact view: turn on", "Alert: A machine goes offline: turn off", "Alert: A job fails: turn on", "Snooze alerts for 1 hour", "Machines…", "Check for updates"]) assert.ok(labels.includes(l), l);
+  for (const l of ["Go to Hoarder", "Hoarder > GPU", "Show 5 min", "Refresh every 1 min", "Always on top: turn off", "Compact view: turn on", "Alert: A machine goes offline: turn off", "Alert: A job fails: turn on", "Snooze alerts for 1 hour", "Machines…", "Check for updates"]) assert.ok(labels.includes(l), l);
   assert.ok(!labels.includes("Limits…") && !labels.includes("Fold all cards") && !labels.some(l => l.startsWith("Quiet hours")));
-  const more = buildCommands(acts({ onLimits: () => {}, foldAll: () => {}, setQuietOn: () => {}, quietOn: false })).map(c => c.label);
-  for (const l of ["Limits…", "Fold all cards", "Unfold all cards", "Quiet hours: turn on"]) assert.ok(more.includes(l));
+  const more = buildCommands(acts({ onCustomize: () => {}, onLimits: () => {}, foldAll: () => {}, setQuietOn: () => {}, quietOn: false })).map(c => c.label);
+  for (const l of ["Customize…", "Customize theme…", "Customize text size…", "Limits…", "Fold all cards", "Unfold all cards", "Quiet hours: turn on"]) assert.ok(more.includes(l));
 });
 test("commands run the action they wrap", () => {
   const seen = [], cs = buildCommands(acts({ goGroup: (n, k) => seen.push([n, k]), setAlert: (k, on) => seen.push([k, on]), setPin: v => seen.push(["pin", v]) }));

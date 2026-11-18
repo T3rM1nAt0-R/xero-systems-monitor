@@ -4,7 +4,7 @@
    The numbered scales (--fs-N, --sp-N, --r-N, --sz-N) are the pixel value N times --scale. */
 :root {
   --bg:#07080b; --s1:#0d0f14; --s2:#13161d; --line:#1b1f28; --line2:#282e39;
-  --fg:#e7e9ee; --mid:#aab1bd; --dim:#9099a8; --dim2:#4d5462;
+  --fg:#e7e9ee; --mid:#aab1bd; --dim:#9099a8; --dim2:#646a77;
   --acc:#4cc9f0; --warn:#f5b544; --crit:#f2637a;
   color-scheme: dark;
   /* metric colours (graphs, group markers) */
@@ -29,7 +29,7 @@
   --font-mono: ui-monospace,Consolas,monospace;
   --font-machine: var(--font-ui); --font-group: var(--font-ui); --font-section: var(--font-ui);
   --font-number: var(--font-ui); --font-label: var(--font-ui); --font-small: var(--font-ui);
-  /* text scale: 1 is normal, the Large text setting raises it */
+  /* text scale: 1 is normal; the Customize text size slider changes it */
   --scale: 1; --rk: 1; --shadow-k: 1; --dens: 1; --graph-k: 1; --line-w: 2; --area-op: .08;
   --dur: 180ms; --ease: cubic-bezier(.2,.7,.2,1);   /* open and close motion; keep --dur in step with MOTION_MS in src/motion.js */
   --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
@@ -119,7 +119,7 @@
 }
 :root[data-theme="light"] {
   --bg:#f3f4f7; --s1:#ffffff; --s2:#eceff4; --line:#e0e4ea; --line2:#c9cfda;
-  --fg:#14171c; --mid:#454d5b; --dim:#555d6b; --dim2:#98a0ad;
+  --fg:#14171c; --mid:#454d5b; --dim:#555d6b; --dim2:#7e8590;
   --acc:#066486; --warn:#8a5200; --crit:#b3243e; --ok:#0e7434; --busy:#8a5200; --bad:#b3243e; --bad-text:#b3243e;
   color-scheme: light;
   --on-acc:#fff;
@@ -129,7 +129,6 @@
   --glass-shadow: 0 calc(8px * var(--shadow-k)) calc(28px * var(--shadow-k)) #1a233a1f;
   --blob-a:#0a7ea42e; --blob-b:#8b5cf624; --blob-c:#16a34a1a;
 }
-html[data-size="large"] { --scale: 1.16; }
 /* Glass setting (Customize > Size): Subtle is the default above. Off is flat and solid; Full is clearer and more blurred. */
 html[data-glass="off"] { --glass-bg: var(--s1); --glass-bg-solid: var(--s1); --glass-blur: 0px; --glass-sat: 1; --glass-sheen: none; --glass-shadow: none; --blob-op: 0; --glass-line: var(--line); }
 html[data-glass="full"] { --glass-bg: color-mix(in srgb, var(--glass-tint, var(--s1)) 42%, transparent); --glass-bg-solid: color-mix(in srgb, var(--glass-tint, var(--s1)) 78%, transparent); --glass-blur: 28px; --glass-sat: 1.7; --blob-op: 1.6; }

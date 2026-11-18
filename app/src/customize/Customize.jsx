@@ -20,7 +20,7 @@ const typing = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && ["t
 const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 // The Customize panel: docked on the right (the window shrinks, nothing is covered), one scroll with every section, a sticky header with search, jump chips,
 // undo / redo, hold-to-compare and close. Every change is applied to the whole window at once; `c` is useLook().custom.
-export default function Customize({ c, onClose }) {
+export default function Customize({ c, onClose, start = "" }) {
   const [q, setQ] = useState(""), [picking, setPicking] = useState(false), [active, setActive] = useState(SECTIONS[0][0]), body = useRef(null), raf = useRef(0);
   const { remember, undo, redo, setComparing } = c;
   useEffect(() => { remember(); document.documentElement.dataset.panel = "open"; return () => { delete document.documentElement.dataset.panel; }; }, []);   // eslint-disable-line react-hooks/exhaustive-deps -- once: what the panel opened with
@@ -48,6 +48,7 @@ export default function Customize({ c, onClose }) {
     body.current.scrollTo({ top, behavior: reduced() ? "auto" : "smooth" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }, []);
+  useEffect(() => { if (start && start !== "theme") requestAnimationFrame(() => toSetting(start)); }, []);   // eslint-disable-line react-hooks/exhaustive-deps -- once: opened from a command that names a setting
   const pick = usePick(picking, toSetting);
   const jump = id => { const el = body.current?.querySelector("#csec-" + id); if (el) body.current.scrollTo({ top: el.offsetTop - 4, behavior: reduced() ? "auto" : "smooth" }); };
   const hold = on => ({ onPointerDown: () => setComparing(true), onPointerUp: () => setComparing(false), onPointerLeave: () => setComparing(false), onBlur: () => setComparing(false), onKeyDown: e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); setComparing(true); } }, onKeyUp: e => { if (e.key === " " || e.key === "Enter") setComparing(false); }, "aria-pressed": on });
@@ -57,7 +58,7 @@ export default function Customize({ c, onClose }) {
       <header className="chead2">
         <div className="ctitle"><h3>Customize</h3><small>{themeTitle(c.theme, c.dirty)}</small>
           <span className="cicons">
-            <button className="ghost" disabled={!c.canUndo} onClick={c.undo} aria-label="Undo" data-tip="Undo (Ctrl+Z)">↶</button>
+            <button className="ghost" disabled={!c.canUndo} onClick={c.undo} aria-label="Undo" data-tip="Undo (Ctrl+Z). Your changes this session are kept, even after closing this panel">↶</button>
             <button className="ghost" disabled={!c.canRedo} onClick={c.redo} aria-label="Redo" data-tip="Redo (Ctrl+Y)">↷</button>
             <button className={"ghost" + (picking ? " on" : "")} onClick={() => setPicking(p => !p)} aria-pressed={picking} aria-label="Pick mode" data-tip="Pick: click anything in the window to edit it">⌖</button>
             <button className={"ghost" + (c.comparing ? " on" : "")} {...hold(c.comparing)} aria-label="Hold to compare" data-tip="Hold to see the look from when you opened this">👁</button>

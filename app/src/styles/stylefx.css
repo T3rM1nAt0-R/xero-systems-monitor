@@ -1,22 +1,26 @@
 /* What the Customize Shape and Surfaces settings do (attributes and --rk, --shadow-k, --grain, --bg-image come from theme/css.js). Loaded after flat.css so it can replace the body background.
    Everything here is static CSS: one gradient or one pattern per effect, nothing that repaints on each poll. */
 html[data-bg="solid"] body{background:var(--bg)}
-html[data-bg="image"] body{background:linear-gradient(#0000005c,#0000005c) fixed,var(--bg-image,none) center/cover fixed,var(--bg)}
+html[data-bg="image"] body{background:linear-gradient(color-mix(in srgb,var(--bg) 36%,transparent),color-mix(in srgb,var(--bg) 36%,transparent)) fixed,var(--bg-image,none) center/cover fixed,var(--bg)}   /* the picture is dimmed with the look's own background colour, so it works on light looks too */
 html[data-border="none"] :is(.panel,.tile,.seg,.menu,.dlg,.drawer,button){border-color:transparent}
 html[data-border="none"] .card{border-top-color:transparent;border-right-color:transparent;border-bottom-color:transparent}
 html[data-border="bold"] :is(.card,.panel,.tile,.seg,.menu,.dlg,button){border-width:2px}
 html[data-border="bold"] .card{border-left-width:var(--edge,2px)}
 /* Terminal: monospace, flat, optional scanlines (one static gradient over the window) */
-html[data-family="terminal"]{--font-ui:var(--font-mono);--glass-sheen:none;--glass-line:var(--line2)}
+html[data-family="terminal"]{--font-ui:var(--font-mono);--glass-sheen:none}
+html[data-family="terminal"]:not([data-glass="off"]){--glass-line:var(--line2)}   /* Glass Off removes the glass edge line in every family */
 html[data-family="terminal"] :is(button,input,select,textarea){font-family:inherit}
 html[data-scan="on"][data-family="terminal"] body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 2px,#0000002e 2px 3px)}
-/* Soft: raised, rounded, no borders */
-html[data-family="soft"] :is(.card,.panel,.tile,button,.seg){box-shadow:calc(6px * var(--shadow-k)) calc(6px * var(--shadow-k)) calc(14px * var(--shadow-k)) #0000005c,calc(-5px * var(--shadow-k)) calc(-5px * var(--shadow-k)) calc(12px * var(--shadow-k)) #ffffff0f}
+/* Soft: raised, rounded, no borders. The two shades are the look's own background made darker and lighter, so it works on light looks too. */
+html[data-family="soft"]{--soft-dark:color-mix(in srgb,var(--bg) 55%,#000);--soft-light:color-mix(in srgb,var(--bg) 88%,#fff)}
+html[data-theme="light"][data-family="soft"]{--soft-dark:color-mix(in srgb,var(--bg) 82%,#000);--soft-light:#fff}
+html[data-family="soft"] :is(.card,.panel,.tile,button,.seg){box-shadow:calc(6px * var(--shadow-k)) calc(6px * var(--shadow-k)) calc(14px * var(--shadow-k)) var(--soft-dark),calc(-5px * var(--shadow-k)) calc(-5px * var(--shadow-k)) calc(12px * var(--shadow-k)) var(--soft-light)}
 html[data-family="soft"] :is(.card,.panel,.tile,.seg){border-color:transparent}
 html[data-family="soft"] .card{border-left-color:var(--mc,transparent)}
 /* Blueprint: grid paper and white lines */
-html[data-family="blueprint"] body{background:linear-gradient(#ffffff14 1px,transparent 1px) 0 0/24px 24px fixed,linear-gradient(90deg,#ffffff14 1px,transparent 1px) 0 0/24px 24px fixed,var(--bg)}
-html[data-family="blueprint"]{--glass-sheen:none;--glass-line:color-mix(in srgb,var(--fg) 55%,transparent)}
+html[data-family="blueprint"] body{background:linear-gradient(color-mix(in srgb,var(--fg) 8%,transparent) 1px,transparent 1px) 0 0/24px 24px fixed,linear-gradient(90deg,color-mix(in srgb,var(--fg) 8%,transparent) 1px,transparent 1px) 0 0/24px 24px fixed,var(--bg)}
+html[data-family="blueprint"]{--glass-sheen:none}
+html[data-family="blueprint"]:not([data-glass="off"]){--glass-line:color-mix(in srgb,var(--fg) 55%,transparent)}
 html[data-family="blueprint"] :is(.panel,.tile,.seg,button){border-color:color-mix(in srgb,var(--fg) 45%,transparent)}
 /* Grain: a fixed noise picture drawn once; its strength is --grain */
 html[data-grain="on"] body::before{content:"";position:fixed;inset:0;z-index:69;pointer-events:none;opacity:calc(var(--grain) * .6);mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}

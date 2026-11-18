@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 // "Match Windows": the system accent colour, read through the CSS system colour AccentColor (Windows WebView2 and recent browsers), and the picture helpers for a background image.
-// Light or dark is not read here: the window's own "follow the system" theme setting (prefers-color-scheme) does that.
+// Light or dark while Match Windows is on comes from prefers-color-scheme (useSystemLight).
 const PICTURE_MAX = 1600;   // longest side of a background picture, in pixels
 export const rgbToHex = text => {
   const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(String(text));
@@ -23,6 +23,17 @@ export function useOsAccent(on) {
   const [accent, setAccent] = useState("");
   useEffect(() => { if (on) setAccent(readAccent()); }, [on]);
   return on ? accent : "";
+}
+// Is the system set to light? Follows the system while `on` (Match Windows); nothing is saved.
+const LIGHT_QUERY = "(prefers-color-scheme: light)";
+export function useSystemLight(on) {
+  const [light, setLight] = useState(() => !!window.matchMedia?.(LIGHT_QUERY).matches);
+  useEffect(() => {
+    if (!on || !window.matchMedia) return;
+    const q = window.matchMedia(LIGHT_QUERY), f = () => setLight(q.matches); f();
+    q.addEventListener("change", f); return () => q.removeEventListener("change", f);
+  }, [on]);
+  return light;
 }
 // A picture file as a smaller JPEG data URL (at most `limit` characters), or "" when it cannot be read or stays too big.
 export async function readPicture(file, limit) {

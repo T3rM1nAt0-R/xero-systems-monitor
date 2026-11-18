@@ -4,6 +4,16 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: Customize is the one place for the look. The Theme row (Dark, Light, Windows) and Large text are gone from the More menu and from Ctrl+K, which now offer "Customize…", "Customize theme…" and "Customize text size…". Your old theme and Large text choice move into Customize once (Light becomes the Light theme, Windows becomes Match Windows, Large becomes a 116% text size), so nobody loses their look.
+- Fixed: the More menu's Dark and Light no longer wipe every Customize edit, "Large text" no longer stacks on the text size slider (116% x 130% was about 151% while the slider said 100%), and the menu no longer lights Dark or Light for Nord, Dracula, Terminal and the other themes.
+- Fixed: Rounded now works on a theme that has its own family (Terminal), and turning off colour-blind safe or Match Windows, or setting 100% text size, now works on themes that set them. A choice is kept whenever it differs from the theme, not from the global default.
+- Changed: style families change shape only (corners, borders, shadow, the monospace font and scanlines of Terminal). They never touch colours or glass; the Terminal tile and the Terminal theme are now one definition, Scanlines show only in the Terminal family and turn off when you leave it. Green on black and blue paper live in the Terminal theme and a new Blueprint theme.
+- Fixed: light or dark now always follows the background of the look that is shown (so Nord, Terminal and your own looks are never flagged the wrong way), is never saved separately, and holding the eye to compare or Match Windows no longer rewrites anything that is saved.
+- Fixed: the faintest text ("up 3 d 1 h", the CPU and GPU subtitles) now keeps a contrast of at least 3 to 1 on every theme (it was about 2.5 to 1 on Terminal, Dark, Nord and Blueprint).
+- Fixed: Soft, Blueprint and a picture background are built from the theme's own colours, so they work on light themes (Blueprint keeps its grid, Soft no longer shows grey smudges, a picture is no longer always darkened), and Glass Off now removes the glass edge line on Terminal and Blueprint too.
+- Changed: Density options are Tight, Comfortable and Roomy, so they are no longer confused with the Compact view.
+- Fixed: Revert now returns everything to the theme, and Undo and Redo keep this session's steps after you close the panel (the tooltip says so).
+
 ## [0.4.0] - 2026-11-19
 
 - Added: Customize Shape: style families Rounded (today), Sharp / Metro, Terminal (monospace, green on black, optional scanlines drawn as one static gradient), Soft (raised, neumorphic shadows) and Blueprint (blue grid paper, white lines); a corner radius slider from sharp to pill; borders none, hairline or bold; shadow depth.
