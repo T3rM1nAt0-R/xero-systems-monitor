@@ -1,5 +1,6 @@
 import HwStrip from "./HwStrip.jsx";
-import { useState, useEffect, memo, useMemo, useRef } from "react";
+import { useState, useEffect, useContext, memo, useMemo, useRef } from "react";
+import { GroupLayout, onReveal } from "./groupPrefs.js";
 import { SaveButtons, ZoomChip, FullGraph } from "./GraphTools.jsx";
 import { shiftSeries } from "./graphTools.js";
 import { useCompare, useZoom } from "./graphView.js";
@@ -22,9 +23,12 @@ const C = { cpu: "#4ade80", temp: "#fb923c", ram: "#60a5fa", gpu: "#a78bfa", gte
 const stat = (a, f) => a.length ? `usual ${f(avg(a))} · peak ${f(peak(a))}` : "";
 // A group with a clickable label. The open/closed choice is remembered per machine. Folded, it shows a summary and a tiny line of its first graph.
 function Grp({ id, color, title, sub, summary, spark, def = true, cls = "", children }) {
-  const [open, flip] = useFold(id, def);
+  const [open, flip, set] = useFold(id, def);
+  const lay = useContext(GroupLayout), gk = id.slice(id.lastIndexOf(".") + 1);   // this machine's chosen group order and hidden groups
+  useEffect(() => onReveal(w => { if (w === id) { set(true); setTimeout(() => document.getElementById("g-" + id)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60); } }), [id]);
+  if (lay?.hidden.includes(gk)) return null;
   return (
-    <section className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color }}>
+    <section id={"g-" + id} className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color, order: lay ? lay.order.indexOf(gk) : undefined }}>
       <h5 {...foldProps(open, flip)}>
         <b className="chev">{open ? "▾" : "▸"}</b>{title}{sub && <span>{sub}</span>}{!open && summary && <em>{summary}</em>}{!open && spark && <Spark pts={spark} color={color} />}
       </h5>

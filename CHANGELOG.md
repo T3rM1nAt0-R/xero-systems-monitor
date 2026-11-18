@@ -4,6 +4,10 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: a machines strip at the top of the main window, one small tile per machine (This PC first) with status, CPU, memory, GPU, temperature and a tiny CPU line. Offline tiles go grey with the time last seen. Click a tile to jump to that machine's card.
+- Added: Ctrl+K search. Jump to a machine or one of its groups, or change a setting or the time range, from the keyboard.
+- Added: drag a machine card by its header to reorder; a "Groups..." option on each card hides groups you never use and moves the rest up or down. Both are remembered.
+- Changed: tighter spacing between groups, larger folded summaries, and the runner chips scroll sideways on one line.
 - Busy this week is now a heatmap: one row per day, one cell per hour (12-hour labels), darker when the runners were busier; hover a cell for the hour, how busy and the jobs and failures in it. A line per day lists its jobs and failures.
 - Click a job to open it on GitHub: running jobs, timeline bars, slowest jobs and failed jobs in Activity open the pull request, or the repository's Actions page when it is not a pull request. Jobs recorded before this update have no owner in their name and are not clickable.
 - Job history in the Runners group: the last 100 jobs of the machine, newest first, with search and result and workflow filters.

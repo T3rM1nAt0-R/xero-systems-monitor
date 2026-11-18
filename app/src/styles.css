@@ -397,6 +397,31 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
 
+/* ---- machines strip, Ctrl+K palette, card order and group choices, tidy-up ---- */
+.strip{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 0}
+.tile{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:5px 9px;border-radius:9px;background:var(--s1);border-color:var(--line);color:var(--acc);min-width:128px;flex:1 1 128px;max-width:240px}
+.tile .th{display:flex;align-items:center;gap:6px;color:var(--fg);max-width:100%}.tile .th b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .tn{display:flex;flex-wrap:wrap;gap:0 8px;color:var(--fg);font-size:12px}.tile .tn small{color:var(--dim);font-size:10px;letter-spacing:.04em}
+.tile.off{background:var(--bg);border-style:dashed}.tile.off .th,.tile.off .tn{color:var(--dim)}.tile.off .th b{color:var(--dim)}
+.tile .tspark{display:block;opacity:.85}
+.pal{align-items:start;padding-top:12vh}
+.pal .dlg{gap:6px;max-height:70vh}
+.pal input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:8px 10px}
+.plist{overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.popt{display:flex;justify-content:space-between;gap:12px;padding:6px 9px;border-radius:7px;cursor:pointer;color:var(--mid)}
+.popt em{font-style:normal;color:var(--dim);font-size:11px}
+.popt.sel{background:var(--s2);color:var(--fg);box-shadow:inset 2px 0 var(--acc)}
+.grid .chead{cursor:grab}.dragging-card,.dragging-card *{user-select:none;cursor:grabbing!important}
+.card.dragging{opacity:.5}.card.dropto{outline:2px dashed var(--acc);outline-offset:2px}
+.gmenu{position:relative;margin-left:auto}.gmenu>button{padding:1px 8px;font-size:11px;color:var(--dim)}
+.gpop{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;gap:2px;min-width:200px;padding:8px;background:var(--s1);border:1px solid var(--line2);border-radius:10px;box-shadow:0 8px 28px #0008}
+.grow2{display:flex;align-items:center;gap:4px}.grow2 label{flex:1;display:flex;align-items:center;gap:6px;color:var(--fg)}.grow2 button{padding:0 6px;font-size:10px}
+.detail.inline{display:flex;flex-direction:column;gap:6px}
+.card.full{gap:6px}.grid>.card{margin-bottom:8px}
+.grp h5 em{font-size:15px;font-weight:600;color:var(--fg);margin-left:10px}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding:0 14px;margin-left:-14px;margin-right:-14px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+.chips .chip{flex:none}
+@container (min-width:860px){.detail.inline{display:grid}}
 /* Runner insights: busy heatmap, clickable jobs, job history */
 .heat{margin-top:10px}.heat h4{margin:0 0 6px}
 .hrow{display:grid;grid-template-columns:44px 1fr;gap:6px;align-items:center;margin-bottom:2px}
