@@ -154,6 +154,29 @@ pub(crate) fn ping_once() -> Option<f64> {
     parse_ping_ms(&String::from_utf8_lossy(&out.stdout))
 }
 
+/// Registry keys Windows creates while a restart is waiting (Update and servicing).
+const RESTART_KEYS: [&str; 2] = [
+    r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+    r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+];
+
+/// Whether Windows waits for a restart, read with the built-in `reg query` (the key either
+/// exists or not). `None` off Windows, or when `reg` itself cannot run.
+#[must_use]
+pub fn windows_restart_needed() -> Option<bool> {
+    if !cfg!(windows) {
+        return None;
+    }
+    let mut found = false;
+    for key in RESTART_KEYS {
+        let mut cmd = Command::new("reg");
+        cmd.args(["query", key]);
+        crate::hide_window(&mut cmd);
+        found |= cmd.output().ok()?.status.success();
+    }
+    Some(found)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -162,6 +185,11 @@ mod tests {
         {"id":2,"Text":"Temperatures","Children":[
         {"id":3,"Text":"Core #1","Value":"41,0 °C","Children":[]},
         {"id":4,"Text":"Core (Tctl/Tdie)","Min":"30,0 °C","Value":"45,5 °C","Max":"70,0 °C"}]}]}]}"#;
+
+    #[test]
+    fn restart_is_unknown_off_windows() {
+        assert_eq!(windows_restart_needed().is_some(), cfg!(windows));
+    }
 
     #[test]
     fn reads_lhm_temperature() {

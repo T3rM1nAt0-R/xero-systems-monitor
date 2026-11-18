@@ -13,7 +13,8 @@
 #   DISK 42%                   use of the root file system
 #   DF dev size used avail pct mount    one per real file system, sizes in MiB with an M
 #   TEMPS sensor millidegrees  one per sensor (hwmon name, or tz-<type> for thermal zones)
-#   GPU util_pct, temp_c, mem_used_mib, mem_total_mib    or "GPU none"
+#   GPU util_pct, temp_c, mem_used_mib, mem_total_mib    or "GPU none"; util and mem_used are the
+#                              peaks of a few quick samples taken across the frame
 #   NET iface ip speed_mbps rx_bytes tx_bytes uptime_s  default route; "-" when no ip, -1 when no speed
 #   PING ms                    round trip to a public resolver
 #   RUNNER <ps args>           a GitHub Actions Runner.Listener or Runner.Worker process
@@ -26,6 +27,13 @@
 #   DOCKERR text               docker is installed but did not answer
 #   TOP cpu_pct ram_mb count name    busiest programs (cpu_pct is of the whole machine)
 #   HW cpu|gpu|os|board text   hardware names (only when F=1)
+#   REBOOT 0 | REBOOT 1 count  Debian/Ubuntu only: /var/run/reboot-required exists, and how many packages asked
+#   UPDATES n                  updates waiting, from apt-check (only when F=1, only where it is installed; no root needed)
+
+# GPU bursts are short, so one sample per frame misses them: take GPU_SAMPLES quick samples
+# GPU_GAP seconds apart (about 1 s at most) and report the PEAK use and PEAK memory.
+GPU_SAMPLES=4
+GPU_GAP=0.25
 
 nvq() { nvidia-smi --query-gpu="$1" --format=csv,noheader,nounits 2>/dev/null | head -1; }
 
@@ -42,6 +50,19 @@ if [ -n "$F" ]; then
   echo "HW board $(cat /sys/class/dmi/id/product_name 2>/dev/null)"
 fi
 
+# Restart state: only distros that keep dpkg say so in a file; elsewhere it stays unknown.
+if [ -d /var/lib/dpkg ]; then
+  if [ -e /var/run/reboot-required ]; then
+    echo "REBOOT 1 $(grep -c . /var/run/reboot-required.pkgs 2>/dev/null || echo 0)"
+  else
+    echo "REBOOT 0"
+  fi
+fi
+if [ -n "$F" ] && [ -x /usr/lib/update-notifier/apt-check ]; then
+  u=$(timeout 5 /usr/lib/update-notifier/apt-check 2>&1 | sed -n 's/^\([0-9][0-9]*\);.*/\1/p')
+  [ -n "$u" ] && echo "UPDATES $u"
+fi
+
 for h in /sys/class/hwmon/hwmon*; do
   n=$(cat "$h/name" 2>/dev/null)
   for f in "$h"/temp*_input; do
@@ -55,6 +76,18 @@ done
 df -P -BM -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs 2>/dev/null | tail -n +2 | sed 's/^/DF /'
 
 n=$(nvq utilization.gpu,temperature.gpu,memory.used,memory.total)
+if [ -n "$n" ]; then
+  # Extra samples follow the first; the peak use and peak memory of all replace its values.
+  n=$({
+    echo "$n"
+    i=1
+    while [ "$i" -lt "$GPU_SAMPLES" ]; do
+      sleep "$GPU_GAP"
+      nvq utilization.gpu,temperature.gpu,memory.used,memory.total
+      i=$((i + 1))
+    done
+  } | awk -F', *' 'NR==1{t=$2;tot=$4} {if($1+0>u)u=$1+0; if($3+0>m)m=$3+0} END{print u", "t", "m", "tot}')
+fi
 echo "GPU ${n:-none}"
 
 d=$(awk '$2=="00000000"{print $1; exit}' /proc/net/route 2>/dev/null)

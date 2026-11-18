@@ -1,7 +1,7 @@
 //! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor`, the system `ping` and CI runners.
 
 use crate::runners::RunnerWatch;
-use crate::sensors::{cpu_temp, lhm_text, ping_once};
+use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use sysinfo::{
 };
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
-    TopProgram,
+    TopProgram, UpdateInfo,
 };
 
 /// Percent scale.
@@ -39,6 +39,7 @@ pub struct LocalSource {
     acpi_temp: Option<f64>,
     last_net: Option<(Instant, f64, f64)>,
     ping_ms: Option<f64>,
+    updates: UpdateInfo,
     top: Vec<TopProgram>,
     hardware: HardwareInfo,
     runners: RunnerWatch,
@@ -64,6 +65,7 @@ impl LocalSource {
             acpi_temp: None,
             last_net: None,
             ping_ms: None,
+            updates: UpdateInfo::default(),
             top: Vec::new(),
             hardware,
             runners: RunnerWatch::default(),
@@ -92,6 +94,7 @@ impl LocalSource {
             xsm_core::parse::parse_frame(&self.runners.lines(&self.sys, SystemTime::now()), None);
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
             self.ping_ms = ping_once();
+            self.updates.restart_needed = windows_restart_needed();
         }
         let lhm = lhm_text();
         let poll_no = self.polls;
@@ -112,6 +115,7 @@ impl LocalSource {
             top: self.top.clone(),
             hardware: self.hardware.clone(),
             sensors: lhm.as_deref().and_then(xsm_core::lhm::parse_lhm),
+            updates: self.updates.clone(),
             runners: ci.runners,
             jobs: ci.jobs,
             ..Reading::default()

@@ -50,6 +50,9 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
     put(&mut m, "speed", net.and_then(|n| n.link_speed_mbps));
     put(&mut m, "uptime", net.map(|n| n.uptime_s));
     put(&mut m, "ip", net.and_then(|n| n.ip.clone()));
+    put(&mut m, "restart", r.updates.restart_needed);
+    put(&mut m, "restart_pkgs", r.updates.restart_packages);
+    put(&mut m, "updates", r.updates.pending);
     let pair = |used: u64, total: u64| [gib(used), gib(total)];
     put(
         &mut m,

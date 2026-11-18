@@ -88,7 +88,7 @@ fn collect(node: &Value, out: &mut SensorDetail) {
 /// `None` when the text is not JSON or holds none of them.
 #[must_use]
 pub fn parse_lhm(json: &str) -> Option<SensorDetail> {
-    let root: Value = serde_json::from_slice(json.as_bytes()).ok()?;
+    let root = serde_json::from_str::<Value>(json).ok()?;
     let mut out = SensorDetail::default();
     collect(&root, &mut out);
     (out != SensorDetail::default()).then_some(out)
