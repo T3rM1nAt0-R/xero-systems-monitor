@@ -41,6 +41,14 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Hide machines you do not need (the <b>⋯</b> on a card or strip tile). They leave every view and the tray summary; Hidden machines lists them with Show again and Pause monitoring.</td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/customize.png" alt="The Customize dialog, Text tab"></td>
+<td width="50%"><img src="docs/screenshots/customized.png" alt="The window with a customized look"></td>
+</tr>
+<tr>
+<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a font, size and weight for each kind of text (12 bundled fonts), every colour, graph style, sizes, and themes, with a live preview.</td>
+<td valign="top">The same window with the Midnight theme, other fonts, filled smooth graphs and a purple tint for one machine.</td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/tabs-overview.png" alt="A machine card on its Overview tab"></td>
 <td width="50%"><img src="docs/screenshots/tabs-runners.png" alt="The Runners tab"></td>
 </tr>
@@ -50,6 +58,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </tr>
 </table>
 
+- Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Smooth folds, tab changes and menus, a thin loading bar and graph placeholders while data arrives (all off with the system "reduce motion" setting)

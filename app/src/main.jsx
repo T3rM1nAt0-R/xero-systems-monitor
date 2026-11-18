@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
+import "./styles/fonts.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/card.css";
@@ -8,6 +9,7 @@ import "./styles/sections.css";
 import "./styles/compact.css";
 import "./styles/menus.css";
 import "./styles/motion.css";
+import "./styles/customize.css";
 import "./styles/view.css";
 import { installTips } from "./tooltip.js";
 installTips();

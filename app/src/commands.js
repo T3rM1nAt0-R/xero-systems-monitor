@@ -21,6 +21,7 @@ export function buildCommands(a) {
   add("Setting", "Snooze alerts for 1 hour", a.snooze1h, "mute notifications");
   if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");
   add("Setting", "Machines…", a.onMachines, "add remove edit");
+  if (a.onCustomize) add("Setting", "Customize…", a.onCustomize, "look fonts colours theme graph style size density appearance");
   if (a.onLimits) add("Setting", "Limits…", a.onLimits, "thresholds warn");
   for (const n of a.hiddenNames || []) add("Machine", `Show hidden machine ${n}`, () => a.showMachine(n), "unhide hidden machine");
   add("Setting", "Check for updates", a.onCheck, "update version");
