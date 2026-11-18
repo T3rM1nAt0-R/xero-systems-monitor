@@ -1,5 +1,6 @@
 //! The main window's behaviour: normal and mini mode, pinning, theme, show/hide and closing.
 
+use crate::mini_rect::{anchored_start, max_inner, Axis, Room};
 use crate::prefs::PrefsStore;
 use crate::tray;
 use serde::{Deserialize, Serialize};
@@ -154,6 +155,9 @@ fn enter_mini(app: &AppHandle, window: &WebviewWindow) -> Result<(), String> {
         .set_size(PhysicalSize::new(px(w), px(h)))
         .map_err(|e| e.to_string())?;
     if let Some(area) = area {
+        // The corner sum uses the outer size (frame included), read after the resize.
+        let outer = window.outer_size().map_err(|e| e.to_string())?;
+        let (w, h) = (f64::from(outer.width), f64::from(outer.height));
         let x = f64::from(area.position.x) + f64::from(area.size.width) - w - gap;
         let y = f64::from(area.position.y) + f64::from(area.size.height) - h - gap;
         window
@@ -254,71 +258,86 @@ pub fn set_theme(app: &AppHandle, name: &str) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
-/// In mini mode the window follows its content: set the height (CSS pixels), keeping the bottom edge.
+/// In mini mode the window follows its content: set the height (CSS pixels of the page), keeping the bottom edge.
 ///
 /// # Errors
 /// Text when the window cannot be changed.
 pub fn set_mini_height(app: &AppHandle, css_height: f64) -> Result<(), String> {
-    if !app.state::<Frame>().is_mini() {
-        return Ok(());
-    }
-    let window = main_window(app)?;
-    let (pos, size) = (
-        window.outer_position().map_err(|e| e.to_string())?,
-        window.outer_size().map_err(|e| e.to_string())?,
-    );
-    let gap = scaled(&window, CORNER_GAP);
-    let mut height = scaled(&window, css_height.max(MINI_MIN_HEIGHT));
-    if let Some(monitor) = window.current_monitor().map_err(|e| e.to_string())? {
-        height = height.min(f64::from(monitor.work_area().size.height) - 2.0 * gap);
-    }
-    let bottom = pos.y + i32::try_from(size.height).unwrap_or(0);
-    let new_height = px(height);
-    let top = bottom - i32::try_from(new_height).unwrap_or(0);
-    window
-        .set_size(PhysicalSize::new(size.width, new_height))
-        .map_err(|e| e.to_string())?;
-    window
-        .set_position(PhysicalPosition::new(pos.x, top))
-        .map_err(|e| e.to_string())
+    resize_mini(app, None, css_height)
 }
 
-/// In mini mode: put the window at a remembered size (CSS pixels), keeping its bottom-right corner and staying on the screen.
+/// In mini mode: put the window at a remembered size (CSS pixels of the page), keeping its bottom-right corner and staying on the screen.
 ///
 /// # Errors
 /// Text when the window cannot be changed.
 pub fn set_mini_size(app: &AppHandle, css_width: f64, css_height: f64) -> Result<(), String> {
+    resize_mini(app, Some(css_width), css_height)
+}
+
+/// One axis of the window, and the screen room along it (the work area less the corner gap).
+fn axis_of(
+    pos: i32,
+    outer: u32,
+    inner: u32,
+    room: Option<(i32, u32)>,
+    gap: f64,
+) -> (Axis, Option<Room>) {
+    let room = room.map(|(start, len)| Room {
+        start: start + px_signed(gap),
+        len: len.saturating_sub(px(2.0 * gap)),
+    });
+    (Axis { pos, outer, inner }, room)
+}
+
+/// Resize by the page (inner) size, the size `set_size` takes. The frame is never counted into the new size and the
+/// window only moves to keep its far edges where they were, or to come back onto the screen. Nothing happens when the
+/// size is already right, so a repeated call can never make the window creep.
+fn resize_mini(app: &AppHandle, css_width: Option<f64>, css_height: f64) -> Result<(), String> {
     if !app.state::<Frame>().is_mini() {
         return Ok(());
     }
     let window = main_window(app)?;
-    let (pos, size) = (
+    let (pos, outer, inner) = (
         window.outer_position().map_err(|e| e.to_string())?,
         window.outer_size().map_err(|e| e.to_string())?,
+        window.inner_size().map_err(|e| e.to_string())?,
     );
+    let area = window
+        .current_monitor()
+        .map_err(|e| e.to_string())?
+        .map(|m| *m.work_area());
     let gap = scaled(&window, CORNER_GAP);
-    let (mut w, mut h) = (
-        scaled(&window, css_width.max(MINI_MIN_WIDTH)),
-        scaled(&window, css_height.max(MINI_MIN_HEIGHT)),
+    let (ax, rx) = axis_of(
+        pos.x,
+        outer.width,
+        inner.width,
+        area.map(|a| (a.position.x, a.size.width)),
+        gap,
     );
-    if let Some(monitor) = window.current_monitor().map_err(|e| e.to_string())? {
-        w = w.min(f64::from(monitor.work_area().size.width) - 2.0 * gap);
-        h = h.min(f64::from(monitor.work_area().size.height) - 2.0 * gap);
+    let (ay, ry) = axis_of(
+        pos.y,
+        outer.height,
+        inner.height,
+        area.map(|a| (a.position.y, a.size.height)),
+        gap,
+    );
+    let new_w = css_width.map_or(inner.width, |w| {
+        px(scaled(&window, w.max(MINI_MIN_WIDTH))).min(max_inner(ax, rx))
+    });
+    let new_h = px(scaled(&window, css_height.max(MINI_MIN_HEIGHT))).min(max_inner(ay, ry));
+    if (new_w, new_h) == (inner.width, inner.height) {
+        return Ok(());
     }
-    let (right, bottom) = (
-        pos.x + i32::try_from(size.width).unwrap_or(0),
-        pos.y + i32::try_from(size.height).unwrap_or(0),
-    );
-    let (new_w, new_h) = (px(w), px(h));
     window
         .set_size(PhysicalSize::new(new_w, new_h))
         .map_err(|e| e.to_string())?;
-    window
-        .set_position(PhysicalPosition::new(
-            right - i32::try_from(new_w).unwrap_or(0),
-            bottom - i32::try_from(new_h).unwrap_or(0),
-        ))
-        .map_err(|e| e.to_string())
+    let (x, y) = (anchored_start(ax, new_w, rx), anchored_start(ay, new_h, ry));
+    if (x, y) != (pos.x, pos.y) {
+        window
+            .set_position(PhysicalPosition::new(x, y))
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 
 /// Restart the app (the close handler must not hide the window meanwhile).
