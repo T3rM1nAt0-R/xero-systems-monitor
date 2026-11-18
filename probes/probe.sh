@@ -26,6 +26,8 @@
 #   DOCKERR text               docker is installed but did not answer
 #   TOP cpu_pct ram_mb count name    busiest programs (cpu_pct is of the whole machine)
 #   HW cpu|gpu|os|board text   hardware names (only when F=1)
+#   REBOOT 0 | REBOOT 1 count  Debian/Ubuntu only: /var/run/reboot-required exists, and how many packages asked
+#   UPDATES n                  updates waiting, from apt-check (only when F=1, only where it is installed; no root needed)
 
 nvq() { nvidia-smi --query-gpu="$1" --format=csv,noheader,nounits 2>/dev/null | head -1; }
 
@@ -40,6 +42,19 @@ if [ -n "$F" ]; then
   echo "HW gpu $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)"
   echo "HW os $(. /etc/os-release 2>/dev/null; echo "$PRETTY_NAME")"
   echo "HW board $(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+fi
+
+# Restart state: only distros that keep dpkg say so in a file; elsewhere it stays unknown.
+if [ -d /var/lib/dpkg ]; then
+  if [ -e /var/run/reboot-required ]; then
+    echo "REBOOT 1 $(grep -c . /var/run/reboot-required.pkgs 2>/dev/null || echo 0)"
+  else
+    echo "REBOOT 0"
+  fi
+fi
+if [ -n "$F" ] && [ -x /usr/lib/update-notifier/apt-check ]; then
+  u=$(timeout 5 /usr/lib/update-notifier/apt-check 2>&1 | sed -n 's/^\([0-9][0-9]*\);.*/\1/p')
+  [ -n "$u" ] && echo "UPDATES $u"
 fi
 
 for h in /sys/class/hwmon/hwmon*; do

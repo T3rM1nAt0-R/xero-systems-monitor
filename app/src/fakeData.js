@@ -55,7 +55,7 @@ export const forecast = m => (kindOf(m) === "server" ? { per_day: 0.4, days: 95 
 
 const snap = (m, now) => {
   const kind = kindOf(m), seed = seedOf(m.name), v = k => metric(kind, seed, k, now, now), gpu = kind === "pc";
-  const d = { cpu: v("cpu"), temp: v("temp"), ram: v("ram"), disk: v("disk"), down: v("down"), up: v("up"), ping: v("ping"), uptime: 3 * DAY + 5400, ip: gpu ? "192.0.2.20" : "192.0.2.10", speed: 1000, hw: HW[kind],
+  const d = { cpu: v("cpu"), temp: v("temp"), ram: v("ram"), disk: v("disk"), down: v("down"), up: v("up"), ping: v("ping"), uptime: 3 * DAY + 5400, restart: gpu, restart_pkgs: gpu ? 2 : undefined, updates: gpu ? 5 : 0, ip: gpu ? "192.0.2.20" : "192.0.2.10", speed: 1000, hw: HW[kind],
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
   if (gpu) Object.assign(d, { gpu: v("gpu"), gtemp: v("gtemp"), vram_gb: [+((v("vram") / 100) * 12).toFixed(1), 12] });

@@ -402,3 +402,7 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .mrow .mmove{display:inline-flex;flex:none;flex-direction:column;gap:0}.mmove button{padding:0 6px;font-size:9px;line-height:1.2;border-radius:4px}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
+
+/* Uptime and restart status in the card header */
+.chead .up{color:var(--dim2);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chead .restart{color:var(--warn);font-size:11.5px;white-space:nowrap;flex:none}

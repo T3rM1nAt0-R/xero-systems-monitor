@@ -9,7 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
-    RunnerState, TopProgram,
+    RunnerState, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Event, FinishedJob, Rules, Tracker};
 
@@ -102,6 +102,11 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             os: Some(if is_pc(m) { "Windows 11" } else { "Linux" }.to_owned()),
             board: is_pc(m).then(|| "Example Board".to_owned()),
             gpu: is_pc(m).then(|| "Example GPU 12 GB".to_owned()),
+        },
+        updates: UpdateInfo {
+            restart_needed: Some(is_pc(m)),
+            restart_packages: is_pc(m).then_some(2),
+            pending: Some(if is_pc(m) { 5 } else { 0 }),
         },
         ..Reading::default()
     };

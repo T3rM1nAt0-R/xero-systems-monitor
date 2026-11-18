@@ -113,6 +113,7 @@ xsm_core::reading::Reading.net field
 xsm_core::reading::Reading.ping_ms field
 xsm_core::reading::Reading.runners field
 xsm_core::reading::Reading.top field
+xsm_core::reading::Reading.updates field
 xsm_core::reading::RunnerState struct
 xsm_core::reading::RunnerState.busy field
 xsm_core::reading::RunnerState.name field
@@ -121,6 +122,10 @@ xsm_core::reading::TopProgram.cpu_pct field
 xsm_core::reading::TopProgram.name field
 xsm_core::reading::TopProgram.processes field
 xsm_core::reading::TopProgram.ram_bytes field
+xsm_core::reading::UpdateInfo struct
+xsm_core::reading::UpdateInfo.pending field
+xsm_core::reading::UpdateInfo.restart_needed field
+xsm_core::reading::UpdateInfo.restart_packages field
 xsm_core::tracker mod
 xsm_core::tracker::Event struct
 xsm_core::tracker::Event.machine field
@@ -190,6 +195,7 @@ xsm_sources::sensors mod
 xsm_sources::sensors::parse_acpi_temps fn
 xsm_sources::sensors::parse_lhm_cpu_temp fn
 xsm_sources::sensors::parse_ping_ms fn
+xsm_sources::sensors::windows_restart_needed fn
 xsm_sources::ssh mod
 xsm_sources::ssh::ConnState enum
 xsm_sources::ssh::ConnState::Connected variant

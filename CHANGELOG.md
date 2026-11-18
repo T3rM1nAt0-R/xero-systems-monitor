@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Uptime and restart status: each machine card shows how long it has been on and when it last restarted, and "Restart needed for updates" in amber when the system says so (Debian and Ubuntu over ssh, and Windows on This PC). Other systems show no restart line.
+
 ## [0.1.2] - 2026-11-17
 
 - Fixed: the installed app now shows Updates (Check for updates, Update by itself) in the More menu; it was hidden in installed builds and shown only in development runs. The portable copy still hides it.
