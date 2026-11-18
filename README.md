@@ -29,16 +29,20 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
 </tr>
 <tr>
-<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all. Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 </table>
 
+- This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
+- Every machine card: uptime, last restart time and "Restart needed for updates" (Debian/Ubuntu and Windows)
 - This PC: CPU, memory, disk, network, ping, top programs, GPU (NVIDIA), CPU temperature
 - Remote Linux machines over your own SSH config, no agent to install on them
+- Runner insights: a busy-hours heatmap for the week, a searchable job history, and a click on any job opens it on GitHub (its pull request, or the Actions page)
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)
-- Docker containers and failed systemd services on remote machines
+- Docker containers and failed systemd services on remote machines, with Restart, Stop, Start and Logs buttons (the ssh user needs the docker group)
 - History from 5 minutes to 1 year, stored locally in SQLite
+- Graph tools: drag across a graph to zoom (every graph of that machine follows, double-click to reset), compare with yesterday or last week (dashed copy), open one graph full-window to overlay other machines, save a graph as a picture or CSV
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
 - Your own limits per machine (CPU %, CPU and GPU temperature, disk % and "full in N days"), quiet hours (11 PM to 8 AM by default; pop-ups wait except "machine offline"), and a Mute button on each alert in the Activity drawer
 - Tray icon, autostart
@@ -62,7 +66,7 @@ Add a Linux machine in the app by the **SSH host name** from your `~/.ssh/config
 
 - Log in with a key (or an agent). The app never asks for or stores a password, and a prompt would fail the connection.
 - Nothing is installed on the server. The app sends a small shell probe over one long-lived SSH connection. The server only needs a POSIX `sh`.
-- `nvidia-smi` and `docker` are optional: GPU and container cards appear only when the server has them.
+- `nvidia-smi` and `docker` are optional: GPU and container cards appear only when the server has them. GPU use and memory on a server are the peak of a few quick samples per check, and the GPU graphs keep peaks on long ranges, so short bursts show.
 
 Test it first: `ssh your-host true` must work without a prompt.
 

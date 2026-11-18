@@ -26,6 +26,7 @@ const commands = {
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
   get_events: ({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
   get_jobs: ({ since }) => finishedJobs(store.machines, since, clock()),
+  open_link: ({ url }) => { if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer"); return null; },
   get_forecast: ({ machine }) => (named(machine) ? forecast(named(machine)) : { per_day: null, days: null }),
   get_machines: () => ({ machines: store.machines.map(m => ({ ...m })) }),
   save_machines: ({ machines }) => {
@@ -33,6 +34,12 @@ const commands = {
     if (error) return { error };
     store.machines = machines.map(({ was, ...m }) => m);   // `was` only matters to the real collector (it moves history to the new name)
     return {};
+  },
+  container_action: ({ action, name }) => {
+    if (!["restart", "stop", "start", "logs"].includes(action)) throw new Error("Not an action.");
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(name || "")) throw new Error("That is not a container name docker would accept.");
+    if (action !== "logs") return `${{ restart: "Restarted", stop: "Stopped", start: "Started" }[action]} ${name}. (demo)`;
+    return Array.from({ length: 50 }, (_, i) => `2026-11-18T09:${String(i).padStart(2, "0")}:00Z ${name} demo log line ${i + 1}`).join("\n") + "\n";
   },
   get_prefs: () => ({ ...store.prefs }),
   set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },

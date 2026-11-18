@@ -84,6 +84,12 @@ fn loop_script(probe: &str, interval_s: u32) -> String {
 /// The system `ssh` for `host`: uses `~/.ssh/config` and keys, never asks for a password.
 #[must_use]
 pub fn ssh_command(host: &str) -> Command {
+    ssh_command_with(host, &["sh"])
+}
+
+/// Like [`ssh_command`] but running `remote` (one word per item) on the far side instead of `sh`.
+#[must_use]
+pub fn ssh_command_with<S: AsRef<str>>(host: &str, remote: &[S]) -> Command {
     let mut cmd = Command::new("ssh");
     cmd.args(["-o", "BatchMode=yes", "-o"])
         .arg(format!("ConnectTimeout={CONNECT_TIMEOUT_S}"))
@@ -91,7 +97,8 @@ pub fn ssh_command(host: &str) -> Command {
         .arg(format!("ServerAliveInterval={ALIVE_INTERVAL_S}"))
         .arg("-o")
         .arg(format!("ServerAliveCountMax={ALIVE_MAX_MISSES}"))
-        .args(["--", host, "sh"]);
+        .args(["--", host])
+        .args(remote.iter().map(AsRef::as_ref));
     cmd
 }
 

@@ -1,28 +1,27 @@
 //! Made-up readings for two machines, so the shell runs end to end before the real collector exists.
 //! The numbers follow the same smooth waves as `app/src/fakeData.js`; nothing here is measured.
 
+use crate::demo_jobs::jobs;
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Backend, HistoryReply, State};
+use crate::{Action, Backend, HistoryReply, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
-    RunnerState, TopProgram,
+    RunnerState, SensorDetail, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Event, FinishedJob, Rules, Tracker};
 
 const TAU: f64 = std::f64::consts::TAU;
 const DAY_S: f64 = 86_400.0;
-const JOB_SLOT_S: i64 = 7_200;
-const JOB_LENGTH_S: i64 = 900;
 const SERIES_POINTS: f64 = 400.0;
 const MIN_STEP_S: f64 = 3.0;
 const OFFLINE_AFTER: u32 = 3;
 const GIB: f64 = 1_073_741_824.0;
 const MIB: u64 = 1_048_576;
-const RUNNERS: [&str; 2] = ["runner-1", "runner-2"];
+pub(crate) const RUNNERS: [&str; 2] = ["runner-1", "runner-2"];
 const FORECAST_PER_DAY: f64 = 0.4;
 const FORECAST_DAYS: f64 = 95.0;
 
@@ -103,9 +102,23 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             board: is_pc(m).then(|| "Example Board".to_owned()),
             gpu: is_pc(m).then(|| "Example GPU 12 GB".to_owned()),
         },
+        updates: UpdateInfo {
+            restart_needed: Some(is_pc(m)),
+            restart_packages: is_pc(m).then_some(2),
+            pending: Some(if is_pc(m) { 5 } else { 0 }),
+        },
         ..Reading::default()
     };
     if is_pc(m) {
+        r.sensors = Some(SensorDetail {
+            fans_rpm: vec![1180.0, 920.0],
+            cpu_clock_mhz: Some(3900.0),
+            cpu_power_w: Some(40.0 + cpu_pct / 2.0),
+            gpu_power_w: Some(35.0),
+            core_load_pct: (0..8)
+                .map(|i| (cpu_pct + f64::from(i) * 7.0) % 100.0)
+                .collect(),
+        });
         r.gpu = Some(GpuReading {
             util_pct: wave(GPU, phase, t),
             temp_c: wave(GTEMP, phase, t),
@@ -156,35 +169,6 @@ fn history(m: &MachineConfig, now: f64, range: f64) -> History {
         ping: s(PING),
         loss: Some(0.0),
     }
-}
-
-/// Finished demo jobs of a runner machine: three of every four two-hour slots hold one.
-fn jobs(machines: &[MachineConfig], since: i64, now: i64) -> Vec<FinishedJob> {
-    let mut out = Vec::new();
-    for m in machines.iter().filter(|m| m.runner == Some(true)) {
-        let mut slot = since.max(now - 30 * 86_400) / JOB_SLOT_S;
-        while slot * JOB_SLOT_S <= now {
-            let (start, n) = (slot * JOB_SLOT_S, slot % 4);
-            let end = start + JOB_LENGTH_S + n * 60;
-            if n != 3 && end <= now && end >= since {
-                let runner = RUNNERS[usize::from(n == 1)];
-                out.push(FinishedJob {
-                    machine: m.name.clone(),
-                    runner: runner.to_owned(),
-                    start,
-                    end,
-                    result: if n == 2 { "Failed" } else { "Succeeded" }.to_owned(),
-                    label: format!(
-                        "PR #{} · branch-{slot} · Build (example-repo)",
-                        100 + slot % 900
-                    ),
-                });
-            }
-            slot += 1;
-        }
-    }
-    out.sort_by_key(|j| j.end);
-    out
 }
 
 /// A backend that answers every command with demo data and keeps the machine list in memory.
@@ -294,6 +278,17 @@ impl Backend for DemoBackend {
             per_day: known_server.then_some(FORECAST_PER_DAY),
             days: known_server.then_some(FORECAST_DAYS),
         })
+    }
+
+    fn container_action(
+        &self,
+        _machine: &str,
+        action: Action,
+        name: &str,
+    ) -> Result<String, String> {
+        Ok(format!(
+            "Demo: {action:?} {name} did nothing, there is no real docker here."
+        ))
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {
