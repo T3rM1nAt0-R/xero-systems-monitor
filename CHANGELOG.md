@@ -5,6 +5,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 - Fixed: the app stays responsive while a container action waits on ssh or a long history is read (blocking work moved off the shared runtime, reads use their own database connection); the Linux probe takes about 0.5 s per cycle instead of 4 s with a GPU and a running job (GPU sampled in the background, no fixed sleeps, docker stats every third cycle); container logs are capped at 64 KB per stream; web links with `..` are refused.
+- Fixed: dragging on a graph to zoom no longer also opens "What was busy then?"; the Disk graph now uses the same graph card as every other metric.
+- Changed: internal clean-up from the code review: one way to pass limits (`limitsOf(name)`), machine "last seen" and "CPU high since" are worked out by a pure tested helper, cards and graph panels get stable props so they skip needless redraws, hook dependency warnings are on.
 - Added: an Actions workflow, Publish release, that publishes a draft release by its tag after checking it has `latest.json`.
 
 ## [0.2.0] - 2026-11-18

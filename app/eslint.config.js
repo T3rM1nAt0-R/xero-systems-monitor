@@ -15,8 +15,8 @@ export default [
       ...react.configs.recommended.rules,
       ...react.configs["jsx-runtime"].rules,
       "react-hooks/rules-of-hooks": "error",
-      // Several effects and memos deliberately depend on a narrowed value (for example the minute, not the second), so the dependency list is a choice here.
-      "react-hooks/exhaustive-deps": "off",
+      // A few memos deliberately depend on a narrowed value (the minute, not the second). Each of those carries an eslint-disable-line with the reason.
+      "react-hooks/exhaustive-deps": "warn",
       "no-unused-vars": ["error", { ignoreRestSiblings: true }],
       "react/prop-types": "off",
     },

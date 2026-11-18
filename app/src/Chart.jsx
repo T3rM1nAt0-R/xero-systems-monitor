@@ -2,7 +2,7 @@ import { memo, useEffect, useId, useMemo, useRef } from "react";
 import { axisTicks } from "./format.js";
 import Axis from "./Axis.jsx";
 import { join, hoverAt, hoverEnd } from "./hoverGroup.js";
-import { clipSeries, zoomRange } from "./graphTools.js";
+import { clipSeries, zoomRange, isClick } from "./graphTools.js";
 import { setZoom } from "./graphView.js";
 // Full-size graph with hover readout. The hover is moved straight in the DOM (no React render per mouse move).
 function nearest(pts, t) {
@@ -15,22 +15,23 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
   const top = useMemo(() => max || Math.max(1, ...series.flatMap(s => s.pts.map(p => p[1])), ...(cmp || []).map(p => p[1])) * 1.15, [series, max, cmp]);
   const X = t => Math.max(0, Math.min(W, ((t - t0) / (t1 - t0)) * W)).toFixed(1);
   const line = pts => pts.map(([t, v], i) => (i ? "L" : "M") + X(t) + " " + (H - Math.min(1, v / top) * H).toFixed(1)).join("");
-  const cmpPath = useMemo(() => { const c = cmp ? clipSeries(cmp, t0, t1) : []; return c.length > 1 ? line(c) : null; }, [cmp, t0, t1, top]);   // the faint dashed copy from an earlier day
+  // X and line are rebuilt each render from t0, t1 and top, so those three are the real inputs of the two memos below.
+  const cmpPath = useMemo(() => { const c = cmp ? clipSeries(cmp, t0, t1) : []; return c.length > 1 ? line(c) : null; }, [cmp, t0, t1, top]);   // eslint-disable-line react-hooks/exhaustive-deps -- line() only reads t0, t1 and top; the faint dashed copy from an earlier day
   const paths = useMemo(() => series.map(s => {
     const pts = clipSeries(s.pts, t0, t1);   // zoomed in: only what is inside the window, cut exactly at its edges
     if (pts.length < 2) return null;
-    const l = pts.map(([t, v], i) => (i ? "L" : "M") + X(t) + " " + (H - Math.min(1, v / top) * H).toFixed(1)).join("");
+    const l = line(pts);
     return { l, a: `${l}L${X(pts[pts.length - 1][0])} ${H}L${X(pts[0][0])} ${H}Z` };
-  }), [series, t0, t1, top]);
+  }), [series, t0, t1, top]);   // eslint-disable-line react-hooks/exhaustive-deps -- X() only reads t0 and t1
   const f = fmt || (v => v.toFixed(0) + unit);
   const ticks = axisTicks(t0, t1, 3), pct = t => ((t - t0) / (t1 - t0)) * 100;
   const latest = useRef(); latest.current = { series, f, t0, t1, cmp, cmpLabel };
-  const id = useId(), g = group || id;
+  const id = useId(), g = group || id, color0 = series[0]?.color;
   useEffect(() => join(g, id, {   // this graph's side of the shared hover
-    title: title || series[0]?.name, color: series[0]?.color, el: () => root.current,
+    title: title || series[0]?.name, color: color0, el: () => root.current,
     value: t => { const { series: ss, f: ff } = latest.current; const hit = ss.filter(s => s.pts.length).map(s => (ss.length > 1 ? s.name + " " : "") + ff(nearest(s.pts, t)[1])); const c = latest.current.cmp; if (c?.length && hit.length && t >= c[0][0] && t <= c[c.length - 1][0]) hit.push(latest.current.cmpLabel + " " + ff(nearest(c, t)[1])); return hit.length ? hit.join(" · ") : null; },
     mark: t => { const el = x.current, r = root.current; if (!el || !r) return; const { t0: a, t1: b } = latest.current, q = (t - a) / (b - a); if (t == null || q < 0 || q > 1) { el.style.opacity = 0; return; } el.style.transform = `translateX(${q * r.offsetWidth}px)`; el.style.opacity = 1; },
-  }), [g, id, title, series[0]?.color]);
+  }), [g, id, title, color0]);   // eslint-disable-line react-hooks/exhaustive-deps -- title falls back to series[0].name; the readout is re-read from `latest` on every move
   const move = e => {
     cx.current = e.clientX; cy.current = e.clientY; if (raf.current) return;
     raf.current = requestAnimationFrame(() => {
@@ -41,7 +42,7 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
   };
   // A click (the pointer barely moved since it went down) picks that moment: onPick(t, x, y). Dragging is not a click.
   const pick = e => {
-    const d = down.current, el = root.current; if (!onPick || !el || (d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) > 4)) return;
+    const el = root.current; if (!onPick || !el || !isClick(downAt.current, e.clientX, e.clientY)) return;
     const r = el.getBoundingClientRect(); onPick(t0 + Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (t1 - t0), e.clientX, e.clientY);
   };
   const leave = () => { cancelAnimationFrame(raf.current); raf.current = 0; hoverEnd(g); };

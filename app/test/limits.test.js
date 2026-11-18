@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { isWarn, LIM } from "../src/format.js";
-import { DEFAULT_LIMITS, cleanLimit, limitsFor, setLimit, tidyLimits } from "../src/limits.js";
+import { DEFAULT_LIMITS, cleanLimit, limitsFor, memoLimitsFor, setLimit, tidyLimits } from "../src/limits.js";
 import { DEFAULT_QUIET, isQuiet, isHeld, isMuted, mute, unmute, muteLabel, timeLabel, TIME_OPTIONS } from "../src/quiet.js";
 import { machineAlerts, diskAlerts, failedAlerts, eventAlerts } from "../src/alerts.js";
 
@@ -36,9 +36,9 @@ test("limits: same for all, one machine, and tidy saves only changes", () => {
 test("disk alerts follow the machine's limits", () => {
   const m = { name: "a", err: null, d: { storage: [["C:", 80, 100]] } };
   assert.equal(diskAlerts([m], {}, 0).length, 0);
-  assert.equal(diskAlerts([m], {}, 0, { a: { disk: 70 } })[0].kind, "disk");
+  assert.equal(diskAlerts([m], {}, 0, memoLimitsFor({ a: { disk: 70 } }))[0].kind, "disk");
   assert.equal(diskAlerts([m], { a: { days: 20 } }, 0).length, 0);
-  assert.equal(diskAlerts([m], { a: { days: 20 } }, 0, { a: { days: 30 } })[0].machine, "a");
+  assert.equal(diskAlerts([m], { a: { days: 20 } }, 0, memoLimitsFor({ a: { days: 30 } }))[0].machine, "a");
 });
 test("alerts carry the machine name", () => {
   const first = machineAlerts(null, [{ name: "a", gone: [] }]);

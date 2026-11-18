@@ -11,7 +11,7 @@ export const HOT_MIN = 10;
 // Same rule as the collector's container_bad(): restarting, dead, a non-zero exit, or a failing health check. A clean exit is not a failure.
 export const containerBad = ([, state, status]) => state === "restarting" || state === "dead" || /\(unhealthy\)/.test(status) || (state === "exited" && /^Exited \((?!0\))\d+\)/.test(status));
 export const badNow = d => [...(d?.docker || []).filter(containerBad).map(c => "c:" + c[0]), ...(d?.failed || []).map(u => "f:" + u)];
-import { DISK_DAYS, limitsFor } from "./limits.js";
+import { DISK_DAYS, DEFAULT_LIMITS } from "./limits.js";
 export const DEFAULT_PREFS = { offline: true, failed: true, runner: true, hot: true, svc: true, disk: true };
 
 // Compare the last state with this one. `prev` is what this returned last time (null the first time: nothing alerts).
@@ -53,11 +53,11 @@ export function jobStats(rows, machine, since) {
 
 // Disks: any drive above its limit (90 % unless set), or the forecast says the disk fills within its days (14 unless set). One alert per machine per day.
 export { DISK_DAYS };
-export function diskAlerts(machines, fc, now = Date.now(), limits = {}) {
+export function diskAlerts(machines, fc, now = Date.now(), limitsOf = () => DEFAULT_LIMITS) {
   const day = Math.floor(now / 86400000), out = [];
   for (const m of machines) {
     if (m.err) continue;
-    const lim = limitsFor(limits, m.name);
+    const lim = limitsOf(m.name);
     const full = (m.d?.storage || []).filter(([, u, t]) => t > 0 && 100 * u / t > lim.disk).sort((x, y) => y[1] / y[2] - x[1] / x[2])[0], days = fc?.[m.name]?.days;
     if (full) out.push({ key: `${m.name}:disk:full:${day}`, machine: m.name, kind: "disk", title: `Disk ${full[0]} on ${m.name} is ${Math.round(100 * full[1] / full[2])}% full`, body: "Free some space soon." });
     else if (days != null && days <= lim.days) out.push({ key: `${m.name}:disk:fc:${day}`, machine: m.name, kind: "disk", title: `Disk on ${m.name} fills in about ${days} day${days === 1 ? "" : "s"}`, body: "At the current pace." });

@@ -27,7 +27,8 @@ const stat = (a, f) => a.length ? `usual ${f(avg(a))} · peak ${f(peak(a))}` : "
 function Grp({ id, color, title, sub, summary, spark, def = true, cls = "", children }) {
   const [open, flip, set] = useFold(id, def);
   const lay = useContext(GroupLayout), gk = id.slice(id.lastIndexOf(".") + 1);   // this machine's chosen group order and hidden groups
-  useEffect(() => onReveal(w => { if (w === id) { set(true); setTimeout(() => document.getElementById("g-" + id)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60); } }), [id]);
+  const setOpen = useRef(set); setOpen.current = set;   // `set` is a new function each render; the reveal listener must call the latest one
+  useEffect(() => onReveal(w => { if (w === id) { setOpen.current(true); setTimeout(() => document.getElementById("g-" + id)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60); } }), [id]);
   if (lay?.hidden.includes(gk)) return null;
   return (
     <section id={"g-" + id} className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color, order: lay ? lay.order.indexOf(gk) : undefined }}>
@@ -38,66 +39,65 @@ function Grp({ id, color, title, sub, summary, spark, def = true, cls = "", chil
     </section>);
 }
 // One graph card. Module-level and memoised so charts keep their state between polls.
-const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, old, live, busy }) {
+// Every prop is a number, a string, or an object that keeps its identity between polls, so memo can skip a graph whose numbers did not change.
+// `val` is the big number and `vu` the small unit after it; `fcText` (with `fcWarn`, `fcTip`) is the disk forecast chip; `children` go under the graph.
+const Panel = memo(function Panel({ title, val, vu, warn, sm, fcText, fcWarn, fcTip, cls = "", k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, old, live, busy, children }) {
   const series = useMemo(() => [{ name: name || title, pts, color: C[k] }], [name, title, pts, k]);
   const card = useRef(null), [big, setBig] = useState(false), off = useCompare();
   const [pop, setPop] = useState(null), shut = useCallback(() => setPop(null), []), pick = useCallback((t, x, y) => setPop({ t, x, y }), []);
   const cmp = useMemo(() => (off && old ? shiftSeries(old, off, t0, t1) : null), [off, old, t0, t1]);   // yesterday / last week, moved onto today's clock
   return (
-    <div className="panel" style={{ "--c": C[k] }} ref={card}>
-      <div className="ph"><h4><button className="ttl" onClick={() => setBig(true)} data-tip="Open this graph full window">{title}</button></h4><SaveButtons title={title} series={series} card={card} />{nv != null && <span className={"now" + (warn ? " warn" : "")}>{nv}</span>}{sm && <span className="sum">{sm}</span>}</div>
+    <div className={"panel " + cls} style={{ "--c": C[k] }} ref={card}>
+      <div className="ph"><h4><button className="ttl" onClick={() => setBig(true)} data-tip="Open this graph full window">{title}</button></h4><SaveButtons title={title} series={series} card={card} />{val != null && <span className={"now" + (warn ? " warn" : "")}>{val}{vu && <small>{vu}</small>}</span>}{sm && <span className="sum">{sm}</span>}{fcText && <span className={"sum fc" + (fcWarn ? " warn" : "")} data-tip={fcTip}>{fcText}</span>}</div>
       <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} cmp={cmp} cmpLabel={off === 86400 ? "yesterday" : "last week"} live={live} onPick={busy ? pick : undefined} />
+      {children}
       {pop && <BusyPopover machine={group} {...pop} range={range} onClose={shut} />}
       {big && <FullGraph title={title} k={k} color={C[k]} machine={group} pts={pts} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} live={live} onClose={() => setBig(false)} />}
     </div>);
 });
 // One machine's stack of groups: CPU, GPU, Network, Disk, Runners. Each group is a row of graphs.
 export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limits = DEFAULT_LIMITS }) {
-  const zoom = useZoom(m.name), off = useCompare(), d = m.d || {}, t1 = zoom ? zoom[1] : now, t0 = zoom ? zoom[0] : now - range, span = t1 - t0, live = !zoom, diskCard = useRef(null), [diskBig, setDiskBig] = useState(false), P = k => h?.[k] || [];
+  const zoom = useZoom(m.name), d = m.d || {}, t1 = zoom ? zoom[1] : now, t0 = zoom ? zoom[0] : now - range, span = t1 - t0, live = !zoom, P = k => h?.[k] || [];
   const hasGpu = d.gpu != null || P("gpu").some(p => p[1] > 0);
   const hw = d.hw || {}, drives = d.storage || [], sum = drives.reduce((a, x) => [a[0] + x[1], a[1] + x[2]], [0, 0]);
-  const day = useMemo(() => d.runners ? jobStats(rows, m.name, t1 - 86400) : null, [rows, m.name, d.runners, Math.floor(t1 / 60)]);   // last 24 h, refreshed each minute
+  const t1Min = Math.floor(t1 / 60), t0Min = Math.floor(t0 / 60);   // the lists below only need refreshing once a minute
+  const day = useMemo(() => d.runners ? jobStats(rows, m.name, t1 - 86400) : null, [rows, m.name, d.runners, t1Min]);   // eslint-disable-line react-hooks/exhaustive-deps -- last 24 h, refreshed each minute, not each poll
   useEffect(() => setJobsAt(m.name, t => {   // jobs that were running at moment t (for the shared hover tooltip)
     const out = rows.filter(r => r[0] === m.name && r[2] <= t && t <= r[3]).map(r => `${r[1]} · ${r[5]}${r[4] ? " (" + r[4] + ")" : ""}`);
     for (const [n, s] of Object.entries(m.started || {})) if (s <= t && d.jobs?.[n]) out.push(`${n} · ${d.jobs[n][0] || "Running"} (running)`);
     return out;
   }), [rows, m.name, m.started, d.jobs]);
   const full = fc?.days ? `full in ~${fc.days < 60 ? fc.days + " days" : Math.round(fc.days / 30) + " months"}` : "";
-  const marks = useMemo(() => rows.filter(r => r[0] === m.name && r[2] >= t0).map(r => ({ t: r[2], text: `${r[1]} started: ${r[5]}` })), [rows, m.name, Math.floor(t0 / 60)]);
+  const marks = useMemo(() => rows.filter(r => r[0] === m.name && r[2] >= t0).map(r => ({ t: r[2], text: `${r[1]} started: ${r[5]}` })), [rows, m.name, t0Min]);   // eslint-disable-line react-hooks/exhaustive-deps -- the marks only move once a minute
   // Pn must keep one identity between renders (a new component type would remount every card on each poll and close the "What was busy then?" box); it reads the latest values from a ref.
   const pc = useRef(); pc.current = { P, h2, t0, t1, span, live, name: m.name };
   const Pn = useRef(p => { const c = pc.current; return <Panel {...p} pts={c.P(p.k)} old={c.h2?.[p.k]} t0={c.t0} t1={c.t1} range={c.span} live={c.live} group={c.name} />; }).current;
-  const diskSeries = useMemo(() => [{ name: "Disk use", pts: P("disk"), color: C.disk }], [h?.disk]);
-  const big = (v, u) => v == null ? null : <>{v}<small>{u}</small></>;
   return (
     <div className="detail inline">
       <ZoomChip machine={m.name} span={zoom} />
       <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" spark={P("cpu")} sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
-        <Pn title="CPU" k="cpu" busy now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
-        <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
-        <Pn title="Memory" k="ram" busy now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
+        <Pn title="CPU" k="cpu" busy val={d.cpu?.toFixed(0)} vu="%" warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
+        <Pn title="CPU temp" k="temp" val={d.temp?.toFixed(0)} vu="°C" warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
+        <Pn title="Memory" k="ram" busy val={d.ram_gb ? gb(d.ram_gb[0]) : d.ram?.toFixed(0)} vu={d.ram_gb ? `/ ${d.ram_gb[1].toFixed(0)} GB` : "%"} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
       <HwStrip d={d} />
       {d.top?.length > 0 && <div className="procs"><Sub id={m.name + ".procs"} title="Busiest programs now">{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</Sub></div>}</Grp>
       {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" spark={P("gpu")} sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
-        <Pn title="GPU" k="gpu" now={big(d.gpu?.toFixed(0), "%")} sm={stat(P("gpu"), v => v.toFixed(0) + "%")} max={100} unit="%" />
-        <Pn title="GPU temp" k="gtemp" now={big(d.gtemp?.toFixed(0), "°C")} warn={isWarn("gtemp", d.gtemp, limits)} max={100} unit="°C" thr={limits.gtemp} thrLabel={`Warm above ${limits.gtemp}°C`} />
-        <Pn title="GPU memory" k="vram" now={d.vram_gb ? big(gb(d.vram_gb[0]), `/ ${d.vram_gb[1].toFixed(0)} GB`) : big(d.vram?.toFixed(0), "%")} max={100} unit="%" />
+        <Pn title="GPU" k="gpu" val={d.gpu?.toFixed(0)} vu="%" sm={stat(P("gpu"), v => v.toFixed(0) + "%")} max={100} unit="%" />
+        <Pn title="GPU temp" k="gtemp" val={d.gtemp?.toFixed(0)} vu="°C" warn={isWarn("gtemp", d.gtemp, limits)} max={100} unit="°C" thr={limits.gtemp} thrLabel={`Warm above ${limits.gtemp}°C`} />
+        <Pn title="GPU memory" k="vram" val={d.vram_gb ? gb(d.vram_gb[0]) : d.vram?.toFixed(0)} vu={d.vram_gb ? `/ ${d.vram_gb[1].toFixed(0)} GB` : "%"} max={100} unit="%" />
       </div></Grp>}
       <Grp id={m.name + ".net"} cls="full" color="#60a5fa" def={false} title="Network" spark={P("down")} sub={d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`} summary={`↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`}><div className="dgrid">
-        <Pn title="Download" k="down" now={d.down != null ? rateStr(d.down) : null} fmt={rateStr} />
-        <Pn title="Upload" k="up" now={d.up != null ? rateStr(d.up) : null} fmt={rateStr} />
-        <Pn title="Ping" k="ping" now={big(d.ping != null ? Number(d.ping).toFixed(0) : null, "ms")} sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
+        <Pn title="Download" k="down" val={d.down != null ? rateStr(d.down) : null} fmt={rateStr} />
+        <Pn title="Upload" k="up" val={d.up != null ? rateStr(d.up) : null} fmt={rateStr} />
+        <Pn title="Ping" k="ping" val={d.ping != null ? Number(d.ping).toFixed(0) : null} vu="ms" sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
       </div>
       {d.conns?.length > 0 && <Conns list={d.conns} />}</Grp>
-      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" spark={P("disk")} sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }} ref={diskCard}>
-          <div className="ph"><h4><button className="ttl" onClick={() => setDiskBig(true)} data-tip="Open this graph full window">Disk use</button></h4><SaveButtons title="Disk use" series={diskSeries} card={diskCard} />{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days <= limits.days ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
-          <Chart series={diskSeries} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} group={m.name} title="Disk use" cmp={off && h2?.disk ? shiftSeries(h2.disk, off, t0, t1) : null} cmpLabel={off === 86400 ? "yesterday" : "last week"} />
-          {diskBig && <FullGraph title="Disk use" k="disk" color={C.disk} machine={m.name} pts={P("disk")} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} onClose={() => setDiskBig(false)} />}
+      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" spark={P("disk")} sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><Pn title="Disk use" k="disk" cls="diskcard" val={d.disk?.toFixed(0)} vu="%" sm={drives.length > 0 ? `${gb(sum[0])} of ${sum[1].toFixed(0)} GB used` : ""} fcText={full} fcWarn={!!fc?.days && fc.days <= limits.days} fcTip={fc ? `A straight line through the last 30 days: +${fc.per_day}% of the disk per day` : undefined} max={100} unit="%">
           <Sub id={m.name + ".drives"} title="Drives" hint={drives.length > 0 && `${drives.length} ${drives.length === 1 ? "drive" : "drives"}`}><div className="drives">
             {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (100 * u / t > limits.disk ? " crit" : 100 * u / t > limits.disk - 15 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
           </div></Sub>
-        </div>
+        </Pn>
       </Grp>
       {d.runners && <Grp id={m.name + ".run"} color="#4cc9f0" cls="runners" title="Runners" sub={`${Object.keys(d.jobs || {}).length} busy · ${Object.keys(d.runners).length - Object.keys(d.jobs || {}).length} idle${day && day.done ? ` · ${day.done} jobs in 24 h${day.failed ? `, ${day.failed} failed` : ""}${day.stopped ? `, ${day.stopped} stopped` : ""}` : ""}`} summary={`${Object.keys(d.jobs || {}).length} busy`}>
         <Smooth className="panel wide">
@@ -109,16 +109,16 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
         </Smooth></Grp>}
       {(d.docker || d.failed?.length > 0) && (() => {   // Docker containers (running first, failing on top), ones that disappeared, and failed systemd units
         const cs = [...(d.docker || [])].sort((x, y) => (containerBad(y) - containerBad(x)) || ((y[1] === "running") - (x[1] === "running")) || x[0].localeCompare(y[0]));
-        const gone = m.cgone || [], failed = d.failed || [], bad = cs.filter(containerBad).length + failed.length, up = cs.filter(c => c[1] === "running").length;
-        const sub = d.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${gone.length ? ` · ${gone.length} gone` : ""}`;
+        const cgone = m.cgone || [], failed = d.failed || [], bad = cs.filter(containerBad).length + failed.length, up = cs.filter(c => c[1] === "running").length;
+        const sub = d.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`;
         return <Grp id={m.name + ".svc"} color={bad || d.docker_err ? "#fb5a72" : "#4ade80"} title="Containers & services" sub={sub} summary={bad ? `${bad} failing` : `${up} running`}>
           <div className="panel wide svc">
             {d.docker_err && <div className="svcnote" role="alert">Docker is installed here but would not answer: <code>{d.docker_err}</code> The ssh user probably needs to be in the docker group.</div>}
             {failed.map(u => <div className="svcrow bad" key={"f" + u}><i /><b>{u}</b><span className="st">failed</span><span className="sub">systemd service</span></div>)}
             {cs.map(([n, st, text, img, ports, ago]) => <div className={"svcrow" + (containerBad([n, st, text]) ? " bad" : st === "running" ? " up" : "")} key={n}>
               <i /><b data-tip={n}>{n}</b><span className="st">{text}</span><span className="sub" data-tip={[img, ports, ago && "created " + ago].filter(Boolean).join(" · ")}>{[img, ports].filter(Boolean).join(" · ")}</span><ContainerActions machine={m.name} name={n} running={st === "running"} /></div>)}
-            {gone.map(([n, t, , text, img]) => <div className="svcrow gone" key={"g" + n}><i /><b data-tip={n}>{n}</b><span className="st">gone {since(t)} ago</span><span className="sub">was: {text}{img ? " · " + img : ""}</span></div>)}
-            {!cs.length && !gone.length && !failed.length && !d.docker_err && <div className="quiet">No containers on this machine right now.</div>}
+            {cgone.map(([n, t, , text, img]) => <div className="svcrow gone" key={"g" + n}><i /><b data-tip={n}>{n}</b><span className="st">gone {since(t)} ago</span><span className="sub">was: {text}{img ? " · " + img : ""}</span></div>)}
+            {!cs.length && !cgone.length && !failed.length && !d.docker_err && <div className="quiet">No containers on this machine right now.</div>}
           </div></Grp>; })()}
     </div>
   );

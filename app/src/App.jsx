@@ -12,13 +12,14 @@ import useCardDrag from "./cardDrag.js";
 import MoreMenu, { REFRESH } from "./MoreMenu.jsx";
 import { Clock, Ago } from "./Clock.jsx";
 import * as api from "./api.js";
-import { isWarn, hm } from "./format.js";
-import { limitsFor, tidyLimits } from "./limits.js";
+import { hm } from "./format.js";
+import { memoLimitsFor, tidyLimits } from "./limits.js";
 import { DEFAULT_QUIET, mute, unmute } from "./quiet.js";
 import Limits from "./Limits.jsx";
 import { DEFAULT_PREFS } from "./alerts.js";
 import { unseenFailures } from "./events.js";
-import { RANGES, snapRange, SHORT, KEYS } from "./consts.js";
+import { RANGES, snapRange, SHORT, KEYS, NONE, NO_HOT } from "./consts.js";
+import { trackMachines } from "./calm.js";
 import { load, save, usePersisted } from "./store.js";
 import { foldAll, CARD } from "./fold.js";
 import useAlerts from "./useAlerts.js";
@@ -45,21 +46,20 @@ export default function App() {
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
   const foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
-  const appRef = useRef(null), lastOk = useRef({}), hot = useRef({});
+  const appRef = useRef(null), seen = useRef({ hot: {}, lastOk: {} });
   useEffect(() => save("alerts", alertPrefs), [alertPrefs]);
   const [limits, setLimits] = usePersisted("limits", {}), [quiet, setQuiet] = usePersisted("quiet", DEFAULT_QUIET), [muted, setMuted] = usePersisted("muted", []);
 
   const [localName, setLocalName] = useState("");   // which machine is this PC (the strip lists it first)
   useEffect(() => { if (!dlg) api.getMachines().then(c => setLocalName(c?.machines?.find(m => m.kind === "local")?.name || ""), () => {}); }, [dlg]);
   const [order, setOrder] = usePersisted("order", []);   // the card order you chose by dragging
-  const all = useMemo(() => state?.machines || [], [state]), ms = useMemo(() => applyOrder(all, order), [all, order]), t = now / 1000;
-  ms.forEach(m => {   // remember when each machine was last seen, and how long CPU has been above its limit
-    const h = hot.current[m.name] ||= {};
-    if (!m.err) { lastOk.current[m.name] = m.t || t; if (isWarn("cpu", m.d?.cpu, limitsFor(limits, m.name))) h.cpu ||= m.t ? m.t * 1000 : now; else h.cpu = 0; } else h.cpu = 0;
-  });
+  const all = useMemo(() => state?.machines || [], [state]), ms = useMemo(() => applyOrder(all, order), [all, order]);
+  const limitsOf = useMemo(() => memoLimitsFor(limits), [limits]);   // one call style for limits everywhere: limitsOf(name), the same object until the saved limits change
+  const { hot, lastOk } = useMemo(() => trackMachines(seen.current, ms, now, limitsOf), [ms, now, limitsOf]);   // pure: remembers when each machine was last seen and since when its CPU has been over its limit
+  useEffect(() => { seen.current = { hot, lastOk }; }, [hot, lastOk]);
   const [snoozeUntil, setSnoozeUntil] = usePersisted("snooze", 0), [fired, setFired] = usePersisted("fired", []);
   const onFire = useCallback(f => setFired(l => [f, ...l].slice(0, 100)), [setFired]);
-  useAlerts(ms, hot.current, rows, alertPrefs, { fc, events, snoozeUntil, onFire, limits, quiet, muted });
+  useAlerts(ms, hot, rows, alertPrefs, { fc, events, snoozeUntil, onFire, limitsOf, quiet, muted });
   const log = useMemo(() => [...events, ...fired.map(f => [f.t, "🔔", `${f.title}${f.body ? " · " + f.body : ""}${f.snoozed ? " (snoozed)" : ""}${f.quiet ? " (quiet hours)" : ""}`, { machine: f.machine, kind: f.kind }])].sort((x, y) => y[0] - x[0]), [events, fired]);
   const onMute = useCallback((machine, kind, on) => setMuted(l => on ? mute(l, machine, kind) : unmute(l, machine, kind)), [setMuted]);
 
@@ -78,14 +78,14 @@ export default function App() {
     goMachine(n); setTimeout(() => revealGroup(n + "." + k), 120);
   }, [goMachine]);
   const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
-  const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, foldMachines, goMachine, goGroup, look, refresh, pin, compact, alertPrefs, quiet.on, checkNow]);
+  const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, foldMachines, goMachine, goGroup, look, pin, compact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, setCompact, toggleMini, setQuiet, setSnoozeUntil]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
-  useTrayStatus(ms, limits, unseen);
+  useTrayStatus(ms, limitsOf, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });
 
-  const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} limits={limitsFor(limits, m.name)} auto={calmFold} flat={effCompact} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
+  const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <div className="bar top">
@@ -104,8 +104,8 @@ export default function App() {
       {!state && <div className="empty">{err ? <>Waiting for the collector…<small>{err}</small></> : "Loading…"}</div>}
 
 
-      {state && !effCompact && <Strip ms={stripOrder(ms, localName)} hist={hist} lastOk={lastOk.current} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} />}
-      {state && effCompact && <Compact limits={limits} ms={ms} now={now} lastOk={lastOk.current} hot={hot.current} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
+      {state && !effCompact && <Strip ms={stripOrder(ms, localName)} hist={hist} lastOk={lastOk} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} />}
+      {state && effCompact && <Compact limitsOf={limitsOf} ms={ms} now={now} lastOk={lastOk} hot={hot} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
       {state && !effCompact && <main className="grid" onPointerDown={dragProps}>{ms.map(card)}</main>}
 
       <div className="dock" hidden={mini} onClick={e => e.stopPropagation()}>
