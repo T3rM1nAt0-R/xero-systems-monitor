@@ -25,6 +25,7 @@ Rules for every command:
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
 | `set_pinned` | `on: boolean` (always on top) | the pin now in effect (boolean) |
 | `set_theme` | `theme: "light" or "dark"` (title-bar buttons follow it) | `null` |
+| `set_tray_status` | `status: "calm" or "look" or "bad"` (green, amber or red dot on the tray icon), `tooltip: string` (the tray hover text) | `null`; an error text for any other status |
 | `set_mini_height` | `height: number` (CSS pixels; in mini mode the window follows its content, growing upward) | `null` |
 | `check_for_updates` | none | `true` an update is waiting, `false` up to date, `null` could not check |
 | `apply_update` | none | `true` installed (restart to finish), `"dirty"` local edits block it, `false` failed |

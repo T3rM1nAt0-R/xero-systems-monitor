@@ -5,6 +5,7 @@ mod commands;
 mod frame;
 mod prefs;
 mod tray;
+mod tray_icon;
 mod updates;
 
 use std::sync::Arc;
@@ -96,6 +97,7 @@ pub fn run() {
             commands::set_window_mode,
             commands::set_pinned,
             commands::set_theme,
+            commands::set_tray_status,
             commands::set_mini_height,
             commands::check_for_updates,
             commands::apply_update,

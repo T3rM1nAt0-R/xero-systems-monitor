@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 19. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -87,6 +87,11 @@ pub fn set_pinned(app: AppHandle, on: bool) -> Reply<bool> {
 #[tauri::command]
 pub fn set_theme(app: AppHandle, theme: String) -> Reply<()> {
     frame::set_theme(&app, &theme)
+}
+
+#[tauri::command]
+pub fn set_tray_status(app: AppHandle, status: String, tooltip: String) -> Reply<()> {
+    crate::tray::set_status(&app, &status, &tooltip)
 }
 
 #[tauri::command]

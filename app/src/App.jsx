@@ -20,6 +20,7 @@ import useUpdates from "./useUpdates.js";
 import useWindowMode from "./useWindowMode.js";
 import useShortcuts from "./useShortcuts.js";
 import useLook from "./useLook.js";
+import useTrayStatus from "./useTrayStatus.js";
 
 export default function App() {
   const [range, setRange] = usePersisted("range", () => 300), [refresh, setRefresh] = usePersisted("refresh", 3), [auto, setAuto] = usePersisted("auto", true);
@@ -56,6 +57,7 @@ export default function App() {
   }, [mini, state]);
 
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
+  useTrayStatus(ms, limits, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin });
