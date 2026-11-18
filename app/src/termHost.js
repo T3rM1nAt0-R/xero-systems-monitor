@@ -37,7 +37,7 @@ function clipboardKeys(term) {
   });
 }
 // Start a session for `machine`. `note` is called when its state changes (first output, ended).
-export function open(id, machine, note) {
+export function open(id, machine, note, admin = false) {
   wire();
   if (live.has(id)) { live.get(id).note = note; return; }
   const term = new Terminal({ ...look(), cursorBlink: true, scrollback: 5000 }), fit = new FitAddon(), el = document.createElement("div");
@@ -49,7 +49,7 @@ export function open(id, machine, note) {
   live.set(id, s);
   term.onData(d => { if (!s.ended) terminalWrite(id, d).catch(() => {}); });
   term.onResize(({ cols, rows }) => { if (!s.ended) terminalResize(id, cols, rows).catch(() => {}); });
-  terminalOpen(id, machine, term.cols, term.rows).catch(e => { s.ended = true; s.got = true; term.write(`\x1b[31m${e?.message || e}\x1b[0m\r\n`); s.note(); });
+  terminalOpen(id, machine, term.cols, term.rows, admin).catch(e => { s.ended = true; s.got = true; term.write(`\x1b[31m${e?.message || e}\x1b[0m\r\n`); s.note(); });
 }
 // Put the session's terminal into `container`, fit it to the space and focus it. Returns a function that stops watching the size.
 export function show(id, container) {

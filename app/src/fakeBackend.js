@@ -5,7 +5,7 @@ import { validSessionId } from "./terminal.js";
 import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt, busiest } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
-const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, updates: true }, mode: "full", pinned: true };
+const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, updates: true, alwaysAdmin: false, elevated: false, startCancelled: false }, mode: "full", pinned: true };
 const clock = () => Date.now() / 1000;
 const ok = async () => null;
 const named = n => store.machines.find(m => m.name === n);
@@ -43,6 +43,7 @@ const commands = {
   },
   terminal_write: ({ id, data }) => { shells.get(id)?.input(String(data)); return null; },
   terminal_resize: () => null,
+  is_elevated: () => false, sudo_inline_available: () => "not_inline", open_admin_shell_window: () => null, restart_as_admin: () => null,
   terminal_close: ({ id }) => { shells.delete(id); return null; },
   get_state: () => ({ machines: store.machines.filter(m => !m.paused).map(m => demoMachine(m, clock())) }),
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),

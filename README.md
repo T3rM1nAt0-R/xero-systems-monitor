@@ -75,7 +75,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/hardware.png" alt="The Hardware tab"></td>
 <td valign="top">The Hardware tab: each CPU core with its load and temperature, fans, clock and power, the battery (charge, charging, time left) on laptops, and the programs using the graphics card (NVIDIA) with the memory each holds. Linux machines show the per-core numbers too.</td>
 <td width="50%"><img src="docs/screenshots/terminal.png" alt="The Terminal tab with two demo shells"></td>
-<td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
+<td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. Admin shells on This PC: <b>Admin shell…</b> opens the menu below (in the tab through Windows sudo, a separate admin window, or restart Xero as admin).<br><img src="docs/screenshots/admin-shell.png" alt="The Admin shell menu in the Terminal tab" width="360"><br>In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
 </tr>
 <tr>
 <td width="50%"><img src="docs/screenshots/processes.png" alt="The Processes tab"></td>
@@ -93,6 +93,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </tr>
 </table>
 
+- Admin shells on This PC: "Admin shell…" in the Terminal tab (in the tab through Windows sudo, a separate admin window, or restart Xero as admin), a red Admin badge when elevated, and More > Restart as admin / Always start as admin
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V
 - Customize: a theme holds the whole look; built-in themes and popular palettes, "Custom (based on ...)" with Save, Save as new and Revert; rename, delete, copy code, export and import your own; a colour-blind safe switch (status also by shape); a colour per machine in its ⋯ menu tints its card edge and tile; a warning when text and background are hard to read together
 - Network tab: adapters, Wi-Fi name and signal, an internet check with a 24-hour up/down strip, and a ping map of your other machines

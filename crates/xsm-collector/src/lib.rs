@@ -26,6 +26,7 @@ pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
 pub use xsm_core::system::{Act, Priority, Query};
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
+pub use xsm_sources::elevation::{is_elevated, run_as_admin, sudo_setting, RunAs};
 
 use serde::Serialize;
 

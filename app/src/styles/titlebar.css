@@ -1,7 +1,19 @@
 /* The window's own title bar: the top bar is the drag handle (data-tauri-drag-region; a double-click maximises) and ends with the window buttons. The system frame is off. */
 .top{padding-right:0;-webkit-app-region:no-drag;user-select:none;-webkit-user-select:none}
 .top .menu{bottom:auto;top:calc(100% + var(--sp-6))}
-.winbtns{display:flex;align-self:stretch;margin:calc(-1 * var(--sp-8)) 0 calc(-1 * var(--sp-8)) var(--sp-4)}
+.winbtns{position:fixed;top:0;right:0;z-index:40;display:flex;height:var(--sz-38)}
+.winspace{flex:none;width:calc(3 * var(--sz-46));align-self:stretch;margin-right:calc(-1 * var(--sp-12))}
+.mini .winspace{width:var(--sz-32)}
+.mini ~ .winbtns,.winbtns:has(.close:only-child){height:var(--sz-32)}
+/* The bar never wraps: the middle shrinks, the clock goes first, then the "Live, updated" text (the Customize panel takes 380px of the width). */
+.top{flex-wrap:nowrap;min-width:0}
+.top>*{flex-shrink:0}
+.top .brand,.top .live:not(.clock){flex-shrink:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media (max-width:900px){.top .clock{display:none}}
+@media (max-width:640px){.top .brand{display:none}}
+html[data-panel="open"] .top .clock{display:none}
+@media (max-width:1100px){html[data-panel="open"] .top .brand{display:none}}
+@media (max-width:900px){html[data-panel="open"] .top .live:not(.clock){display:none}}
 .wbtn{width:var(--sz-46);min-height:var(--sz-38);padding:0;border:0;border-radius:0;background:none;color:var(--dim);display:inline-flex;align-items:center;justify-content:center;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
 .wbtn:hover:not(:disabled){background:var(--s2);color:var(--fg)}
 .wbtn.close:hover:not(:disabled){background:var(--crit);color:var(--on-strong)}

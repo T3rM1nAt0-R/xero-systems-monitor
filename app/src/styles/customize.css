@@ -1,7 +1,7 @@
 /* Customize panel: docked on the right (the window shrinks beside it), one scroll, sticky header, rows, theme gallery. */
 :root{--panel-w:380px}
 html[data-panel="open"] #root{width:calc(100vw - var(--panel-w));transform:translateZ(0);transition:width var(--dur) var(--ease)}   /* the transform makes the fixed dock and bars stay inside the shrunken window */
-.cpanel{position:fixed;top:0;right:0;bottom:0;width:var(--panel-w);z-index:36;display:flex;flex-direction:column;background:var(--s1);border-left:1px solid var(--line2);box-shadow:var(--shadow-drawer);animation:cpanelin var(--dur) var(--ease) both}
+.cpanel{position:fixed;top:var(--sz-38);right:0;bottom:0;width:var(--panel-w);z-index:36;display:flex;flex-direction:column;background:var(--s1);border-left:1px solid var(--line2);box-shadow:var(--shadow-drawer);animation:cpanelin var(--dur) var(--ease) both}
 .chead2{flex:none;padding:var(--sp-12) var(--sp-12) var(--sp-8);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:var(--sp-8);background:var(--s1)}
 .ctitle{display:flex;align-items:center;gap:var(--sp-8)}
 .ctitle h3{margin:0;font-size:var(--fs-15);font-weight:600}

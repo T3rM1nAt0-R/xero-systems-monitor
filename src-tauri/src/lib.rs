@@ -1,6 +1,7 @@
 //! The desktop shell: the window's commands, tray, autostart, mini window, single instance and updater.
 #![deny(missing_docs)]
 
+mod admin;
 mod commands;
 mod frame;
 mod links;
@@ -19,7 +20,7 @@ use tauri_plugin_window_state::{Builder as WindowState, StateFlags};
 use xsm_collector::{Backend, DemoBackend, LiveBackend};
 
 /// Argument Windows passes at sign-in: start in the tray, window hidden.
-const HIDDEN_FLAG: &str = "--hidden";
+pub(crate) const HIDDEN_FLAG: &str = "--hidden";
 /// Set this environment variable to `1` to show made-up data instead of polling.
 const DEMO_VAR: &str = "XSM_DEMO";
 
@@ -60,6 +61,7 @@ fn remembered() -> StateFlags {
 /// # Panics
 /// When the Tauri runtime cannot start, which leaves nothing to show anyway.
 pub fn run() {
+    admin::wait_if_relaunched();
     let built = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             frame::show(app);
@@ -78,10 +80,19 @@ pub fn run() {
         .manage(tray::Checks::default())
         .manage(updates::Pending::default())
         .manage(terminal::Terminals::default())
+        .manage(admin::StartNotice::default())
         .setup(|app| {
             let handle = app.handle();
-            app.manage(commands::BackendState(backend_for(handle)?));
             app.manage(prefs::PrefsStore::load(handle));
+            // "Always start as admin": relaunch elevated before anything else starts, so the window never shows.
+            if admin::start_elevated_if_asked(
+                handle,
+                handle.state::<prefs::PrefsStore>().always_admin(),
+            ) {
+                handle.exit(0);
+                return Ok(());
+            }
+            app.manage(commands::BackendState(backend_for(handle)?));
             tray::build(handle)?;
             if !std::env::args().any(|a| a == HIDDEN_FLAG) {
                 frame::show(handle);
@@ -130,6 +141,10 @@ pub fn run() {
             commands::terminal_write,
             commands::terminal_resize,
             commands::terminal_close,
+            commands::is_elevated,
+            commands::sudo_inline_available,
+            commands::open_admin_shell_window,
+            commands::restart_as_admin,
         ])
         .build(tauri::generate_context!());
     match built {

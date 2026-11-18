@@ -12,6 +12,8 @@ const FILE: &str = "prefs.json";
 /// What `get_prefs` and `set_prefs` answer (`Prefs` in `docs/window-api.md`).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+// reason: this is the JSON the window reads, one switch per field
+#[allow(clippy::struct_excessive_bools)]
 pub struct Prefs {
     /// Closing the window hides it to the tray.
     pub close_to_tray: bool,
@@ -19,6 +21,12 @@ pub struct Prefs {
     pub login: bool,
     /// True when this copy can update itself: an installed build that is not the portable copy.
     pub updates: bool,
+    /// Start elevated (relaunch as administrator at start).
+    pub always_admin: bool,
+    /// The app is running as administrator now.
+    pub elevated: bool,
+    /// "Always start as admin" was on but the Windows question was answered no (read once).
+    pub start_cancelled: bool,
 }
 
 /// The part of `set_prefs` that can change.
@@ -29,18 +37,22 @@ pub struct PrefsPatch {
     pub close_to_tray: Option<bool>,
     /// New start-with-Windows value.
     pub login: Option<bool>,
+    /// New always-start-as-admin value.
+    pub always_admin: Option<bool>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 struct Stored {
     close_to_tray: bool,
+    always_admin: bool,
 }
 
 impl Default for Stored {
     fn default() -> Self {
         Self {
             close_to_tray: true,
+            always_admin: false,
         }
     }
 }
@@ -70,9 +82,14 @@ impl PrefsStore {
         self.stored.lock().map_or(true, |s| s.close_to_tray)
     }
 
-    fn set_close_to_tray(&self, on: bool) -> Result<(), String> {
+    /// True when the app should relaunch elevated at start.
+    pub fn always_admin(&self) -> bool {
+        self.stored.lock().is_ok_and(|s| s.always_admin)
+    }
+
+    fn change(&self, edit: impl FnOnce(&mut Stored)) -> Result<(), String> {
         let mut stored = self.stored.lock().map_err(|e| e.to_string())?;
-        stored.close_to_tray = on;
+        edit(&mut stored);
         let text = serde_json::to_string(&*stored).map_err(|e| e.to_string())?;
         if let Some(dir) = self.path.parent() {
             std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
@@ -93,6 +110,12 @@ pub fn get(app: &AppHandle) -> Result<Prefs, String> {
         close_to_tray: store.close_to_tray(),
         login: app.autolaunch().is_enabled().map_err(|e| e.to_string())?,
         updates: !cfg!(debug_assertions) && crate::portable_dir().is_none(),
+        always_admin: store.always_admin(),
+        elevated: crate::admin::elevated(),
+        start_cancelled: app
+            .state::<crate::admin::StartNotice>()
+            .0
+            .swap(false, std::sync::atomic::Ordering::Relaxed),
     })
 }
 
@@ -111,7 +134,10 @@ pub fn set(app: &AppHandle, patch: &PrefsPatch) -> Result<Prefs, String> {
         done.map_err(|e| e.to_string())?;
     }
     if let Some(on) = patch.close_to_tray {
-        app.state::<PrefsStore>().set_close_to_tray(on)?;
+        app.state::<PrefsStore>().change(|s| s.close_to_tray = on)?;
+    }
+    if let Some(on) = patch.always_admin {
+        app.state::<PrefsStore>().change(|s| s.always_admin = on)?;
     }
     get(app)
 }
