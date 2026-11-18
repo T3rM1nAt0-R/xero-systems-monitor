@@ -1,22 +1,14 @@
 /* Runners tab: the runner list and the queue (headings and hairlines, no boxes), and the mini window columns. */
 .rlist{display:flex;flex-direction:column}
-.rrow{display:grid;grid-template-columns:minmax(90px,1.2fr) 90px minmax(0,3fr) 80px 70px;gap:var(--sp-10);align-items:center;padding:var(--sp-5) 0;border-top:1px solid var(--line);font-size:var(--fs-12)}
-.rrow.q{grid-template-columns:minmax(0,1fr) auto}
-.rrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rname{display:flex;align-items:center;gap:var(--sp-6);color:var(--fg)}
-.rname i{width:var(--sz-8);height:var(--sz-8);border-radius:50%;background:var(--dim2);flex:none}
-.rname.busy i{background:var(--c-run)}
-.rname.gone i{background:var(--bad)}
-.rst,.rt,.rsz{color:var(--dim)}
-.rt,.rsz{text-align:right}
-.rfoot{display:flex;align-items:center;gap:var(--sp-10);padding-top:var(--sp-6);border-top:1px solid var(--line)}
-@media (max-width:620px){.rrow{grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto}.rrow .rst,.rrow .rsz{display:none}}
+.rrow.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-12);align-items:center;padding:var(--sp-8) 0;border-top:1px solid var(--hair);font-size:var(--fs-12)}
+.rrow.q span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow.q .rt{color:var(--dim)}
 /* Mini window: the machine rows flow into 1, 2 or 3 columns by the window's width */
 .mini .compact{column-count:1;column-gap:var(--sp-10)}
 .mini .compact .crow{break-inside:avoid}
 @media (min-width:480px){.mini .compact{column-count:2}}
 @media (min-width:720px){.mini .compact{column-count:3}}
-/* Runners, flat: three big numbers, one row per runner, a swimlane timeline with a now line, a slim week heatmap and a zebra history table. */
+/* Runners, flat: three big numbers, the queue, a slim week heatmap and a zebra history table. */
 .rstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-16);padding:var(--sp-6) 0 var(--sp-10)}
 .rstats .lbl{display:block}
 .rstats b{display:block;font-size:calc(var(--size-number) * 2.4);font-family:var(--font-number);font-weight:var(--weight-number,500);line-height:1.1;color:var(--fg)}
@@ -24,26 +16,7 @@
 .rstats b.bad{color:var(--bad-text)}
 .rstats b.warn{color:var(--busy)}
 .rstats b.good{color:var(--ok)}
-.tlrange{margin-bottom:var(--sp-6)}
-.rrow{padding:var(--sp-8) 0;border-top:1px solid var(--hair)}
-.rrow:first-child{border-top:0}
-.rname{font-weight:600}
-.rname.busy i{box-shadow:0 0 6px var(--c-run)}
-.rname.gone i{background:var(--bad)}
-.rrow .rst{font-size:var(--fs-12)}
-.rlist:not(.jobs) .rrow:not(.q){grid-template-columns:minmax(90px,1.2fr) minmax(150px,1.6fr) minmax(0,3fr) 80px 70px}
-@media (max-width:620px){.rlist:not(.jobs) .rrow:not(.q){grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto}}
-.rname.idle i{background:var(--ok);opacity:.55}
-.rname.busy i{background:var(--busy);box-shadow:0 0 6px var(--busy)}
 .rres.succeeded{color:var(--ok)}.rres.failed{color:var(--bad-text)}.rres.stopped{color:var(--busy)}.rres.unknown{color:var(--dim)}
-.rrow .rjob{color:var(--fg)}
-.rfoot{border-top:1px solid var(--hair)}
-.jobs .rrow{grid-template-columns:minmax(90px,1.2fr) 90px minmax(0,3fr) 80px}
-@media (max-width:620px){.jobs .rrow{grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto}}
-.tl{gap:0}
-.lane{padding:var(--sp-4) 0}
-.track{height:var(--sz-20);background:none;border:0;border-bottom:1px solid var(--hair);border-right:1px solid var(--acc);border-radius:0}
-.detail .track{height:var(--sz-18)}
 .jb{background:color-mix(in srgb,var(--ok) 85%,transparent);color:var(--on-acc);border-radius:var(--r-3)}
 .jb.run{background:var(--c-run)}
 .jb.bad{background:var(--bad);color:var(--on-acc)}
@@ -59,3 +32,32 @@
 .hitem.head{background:none;color:var(--dim);font-size:var(--fs-10-5);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--hair)}
 .hitem.link:hover{background:color-mix(in srgb,var(--fg) 8%,transparent)}
 .hfilters input,.hfilters select{background:none;border-color:var(--hair)}
+
+/* Runners table: one row per runner with its own timeline lane; every row is the same height and shares one column grid. */
+.rtable{--rt-row:var(--sz-36);--rt-cols:minmax(var(--sp-70),var(--sp-150)) var(--sp-60) minmax(var(--sp-60),var(--sp-200)) var(--sp-60) minmax(var(--sp-100),1fr);display:flex;flex-direction:column}
+.rtable.hassz{--rt-cols:minmax(var(--sp-70),var(--sp-150)) var(--sp-60) minmax(var(--sp-60),var(--sp-200)) var(--sp-60) var(--sp-60) minmax(var(--sp-100),1fr)}
+.rtable.compact{--rt-row:var(--sz-28);--rt-cols:minmax(var(--sp-60),var(--sp-100)) minmax(var(--sp-40),var(--sp-150)) minmax(var(--sp-60),1fr)}
+.rtr{display:grid;grid-template-columns:var(--rt-cols);column-gap:var(--sp-12);align-items:center;height:var(--rt-row);padding:0 var(--sp-4);border-top:1px solid var(--hair);font-size:var(--fs-12);min-width:0}
+.rtr>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rth{height:var(--sz-28);border-top:0;border-bottom:1px solid var(--hair);color:var(--dim);font-size:var(--fs-10-5);letter-spacing:.06em;text-transform:uppercase}
+.rth+.rtr{border-top:0}
+.rtx{height:var(--sz-20);border-top:1px solid var(--hair)}
+.rtx .rtl{grid-column:-2}
+.rtable .rtl{overflow:visible}
+.rtable .rtl .seg{text-transform:none;letter-spacing:0;float:right}
+.rname{display:flex;align-items:center;gap:var(--sp-8);color:var(--fg);font-weight:600}
+.rname span{overflow:hidden;text-overflow:ellipsis}
+.rname i{width:var(--sz-8);height:var(--sz-8);border-radius:50%;background:var(--dim2);flex:none}
+.rname.idle i{background:var(--ok);opacity:.55}
+.rname.busy i{background:var(--busy);box-shadow:0 0 6px var(--busy)}
+.rname.gone i{background:var(--bad)}
+.rst,.rt{color:var(--dim)}
+.rst.busy{color:var(--busy)}
+.rst.gone{color:var(--bad-text)}
+.rt{text-align:right;font-variant-numeric:tabular-nums}
+.rjob{color:var(--fg)}
+.rtlane{position:relative;height:var(--sz-18);border-right:1px solid var(--acc);border-bottom:1px solid var(--hair)}
+.rtable.compact .rtlane{height:var(--sz-14)}
+.rfoot{display:flex;align-items:center;gap:var(--sp-12);padding-top:var(--sp-8);border-top:1px solid var(--hair)}
+@media (max-width:620px){.rtable:not(.compact){--rt-cols:minmax(var(--sp-60),var(--sp-100)) minmax(var(--sp-40),1fr) minmax(var(--sp-80),1.2fr)}.rtable:not(.compact) .rst,.rtable:not(.compact) .rt{display:none}}
+.rtable .xax{margin:0}

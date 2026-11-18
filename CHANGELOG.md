@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: the runner list and the swimlane timeline are now one table: a row per runner (dot, name, Busy / Idle / Offline, current job or "Idle · last job 22 min ago", time in the job) with that runner's own timeline lane filling the rest of the row, one shared 12-hour time axis and the 24 h / 7 d chips in the header. Rows are the same height with aligned columns; on a narrow window the lanes shrink and the job text is cut with an ellipsis. The Overview shows a smaller version with no status or time columns.
+
 ## [0.3.0] - 2026-11-18
 
 - Added: window motion (Full only): at startup the cards and machine tiles cascade in one after another and their big numbers count up from zero; switching between Full, Compact and Mini fades and settles the content; "Fold all" (F) ripples from the top card to the bottom instead of folding everything at once.
