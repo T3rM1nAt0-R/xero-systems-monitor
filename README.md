@@ -29,7 +29,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
 </tr>
 <tr>
-<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>).</td>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all.</td>
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 </table>
@@ -40,6 +40,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 - Docker containers and failed systemd services on remote machines
 - History from 5 minutes to 1 year, stored locally in SQLite
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
+- Your own limits per machine (CPU %, CPU and GPU temperature, disk % and "full in N days"), quiet hours (11 PM to 8 AM by default; pop-ups wait except "machine offline"), and a Mute button on each alert in the Activity drawer
 - Tray icon, autostart
 - Updates itself from GitHub Releases (when you ask it to check)
 
