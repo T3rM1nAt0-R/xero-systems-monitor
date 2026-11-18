@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: a flatter, calmer look. Each machine card is one frosted-glass surface; groups are plain headings with a hairline, graphs sit open with the label and big number above, and colour is used only for data. A soft colourful backdrop shows through the glass. New Customize > Size > Glass setting (Off, Subtle, Full); it also turns off when Windows asks for less transparency.
+
 - Added: the Logs tab: the last 200 system log lines (journalctl on Linux, System and Application events on This PC) with an Errors / Warnings / All filter, a service filter on Linux, a search box and an auto-refresh switch. Container logs open from the chips under the list.
 - Added: the Runners tab is the full runners view: one row per runner (name, status, current job, time in the job), the queue of jobs waiting for this machine's runners, and a "Check work folder sizes" button (over ssh with `du` and a time limit on Linux, walked on This PC); the timeline, last 7 days, busy heatmap and job history sit below. Overview keeps the compact runners block with the timeline. New command `get_work_size`.
 - Added: the mini window can be resized by dragging its edges; its content flows into 1, 2 or 3 columns by width, and the size is remembered (the Fit button forgets it). New command `set_mini_size`.

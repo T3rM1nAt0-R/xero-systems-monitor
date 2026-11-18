@@ -2,6 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { ALL_COLORS, normLook, mergeLook, setPath, getPath, lookToCss, contrast, contrastWarning, parseTheme, exportTheme, normTheme, newId, graphOf, sizeOf } from "../src/theme/model.js";
+test("glass defaults to subtle, is written as data-glass, and is cleaned and merged", () => {
+  assert.equal(lookToCss({}).attrs["data-glass"], "subtle");
+  assert.equal(lookToCss({ glass: "off" }).attrs["data-glass"], "off");
+  assert.equal(normLook({ glass: "melted" }).glass, undefined);
+  assert.equal(mergeLook({ glass: "full" }, {}).glass, "full");
+  assert.equal(mergeLook({ glass: "full" }, { glass: "off" }).glass, "off");
+});
 import { PRESETS, resolveTheme, makeTheme, cleanSaved } from "../src/theme/presets.js";
 import { FONTS, fontStack } from "../src/theme/fonts.js";
 import { seriesPaths } from "../src/theme/graphStyle.js";
@@ -55,10 +62,10 @@ test("lookToCss gives variables, derived colours, text levels, graph and size va
   assert.equal(vars["--crit"], "#ff0000"); assert.equal(vars["--bad"], "#ff0000");
   assert.equal(vars["--font-machine"], '"Lato", system-ui, sans-serif'); assert.equal(vars["--size-machine"], "calc(18px * var(--scale))"); assert.equal(vars["--weight-machine"], "700");
   assert.equal(vars["--line-w"], "3"); assert.equal(vars["--area-op"], "0.3"); assert.equal(vars["--graph-k"], "1.4"); assert.equal(vars["--dens"], "0.85"); assert.equal(vars["--scale"], "1.1");
-  assert.deepEqual(attrs, { "data-grid": "off", "data-limits": "off" });
+  assert.deepEqual(attrs, { "data-grid": "off", "data-limits": "off", "data-glass": "subtle" });
   const plain = lookToCss({}), large = lookToCss({}, { large: true }), both = lookToCss({ size: { scale: 1.5 } }, { large: true });
   assert.equal(plain.vars["--scale"], undefined); assert.equal(large.vars["--scale"], undefined); assert.equal(both.vars["--scale"], "1.74");
-  assert.equal(plain.vars["--area-op"], "0.08"); assert.deepEqual(plain.attrs, { "data-grid": "on", "data-limits": "on" });
+  assert.equal(plain.vars["--area-op"], "0.08"); assert.deepEqual(plain.attrs, { "data-grid": "on", "data-limits": "on", "data-glass": "subtle" });
   assert.equal(lookToCss({ colors: { acc: "#0a0a0a" } }).vars["--on-acc"], "#ffffff");
   assert.equal(lookToCss({ colors: { fg: "#ffffff", dim: "#999999", line: "#222222" } }).vars["--line2"].startsWith("color-mix"), true);
 });

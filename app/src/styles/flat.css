@@ -1,0 +1,47 @@
+/* The flat, glass look. One frosted surface per machine card (plus the header, dock, menus and dialogs); everything inside it is flat:
+   headings with a hairline, graphs sitting open, spacing instead of borders. Colour only for data. Loaded after the other style files so it
+   wins over their older boxed rules. Blur, opacity and sheen are tokens (see "glass" in tokens.css and the Glass setting in Customize). */
+body{background:radial-gradient(60vw 50vh at 8% -5%,var(--blob-a),transparent 70%) fixed,radial-gradient(50vw 45vh at 100% 20%,var(--blob-b),transparent 70%) fixed,radial-gradient(55vw 50vh at 40% 110%,var(--blob-c),transparent 70%) fixed,var(--bg)}
+.glass,.card,.top,.dock,.menu,.dlg,.gpop,.busypop,.xmtip,.drawer,.pal{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat))}
+.card{border:1px solid var(--glass-line);border-left:var(--edge,1px) solid var(--mc,var(--glass-line));border-radius:var(--glass-radius);box-shadow:var(--glass-sheen),var(--glass-shadow);padding:var(--sp-14) var(--sp-16);gap:var(--sp-10)}
+.card.full{padding:var(--sp-12) var(--sp-16);gap:var(--sp-8)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--glass-line))}
+.card.off{background:var(--glass-bg-solid)}
+.top,.dock{border-color:var(--glass-line);box-shadow:var(--glass-sheen)}
+.menu,.dlg,.gpop,.busypop,.xmtip,.drawer,.pal{background:var(--glass-bg-solid);border-color:var(--glass-line);box-shadow:var(--glass-sheen),var(--shadow-menu)}
+.modal{-webkit-backdrop-filter:none;backdrop-filter:none}
+/* flat inside the card: no boxes in boxes */
+.card .panel,.detail .panel{background:none;border:0;border-radius:0;padding:0;box-shadow:none}
+.card .job,.card .track,.card .offbox .last,.card .logtext,.card .termbody,.card .mrow,.card .crow,.card .ptile{background:none;box-shadow:none}
+.card .svcnote,.card .sysnote{background:none;border:0;border-left:2px solid color-mix(in srgb,var(--busy) 70%,transparent);border-radius:0;padding:var(--sp-4) var(--sp-10)}
+.card .chip,.card .fchip{background:none}
+.job{border:0;border-bottom:1px solid var(--hair);border-radius:0;padding:var(--sp-6) 0}
+.track{border:0;border-bottom:1px solid var(--hair);border-radius:0}
+.ptile{border:0;border-radius:0}
+.logtext,.termbody{border-color:var(--hair)}
+/* groups: a plain heading and a hairline */
+.grp{gap:var(--sp-8);padding-top:var(--sp-4)}
+.grp h5{padding-bottom:var(--sp-6);border-bottom:1px solid var(--hair)}
+.grp.shut h5{border-bottom-color:transparent}
+.grp h5::before{display:none}
+.grp h5 span{font-size:var(--size-small)}
+.detail .dgrid{gap:var(--sp-14) var(--sp-18);grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.detail .dgrid,.detail .dgrid.two{column-gap:var(--sp-18)}
+/* graphs sit open: label above, big value below, light grid, no box */
+.detail .ph{gap:0 var(--sp-6);margin-bottom:var(--sp-4);align-items:baseline}
+.detail .ph h4{flex:1 0 100%;font-size:var(--size-small);letter-spacing:.09em;color:var(--dim)}
+.detail .ph h4 button{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+.detail .ph .now{font-size:calc(var(--size-number) * 1.7);line-height:1.15}
+.detail .chart{border-bottom:0}
+.chart .gl{border-top-color:color-mix(in srgb,var(--line) 70%,transparent)}
+.chart .gl span{display:none}
+.detail .chart .thr{border-top-style:dotted}
+.xax{color:var(--dim)}
+/* tabs, bars and controls: neutral chrome, hairlines */
+.tabs{border-bottom-color:var(--hair);margin-bottom:var(--sp-8)}
+.bar{border-bottom-color:var(--hair)}
+.seg{border-color:var(--hair)}
+.svcrow:hover,.trow:hover:not(.head),.prow:hover{background:color-mix(in srgb,var(--fg) 5%,transparent)}
+@media (prefers-reduced-transparency:reduce){.card,.top,.dock{box-shadow:none}}
+/* one group per row, graphs side by side inside it */
+@container (min-width:860px){.tabpanel{display:flex;flex-direction:column}}

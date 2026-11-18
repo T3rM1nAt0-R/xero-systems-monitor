@@ -7,7 +7,7 @@ A small, always-on-top monitor for the machines you own: your Windows PC and the
 [![Platform: Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-informational.svg)](#install)
 [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-orange.svg)](https://tauri.app)
 
-![The main window in the dark theme](docs/screenshots/main.png)
+![The main window in the dark theme: one frosted card per machine, graphs sitting open](docs/screenshots/main.png)
 
 The screenshots show made-up demo data, not a real machine.
 
@@ -26,7 +26,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </tr>
 <tr>
 <td width="50%"><img src="docs/screenshots/compact.png" alt="The compact view"></td>
-<td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
+<td width="50%"><img src="docs/screenshots/light.png" alt="The light theme with frosted glass cards"></td>
 </tr>
 <tr>
 <td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>) you can drag to any size; it shows 1 to 3 columns and remembers its size. Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all. Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
