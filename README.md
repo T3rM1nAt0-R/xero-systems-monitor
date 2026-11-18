@@ -29,7 +29,10 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme with frosted glass cards"></td>
 </tr>
 <tr>
-<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>) you can drag to any size; it shows 1 to 3 columns and remembers its size. Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all. Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
+<td colspan="2" align="center"><img src="docs/screenshots/mini.png" alt="The mini view: one frosted surface, a row per machine with number tiles" width="560"></td>
+</tr>
+<tr>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>) you can drag to any size: one frosted surface, a tight row per machine with CPU, memory, GPU and temperature tiles; it shows 1 to 3 columns and remembers its size. Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all. Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 <tr>

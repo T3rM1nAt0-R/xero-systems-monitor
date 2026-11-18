@@ -4,6 +4,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Fixed: the mini window no longer wanders. Each resize mixed the outer window size (with its frame) and the inner page size, so the window crept and grew a little on every call; it now works on the page size only, moves only to keep its bottom-right corner or to stay on screen, and is resized only when the content height changes by 4 px or more (checked at most every quarter second, never while you drag an edge).
+- Changed: the mini window is redrawn as one frosted surface with a tight row per machine: status dot and name, then CPU, memory, GPU (network speed when there is no GPU) and temperature, each with a big number and a tiny line. An alert chip shows only when something needs a look. The View control is now in the mini window too.
+
 ## [0.3.0] - 2026-11-18
 
 - Added: window motion (Full only): at startup the cards and machine tiles cascade in one after another and their big numbers count up from zero; switching between Full, Compact and Mini fades and settles the content; "Fold all" (F) ripples from the top card to the bottom instead of folding everything at once.
