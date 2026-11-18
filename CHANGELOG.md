@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Fixed: short GPU bursts on Linux machines are no longer missed. The probe now takes four quick GPU samples per check and reports the peak use and peak memory. The history graph keeps the peak (not the average) of GPU and GPU memory when it thins old data, so short peaks stay visible on long ranges. CPU and the other graphs still show averages. This PC reads the GPU once per poll and is unchanged.
+
 ## [0.1.2] - 2026-11-17
 
 - Fixed: the installed app now shows Updates (Check for updates, Update by itself) in the More menu; it was hidden in installed builds and shown only in development runs. The portable copy still hides it.

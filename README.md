@@ -61,7 +61,7 @@ Add a Linux machine in the app by the **SSH host name** from your `~/.ssh/config
 
 - Log in with a key (or an agent). The app never asks for or stores a password, and a prompt would fail the connection.
 - Nothing is installed on the server. The app sends a small shell probe over one long-lived SSH connection. The server only needs a POSIX `sh`.
-- `nvidia-smi` and `docker` are optional: GPU and container cards appear only when the server has them.
+- `nvidia-smi` and `docker` are optional: GPU and container cards appear only when the server has them. GPU use and memory on a server are the peak of a few quick samples per check, and the GPU graphs keep peaks on long ranges, so short bursts show.
 
 Test it first: `ssh your-host true` must work without a prompt.
 
