@@ -1,27 +1,34 @@
 import { useState, useEffect, useRef } from "react";
-import { load, save } from "./store.js";
+import { get, set, subscribe, useSetting } from "./store.js";
 // One folding mechanism for everything that opens and shuts: groups, small sections, whole machine cards.
-// The choice is kept per machine under "col."+id (1 = open, 0 = folded). foldAll() reaches every fold whose id starts with a prefix.
-const EVT = "xm-fold";
+// The choice is kept per machine in the settings store under "col."+id (1 = open, 0 = folded). foldAll() reaches every fold on screen whose id starts with a prefix.
 export const CARD = "card.";   // prefix of every machine card's fold id
-const read = (id, def) => { const v = load("col." + id, null); return v == null ? def : v === 1; };
+const COL = "col.", ASKED = "fold-asked.";
+const mounted = new Map();     // id -> how many folds with that id are on screen
+let asks = 0;
 // `exact` reaches only the fold whose id is the prefix itself (so "srv" does not also reach "srv2").
-export const foldAll = (open, prefix = "", exact = false) => window.dispatchEvent(new CustomEvent(EVT, { detail: { open, prefix, exact } }));
 export const reaches = (id, { prefix, exact }) => exact ? id === prefix : id.startsWith(prefix);
-// Runs `fn(open)` when foldAll() reaches an id that starts with the prefix.
+export function foldAll(open, prefix = "", exact = false) {
+  const ask = { open, prefix, exact };
+  for (const id of mounted.keys()) if (reaches(id, ask)) {
+    set(COL + id, open ? 1 : 0);
+    set(ASKED + id, { open, n: ++asks }, { persist: false });   // lets a card tell "folded by fold all" from "folded by a click"
+  }
+}
+// Runs `fn(open)` when foldAll() reaches this id.
 export function useFoldEvent(id, fn) {
   const f = useRef(fn); f.current = fn;
   useEffect(() => {
-    const on = e => { if (reaches(id, e.detail)) f.current(e.detail.open); };
-    window.addEventListener(EVT, on); return () => window.removeEventListener(EVT, on);
+    let last = get(ASKED + id);
+    return subscribe(ASKED + id, () => { const a = get(ASKED + id); if (a && a !== last) { last = a; f.current(a.open); } });
   }, [id]);
 }
 // [open, flip, set]: a remembered open/shut flag.
 export function useFold(id, def = true) {
-  const [open, setOpen] = useState(() => read(id, def));
-  const set = o => { save("col." + id, o ? 1 : 0); setOpen(o); };
-  useFoldEvent(id, set);
-  return [open, () => set(!open), set];
+  const [v, put] = useSetting(COL + id, null);
+  useEffect(() => { mounted.set(id, (mounted.get(id) || 0) + 1); return () => { const n = (mounted.get(id) || 1) - 1; if (n) mounted.set(id, n); else mounted.delete(id); }; }, [id]);
+  const open = v == null ? def : v === 1, setOpen = o => put(o ? 1 : 0);
+  return [open, () => setOpen(!open), setOpen];
 }
 // Props that make a header a keyboard-friendly button.
 export const foldProps = (open, flip) => ({ role: "button", tabIndex: 0, "aria-expanded": open, onClick: flip, onKeyDown: e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), flip()) });
