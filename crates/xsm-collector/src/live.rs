@@ -4,14 +4,17 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
+use crate::scan::{ScanReply, Scans};
 use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
+use xsm_core::drives::path_ok;
 use xsm_core::forecast::{forecast, Forecast};
 use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
+use xsm_sources::folders::{scan_local, scan_ssh};
 use xsm_sources::ssh::ssh_command;
 use xsm_sources::system::{run_action, run_query, Target};
 use xsm_store::Store;
@@ -35,6 +38,7 @@ pub struct LiveBackend {
     snapshots: Arc<Mutex<Vec<Snapshot>>>,
     machines: Mutex<Vec<MachineConfig>>,
     engine: Mutex<Option<Engine>>,
+    scans: Scans,
 }
 
 fn text(e: impl std::fmt::Display) -> String {
@@ -94,6 +98,7 @@ impl LiveBackend {
             snapshots: Arc::new(Mutex::new(Vec::new())),
             machines: Mutex::new(machines),
             engine: Mutex::new(None),
+            scans: Scans::default(),
         };
         live.begin();
         Ok(live)
@@ -183,6 +188,31 @@ impl Backend for LiveBackend {
 
     fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String> {
         self.with_target(machine, |t| run_action(t, act, name))
+    }
+
+    fn find_big_folders(&self, machine: &str, path: &str) -> Result<u64, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .cloned();
+        let m = found.ok_or_else(|| "That machine is not in the list.".to_owned())?;
+        if !path_ok(path) {
+            return Err("Type a folder path, like / or D:\\.".to_owned());
+        }
+        let path = path.trim().to_owned();
+        Ok(match (m.kind, m.host) {
+            (MachineKind::Ssh, Some(host)) => self.scans.start(move |c| scan_ssh(&host, &path, c)),
+            _ => self.scans.start(move |c| scan_local(&path, c)),
+        })
+    }
+
+    fn get_big_folders(&self, job: u64) -> Result<ScanReply, String> {
+        self.scans.status(job)
+    }
+
+    fn cancel_big_folders(&self, job: u64) -> Result<(), String> {
+        self.scans.cancel(job);
+        Ok(())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

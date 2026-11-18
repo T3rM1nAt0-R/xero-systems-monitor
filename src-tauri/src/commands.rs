@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 30. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 33. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -12,7 +12,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
     Act, Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
-    MachineList, Query, SaveOutcome, State as Readings,
+    MachineList, Query, SaveOutcome, ScanReply, State as Readings,
 };
 use xsm_terminal::Size;
 
@@ -119,6 +119,25 @@ pub async fn system_action(
     name: String,
 ) -> Reply<String> {
     blocking(&backend, move |b| b.system_action(&machine, act, &name)).await
+}
+
+#[tauri::command]
+pub async fn find_big_folders(
+    backend: State<'_, BackendState>,
+    machine: String,
+    path: String,
+) -> Reply<u64> {
+    blocking(&backend, move |b| b.find_big_folders(&machine, &path)).await
+}
+
+#[tauri::command]
+pub async fn get_big_folders(backend: State<'_, BackendState>, job: u64) -> Reply<ScanReply> {
+    backend.0.get_big_folders(job)
+}
+
+#[tauri::command]
+pub async fn cancel_big_folders(backend: State<'_, BackendState>, job: u64) -> Reply<()> {
+    backend.0.cancel_big_folders(job)
 }
 
 #[tauri::command]

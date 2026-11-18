@@ -294,3 +294,54 @@ fn reading_survives_json() {
     let text = serde_json::to_string(&r).unwrap();
     assert_eq!(serde_json::from_str::<Reading>(&text).unwrap(), r);
 }
+
+#[test]
+fn per_core_load_battery_fans_clock_and_gpu_programs() {
+    let r = read_after("hardware_extras.txt", "hardware_extras_before.txt");
+    let cpu = r.cpu.as_ref().unwrap();
+    assert_eq!(cpu.core_ticks.len(), 2);
+    assert_eq!(cpu.core_usage_pct, [50.0, 0.0]);
+    let s = r.sensors.as_ref().unwrap();
+    assert_eq!(s.fans_rpm, [1200.0]); // the stopped fan is left out
+    assert_eq!(s.core_temp_c, [52.0, 55.0]); // the broken 0 C core is dropped
+    assert_eq!(s.cpu_clock_mhz, Some(2400.0));
+    let b = r.battery.as_ref().unwrap();
+    assert!(!b.plugged_in && b.minutes_left == Some(95));
+    close(Some(b.charge_pct), 87.0);
+    let apps = r.gpu_apps.as_ref().unwrap();
+    assert_eq!(apps.len(), 2);
+    let game = (apps[0].name.as_str(), apps[0].vram_bytes, apps[0].processes);
+    assert_eq!(game, ("game", 600 * MIB, 2));
+}
+
+#[test]
+fn extras_that_cannot_be_read_are_skipped_and_gpu_programs_are_kept() {
+    let junk = "BAT x y\nFAN fast\nCTEMP a 1\nCTEMP 0 hot\nMHZ ?\nGPUAPP 1 2\nGPUAPP x 1 n\ncpu0 1 1 1 1 1 0 0 0\ncpuX 1\n";
+    let r = parse_frame(junk, None);
+    assert!(r.battery.is_none() && r.sensors.is_none() && r.cpu.is_none());
+    assert_eq!(r.gpu_apps, Some(vec![]), "asked, nothing readable");
+    let before = read("hardware_extras.txt");
+    let kept = parse_frame("cpu 1 1 1 1 1 0 0 0\n", Some(&before));
+    assert_eq!(kept.gpu_apps.as_ref().map(Vec::len), Some(2));
+    let same = parse_frame(&fixture("hardware_extras.txt"), Some(&before));
+    assert_eq!(
+        same.cpu.unwrap().core_usage_pct,
+        [0.0, 0.0],
+        "no ticks passed"
+    );
+    let none = parse_frame("GPUAPP -\n", Some(&before));
+    assert!(none.gpu_apps.unwrap().is_empty());
+}
+
+#[test]
+fn windows_battery_text() {
+    use xsm_core::parse::parse_windows_battery;
+    let b = parse_windows_battery("87 1 95\r\n").unwrap();
+    assert!(!b.plugged_in && b.minutes_left == Some(95));
+    let on_ac = parse_windows_battery("100 2 71582788").unwrap();
+    assert!(on_ac.plugged_in && on_ac.minutes_left.is_none());
+    assert!(parse_windows_battery("").is_none());
+    assert!(parse_windows_battery("87 x 5").is_none());
+    assert!(parse_windows_battery("87 1").is_none());
+    assert!(parse_windows_battery("x 1 5").is_none());
+}

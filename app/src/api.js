@@ -20,6 +20,10 @@ export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : 
 export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 export const systemQuery = (machine, query) => call("system_query", { machine, query });   // query: "services" | "updates"; resolves to the machine'"'"'s text (parsed by system.js)
 export const systemAction = (machine, act, name = "") => call("system_action", { machine, act, name });   // act: "restart" | "stop" | "start" | "upgrade" | "reboot"; rejects with "needs-password:<command>" when sudo wants a password
+// The biggest-folders search of the Disks tab: start it, ask how far it is, stop it. It only reads.
+export const findBigFolders = (machine, path) => call("find_big_folders", { machine, path });   // resolves to a job number
+export const getBigFolders = job => call("get_big_folders", { job });   // { state: "running", seen } | { state: "done", folders: [{ path, bytes }] } | { state: "cancelled" } | { state: "failed", error }
+export const cancelBigFolders = job => call("cancel_big_folders", { job });
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });

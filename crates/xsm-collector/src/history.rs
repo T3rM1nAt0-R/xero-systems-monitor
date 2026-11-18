@@ -1,6 +1,7 @@
 //! The series the charts draw.
 
 use serde::Serialize;
+use std::collections::BTreeMap;
 
 /// One series: `[unix seconds, value]` pairs, oldest first.
 pub type Series = Vec<(f64, f64)>;
@@ -30,6 +31,8 @@ pub struct History {
     pub ping: Series,
     /// Share of pings lost, percent.
     pub loss: Option<f64>,
+    /// Series that depend on the machine (a read and a write speed per drive), by key.
+    pub extra: BTreeMap<String, Series>,
 }
 
 /// The answer of `get_history`: the series, or `{}` for a machine nobody knows.
@@ -57,6 +60,7 @@ impl From<xsm_store::History> for History {
             up: h.up,
             ping: h.ping,
             loss: h.loss,
+            extra: h.extra,
         }
     }
 }
