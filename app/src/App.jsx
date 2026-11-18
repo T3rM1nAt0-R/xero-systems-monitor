@@ -27,6 +27,7 @@ import useUpdates from "./useUpdates.js";
 import useWindowMode from "./useWindowMode.js";
 import useShortcuts from "./useShortcuts.js";
 import useLook from "./useLook.js";
+import useTrayStatus from "./useTrayStatus.js";
 import { COMPARE } from "./graphTools.js";
 import { publishHistory, setCompare, useCompare } from "./graphView.js";
 
@@ -79,6 +80,7 @@ export default function App() {
   const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
   const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, foldMachines, goMachine, goGroup, look, refresh, pin, compact, alertPrefs, quiet.on, checkNow]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
+  useTrayStatus(ms, limits, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });

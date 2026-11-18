@@ -46,7 +46,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 - Graph tools: drag across a graph to zoom (every graph of that machine follows, double-click to reset), compare with yesterday or last week (dashed copy), open one graph full-window to overlay other machines, save a graph as a picture or CSV
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
 - Your own limits per machine (CPU %, CPU and GPU temperature, disk % and "full in N days"), quiet hours (11 PM to 8 AM by default; pop-ups wait except "machine offline"), and a Mute button on each alert in the Activity drawer
-- Tray icon, autostart
+- Tray icon with a status dot (green all calm, amber something needs a look, red a machine is offline or a job or container failed) and a hover text like "3 calm, 1 needs a look · CPU 23%"; autostart
 - Updates itself from GitHub Releases (when you ask it to check)
 
 Windows first. Linux and macOS later.

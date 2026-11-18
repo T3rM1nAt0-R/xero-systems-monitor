@@ -27,6 +27,7 @@ export const setPrefs = patch => call("set_prefs", { patch });
 export const windowMode = mode => call("set_window_mode", { mode });   // "mini" | "full" | "compact"
 export const setPinned = on => call("set_pinned", { on });
 export const setTheme = theme => call("set_theme", { theme });   // "light" | "dark"
+export const setTrayStatus = (status, tooltip) => call("set_tray_status", { status, tooltip });   // "calm" | "look" | "bad"
 export const setMiniHeight = height => call("set_mini_height", { height });
 // Updates and life cycle
 export const checkForUpdates = () => call("check_for_updates");
