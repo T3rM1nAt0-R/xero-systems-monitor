@@ -45,7 +45,12 @@
 @keyframes loadslide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 
+/* Motion setting: Off stops every animation and transition; Subtle shortens them and hides the decorative bits (.fx) */
+html[data-motion="off"] *,html[data-motion="off"] *::before,html[data-motion="off"] *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important}
+html[data-motion="off"] .loadbar i,html[data-motion="off"] .panel.skel .chart::after{animation:none!important}
+html[data-motion="subtle"]{--dur:120ms}
+html[data-motion="subtle"] .fx{display:none}
 @media (prefers-reduced-motion:reduce){
   .collapse,.tabs button,.grp h5 .pin,.loadbar{transition:none}
-  .tabpanel,.menu,.busypop,.dlg,.modal,.loadbar i,.panel.skel .chart::after{animation:none}
+  .tabpanel,.menu,.busypop,.dlg,.modal,.loadbar i,.panel.skel .chart::after,.chart path.cmp,.card.edge-glow::after{animation:none}
 }

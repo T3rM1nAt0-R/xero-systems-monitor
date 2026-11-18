@@ -9,6 +9,7 @@ import "./styles/sections.css";
 import "./styles/compact.css";
 import "./styles/menus.css";
 import "./styles/motion.css";
+import "./styles/chartfx.css";
 import "./styles/customize.css";
 import "./styles/view.css";
 import "./styles/system.css";
