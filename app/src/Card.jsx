@@ -4,6 +4,7 @@ import GroupsMenu from "./GroupsMenu.jsx";
 import { GroupLayout, useGroupPrefs } from "./groupPrefs.js";
 import { groupsFor } from "./order.js";
 import { useMachineSettings } from "./machineSettings.js";
+import { tint } from "./theme/tint.js";
 import CardBar from "./CardBar.jsx";
 import { useCardFold, foldProps } from "./fold.js";
 import { isCalm } from "./calm.js";
@@ -20,14 +21,14 @@ function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto,
   const head = flat ? {} : { ...foldProps(isOpen, flip), className: "chead fold" };
   const chev = !flat && <b className="chev">{isOpen ? "▾" : "▸"}</b>;
   if (off) return (
-    <article className={"card off" + (isOpen ? "" : " folded")} id={"m-" + m.name}>
+    <article className={"card off" + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
       <div className="chead" {...head}>{chev}<i className="dot off" /><h3>{m.name}</h3><span className="state">Offline{lastOk ? ` since ${hm(lastOk)}` : ""}</span><button className="open" onClick={e => { e.stopPropagation(); open(m.name); }}>Open</button></div>
       {isOpen && <div className="offbox"><strong>Can&apos;t reach {m.name}</strong><span>{lastOk ? `Last heard from at ${hm(lastOk)}. ` : ""}It may be restarting, or the network dropped.</span>
         {m.d && <div className="last">{d.cpu != null && <span>Last seen: CPU {d.cpu.toFixed(0)}%</span>}{d.temp != null && <span>{d.temp.toFixed(0)}°C</span>}{d.ram_gb && <span>Memory {gb(d.ram_gb[0])} / {d.ram_gb[1].toFixed(0)} GB</span>}</div>}
         <button onClick={() => onTry(m.name)}>Try again now</button><small>Checking again automatically every few seconds.</small></div>}
     </article>);
   return (
-    <article className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name}>
+    <article className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
       <div className="chead" {...head}>{chev}<i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
         {isOpen && d.uptime != null && <span className="up">{upLine(d.uptime, now)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed for updates</span>}
         {isOpen ? <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span> : <CardBar d={d} h={h} bad={bad} limits={limits} />}{isOpen && <GroupsMenu name={m.name} g={groups} set={setGroups} avail={groupsFor(d, h)} />}</div>

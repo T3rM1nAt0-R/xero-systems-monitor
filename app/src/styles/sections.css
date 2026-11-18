@@ -97,7 +97,7 @@
 .nrow b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nrow .meter{min-width:0}
 .nrow span:nth-child(3){text-align:right;font-variant-numeric:tabular-nums}
-.fsub>h4{display:flex;align-items:baseline;gap:var(--sp-6);margin:var(--sp-8) 0 var(--sp-4);font-size:var(--size-group);font-family:var(--font-group);letter-spacing:.12em;text-transform:uppercase;color:var(--mid);font-weight:600;cursor:pointer;user-select:none}
+.fsub>h4{display:flex;align-items:baseline;gap:var(--sp-6);margin:var(--sp-8) 0 var(--sp-4);font-size:var(--size-group);font-family:var(--font-group);letter-spacing:.12em;text-transform:uppercase;color:var(--mid);font-weight:var(--weight-group,600);cursor:pointer;user-select:none}
 .fsub>h4:hover{color:var(--fg)}
 .fsub>h4 .chev{font-weight:400;color:var(--dim);width:var(--sz-10);display:inline-block;font-size:var(--fs-11)}
 .fsub>h4 em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:var(--fs-12);color:var(--dim)}

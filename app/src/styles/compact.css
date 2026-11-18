@@ -19,7 +19,7 @@
 .cjobs i{font-style:normal;margin-right:var(--sp-4)}
 .cbody{padding:0 var(--sp-8) var(--sp-8)}
 .cbody .card{margin:0}
-.tile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border-radius:var(--r-9);background:var(--s1);border-color:var(--line);color:var(--acc);flex:0 0 auto;width:var(--sz-276);min-width:0;max-width:100%;height:var(--sz-56);box-sizing:border-box;justify-content:center;gap:var(--sp-3);padding:var(--sp-5) var(--sp-10)}
+.tile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border-radius:var(--r-9);background:var(--s1);border-color:var(--line);border-left:var(--edge,1px) solid var(--mc,var(--line));color:var(--mc,var(--acc));flex:0 0 auto;width:var(--sz-276);min-width:0;max-width:100%;height:var(--sz-56);box-sizing:border-box;justify-content:center;gap:var(--sp-3);padding:var(--sp-5) var(--sp-10)}
 .tile .th{display:flex;align-items:center;gap:var(--sp-6);color:var(--fg);max-width:100%}
 .tile .th b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile .tn{display:flex;color:var(--fg);flex-wrap:nowrap;gap:0 var(--sp-6);font-size:var(--fs-11-5);white-space:nowrap;min-width:0}

@@ -16,6 +16,7 @@ import { hm } from "./format.js";
 import { memoLimitsFor, tidyLimits } from "./limits.js";
 import { DEFAULT_QUIET, mute, unmute } from "./quiet.js";
 import Limits from "./Limits.jsx";
+import Customize from "./customize/Customize.jsx";
 import { DEFAULT_PREFS } from "./alerts.js";
 import { unseenFailures } from "./events.js";
 import { RANGES, snapRange, SHORT, KEYS, NONE, NO_HOT } from "./consts.js";
@@ -41,7 +42,7 @@ export default function App() {
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
   const { upd, fail, busy, act, apply, checkNow, ready, ver, restart } = useUpdates(auto);
-  const [menu, setMenu] = useState(false), [pal, setPal] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
+  const [menu, setMenu] = useState(false), [pal, setPal] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [custDlg, setCustDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
   const [expanded, setExpanded] = useState(() => new Set()), [evSeen, setEvSeen] = useState(() => load("evseen", 0));
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
@@ -78,7 +79,7 @@ export default function App() {
     goMachine(n); setTimeout(() => revealGroup(n + "." + k), 120);
   }, [goMachine]);
   const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
-  const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, hist, foldMachines, goMachine, goGroup, look, pin, compact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, setCompact, toggleMini, setQuiet, setSnoozeUntil]);
+  const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), onCustomize: () => setCustDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, hist, foldMachines, goMachine, goGroup, look, pin, compact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, setCompact, toggleMini, setQuiet, setSnoozeUntil]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
   useTrayStatus(ms, limitsOf, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
@@ -119,13 +120,14 @@ export default function App() {
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
         {upd && !ready && <button className="cta" disabled={!!busy} onClick={apply}>{busy === "u" ? "Updating…" : "Update available"}</button>}
         <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
-          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCheck={checkNow}
+          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCustomize={() => setCustDlg(true)} onCheck={checkNow}
           onMachines={() => setDlg(true)} onHelp={() => setHelp(true)} onMini={toggleMini} onRestart={() => act("r", () => api.restartCollector())}
           onStop={() => window.confirm("Stop everything? The monitor and its collector will close until you open it again.") && act("s", () => api.stopEverything())} />
       </div>
       </div>
       {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
+      {custDlg && <Customize c={look.custom} names={ms.map(m => m.name)} onClose={() => setCustDlg(false)} />}
       {dlg && <Machines onClose={() => setDlg(false)} />}
       {help && <div className="modal" onClick={() => setHelp(false)}><div className="dlg" onClick={e => e.stopPropagation()}><h3>Keyboard shortcuts</h3>{KEYS.map(([k, t]) => <div className="mrow" key={k}><kbd>{k}</kbd><span>{t}</span></div>)}<div className="mfoot"><button className="cta" onClick={() => setHelp(false)}>Close</button></div></div></div>}
     </div>

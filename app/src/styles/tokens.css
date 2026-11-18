@@ -23,7 +23,7 @@
   --font-machine: var(--font-ui); --font-group: var(--font-ui); --font-section: var(--font-ui);
   --font-number: var(--font-ui); --font-label: var(--font-ui); --font-small: var(--font-ui);
   /* text scale: 1 is normal, the Large text setting raises it */
-  --scale: 1;
+  --scale: 1; --dens: 1; --graph-k: 1; --line-w: 2; --area-op: .08;
   --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
   --size-number: calc(16px * var(--scale)); --size-label: calc(13px * var(--scale)); --size-small: calc(11px * var(--scale));
   /* font sizes */
@@ -39,26 +39,26 @@
   --fs-15: calc(15px * var(--scale));
   --fs-20: calc(20px * var(--scale));
   /* spacing */
-  --sp-1: calc(1px * var(--scale));
-  --sp-2: calc(2px * var(--scale));
-  --sp-3: calc(3px * var(--scale));
-  --sp-4: calc(4px * var(--scale));
-  --sp-5: calc(5px * var(--scale));
-  --sp-6: calc(6px * var(--scale));
-  --sp-7: calc(7px * var(--scale));
-  --sp-8: calc(8px * var(--scale));
-  --sp-9: calc(9px * var(--scale));
-  --sp-10: calc(10px * var(--scale));
-  --sp-11: calc(11px * var(--scale));
-  --sp-12: calc(12px * var(--scale));
-  --sp-14: calc(14px * var(--scale));
-  --sp-16: calc(16px * var(--scale));
-  --sp-18: calc(18px * var(--scale));
-  --sp-30: calc(30px * var(--scale));
-  --sp-32: calc(32px * var(--scale));
-  --sp-40: calc(40px * var(--scale));
-  --sp-70: calc(70px * var(--scale));
-  --sp-150: calc(150px * var(--scale));
+  --sp-1: calc(1px * var(--scale) * var(--dens));
+  --sp-2: calc(2px * var(--scale) * var(--dens));
+  --sp-3: calc(3px * var(--scale) * var(--dens));
+  --sp-4: calc(4px * var(--scale) * var(--dens));
+  --sp-5: calc(5px * var(--scale) * var(--dens));
+  --sp-6: calc(6px * var(--scale) * var(--dens));
+  --sp-7: calc(7px * var(--scale) * var(--dens));
+  --sp-8: calc(8px * var(--scale) * var(--dens));
+  --sp-9: calc(9px * var(--scale) * var(--dens));
+  --sp-10: calc(10px * var(--scale) * var(--dens));
+  --sp-11: calc(11px * var(--scale) * var(--dens));
+  --sp-12: calc(12px * var(--scale) * var(--dens));
+  --sp-14: calc(14px * var(--scale) * var(--dens));
+  --sp-16: calc(16px * var(--scale) * var(--dens));
+  --sp-18: calc(18px * var(--scale) * var(--dens));
+  --sp-30: calc(30px * var(--scale) * var(--dens));
+  --sp-32: calc(32px * var(--scale) * var(--dens));
+  --sp-40: calc(40px * var(--scale) * var(--dens));
+  --sp-70: calc(70px * var(--scale) * var(--dens));
+  --sp-150: calc(150px * var(--scale) * var(--dens));
   /* radii */
   --r-1: calc(1px * var(--scale));
   --r-2: calc(2px * var(--scale));
