@@ -13,7 +13,9 @@ The screenshots show made-up demo data, not a real machine.
 
 ## Features
 
-One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub Actions self-hosted runner jobs and Docker containers, with history you can scroll back through.
+One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub Actions self-hosted runner jobs and Docker containers, with history you can scroll back through. The window has its own slim title bar (View, More and the window buttons in one place; drag it to move, double-click to maximise) and thin scrollbars that only show while you scroll.
+
+![The slim title bar with View, More and the window buttons](docs/screenshots/titlebar.png)
 
 <table>
 <tr>

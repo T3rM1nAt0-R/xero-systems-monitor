@@ -2,11 +2,14 @@ import { useRef, useState } from "react";
 import { BACKGROUNDS, GLASS_LEVELS, IMAGE_MAX, valueOf } from "../theme/model.js";
 import { fullColors } from "../theme/css.js";
 import { readPicture } from "../theme/os.js";
+import { useMicaSetting } from "../useMica.js";
+import { usePersisted } from "../store.js";
 import { Row, Range, Seg, Toggle } from "./controls.jsx";
 // Surfaces: glass, its tint, the window background (solid, gradient or a picture from disk), grain, and matching Windows.
 export default function SurfacesSection({ c }) {
   const v = f => valueOf(c.look, "surface." + f), set = f => x => c.edit(["surface", f], x), file = useRef(null), [msg, setMsg] = useState("");
   const choose = async f => { if (!f) return; setMsg("Reading the picture..."); const url = await readPicture(f, IMAGE_MAX); setMsg(url ? "" : "That picture could not be used (too big or not a picture)."); if (url) c.editMany([["surface.image", url], ["surface.bg", "image"]]); };
+  const [mica, setMica] = useMicaSetting(), [micaState] = usePersisted("micaState", "off");
   return (
     <>
       <Row id="surface.glass" label="Glass" keys="frosted blur transparent flat" c={c} hint="Frosted cards, menus and bars. Off is plain and flat. It also turns off by itself when Windows asks for less transparency.">
@@ -21,5 +24,7 @@ export default function SurfacesSection({ c }) {
       <Row id="surface.grain" label="Grain" keys="noise film texture" c={c}><Range value={v("grain")} min={0} max={100} label="Grain" ends={["None", "Heavy"]} show={x => (x ? x + "%" : "Off")} onChange={set("grain")} /></Row>
       <Row id="surface.os" label="Match Windows" keys="system accent dark light follow os windows" c={c} hint="Follow the system dark or light setting, and use the system accent colour where the window can read it.">
         <Toggle on={v("os")} onChange={x => c.edit(["surface", "os"], x)} label="Match Windows" /></Row>
+      <Row id="surface.mica" label="Mica behind glass" keys="mica backdrop windows 11 transparent blur" c={null} hint={micaState === "unsupported" ? "Windows could not draw it here (it needs Windows 11), so the window stays solid." : "Let the Windows 11 backdrop show through the glass. Needs Windows 11; anywhere else the window stays solid."}>
+        <Toggle on={mica} onChange={setMica} label="Mica behind glass" /></Row>
     </>);
 }

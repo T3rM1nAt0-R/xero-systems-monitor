@@ -1,7 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "What the window may do. Its data commands are app commands; the plugins and tray are driven from Rust, so the window gets no plugin permission.",
+  "description": "What the window may do. Its data commands are app commands; the plugins and tray are driven from Rust, so the window gets no plugin permission. The only window permissions are the ones its own title bar needs (drag, minimise, maximise, close).",
   "windows": ["main"],
-  "permissions": ["core:event:allow-listen", "core:event:allow-unlisten"]
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-internal-toggle-maximize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-is-maximized",
+    "core:window:allow-close"
+  ]
 }

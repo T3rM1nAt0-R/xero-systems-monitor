@@ -19,6 +19,9 @@
         "minWidth": 360,
         "minHeight": 400,
         "visible": false,
+        "decorations": false,
+        "shadow": true,
+        "transparent": true,
         "backgroundColor": "#07080b"
       }
     ],

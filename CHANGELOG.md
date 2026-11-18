@@ -13,6 +13,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 - Fixed: Soft, Blueprint and a picture background are built from the theme's own colours, so they work on light themes (Blueprint keeps its grid, Soft no longer shows grey smudges, a picture is no longer always darkened), and Glass Off now removes the glass edge line on Terminal and Blueprint too.
 - Changed: Density options are Tight, Comfortable and Roomy, so they are no longer confused with the Compact view.
 - Fixed: Revert now returns everything to the theme, and Undo and Redo keep this session's steps after you close the panel (the tooltip says so).
+- Added: a slim custom title bar. The system frame is off; the top bar is now the title bar (drag it to move, double-click to maximise) with View and More moved up into it and Windows-style minimise, maximise / restore and close buttons (close hover is red; Close still hides to the tray when that is on). The mini window shows only Close. The window only gets the permissions its title bar needs.
+- Added: thin overlay-style scrollbars in the theme colours everywhere (window, menus, tables, logs, terminal): nearly invisible when idle, shown while scrolling, wider under the pointer. They respect the Motion setting.
+- Added: Customize Surfaces "Mica behind glass" (off by default, Windows 11 only): new command `set_mica`. If Windows cannot draw it the window stays solid.
 
 ## [0.4.0] - 2026-11-19
 

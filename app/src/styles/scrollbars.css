@@ -1,0 +1,16 @@
+/* Thin overlay-style scrollbars in the theme colours. Nearly invisible while nothing moves, visible while scrolling (useScrollbars.js sets data-scrolling),
+   and fatter under the pointer. The WebView is Chromium, so ::-webkit-scrollbar does the work; the standard properties are only the fallback, because
+   Chromium ignores ::-webkit-scrollbar wherever scrollbar-width or scrollbar-color is set. */
+::-webkit-scrollbar{width:var(--sz-14);height:var(--sz-14)}
+::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-thumb{background-color:transparent;background-clip:padding-box;border:var(--sz-4) solid transparent;border-radius:var(--r-99);min-height:var(--sz-32);transition:background-color var(--dur) var(--ease),border-width var(--dur) var(--ease)}
+:hover::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--dim2) 35%,transparent)}
+[data-scrolling]::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--dim) 60%,transparent)}
+::-webkit-scrollbar-thumb:hover{background-color:var(--dim);border-width:var(--sz-3)}
+::-webkit-scrollbar-thumb:active{background-color:var(--acc);border-width:var(--sz-3)}
+html[data-motion="off"] ::-webkit-scrollbar-thumb{transition:none}
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:var(--dim2) transparent}}
+/* The terminal draws its own scrollbar (xterm), so it gets the same look. */
+.xterm .xterm-scrollable-element>.scrollbar>.slider{background:color-mix(in srgb,var(--dim2) 35%,transparent);border-radius:var(--r-99)}
+.xterm .xterm-scrollable-element>.scrollbar>.slider:hover{background:var(--dim)}
+.xterm .xterm-scrollable-element>.scrollbar>.slider.active{background:var(--acc)}

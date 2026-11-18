@@ -1,10 +1,11 @@
-//! The commands of `docs/window-api.md`, exactly 39. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 40. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
 
 use crate::frame::{self, Mode};
 use crate::links;
+use crate::mica;
 use crate::prefs::{self, Prefs, PrefsPatch};
 use crate::terminal::{self, Terminals};
 use crate::updates::{self, Build, Pending};
@@ -205,6 +206,11 @@ pub fn set_window_mode(app: AppHandle, mode: Mode) -> Reply<Mode> {
 #[tauri::command]
 pub fn set_pinned(app: AppHandle, on: bool) -> Reply<bool> {
     frame::set_pinned(&app, on)
+}
+
+#[tauri::command]
+pub fn set_mica(app: AppHandle, on: bool) -> Reply<bool> {
+    mica::set(&app, on)
 }
 
 #[tauri::command]
