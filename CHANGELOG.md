@@ -4,6 +4,10 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: a slim custom title bar. The system frame is off; the top bar is now the title bar (drag it to move, double-click to maximise) with View and More moved up into it and Windows-style minimise, maximise / restore and close buttons (close hover is red; Close still hides to the tray when that is on). The mini window shows only Close. The window only gets the permissions its title bar needs.
+- Added: thin overlay-style scrollbars in the theme colours everywhere (window, menus, tables, logs, terminal): nearly invisible when idle, shown while scrolling, wider under the pointer. They respect the Motion setting.
+- Added: Customize Surfaces "Mica behind glass" (off by default, Windows 11 only): new command `set_mica`. If Windows cannot draw it the window stays solid.
+
 ## [0.4.0] - 2026-11-19
 
 - Added: Customize Shape: style families Rounded (today), Sharp / Metro, Terminal (monospace, green on black, optional scanlines drawn as one static gradient), Soft (raised, neumorphic shadows) and Blueprint (blue grid paper, white lines); a corner radius slider from sharp to pill; borders none, hairline or bold; shadow depth.

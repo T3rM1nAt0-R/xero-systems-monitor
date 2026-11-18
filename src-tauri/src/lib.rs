@@ -4,6 +4,7 @@
 mod commands;
 mod frame;
 mod links;
+mod mica;
 mod mini_rect;
 mod prefs;
 mod terminal;
@@ -114,6 +115,7 @@ pub fn run() {
             commands::set_window_mode,
             commands::set_pinned,
             commands::set_theme,
+            commands::set_mica,
             commands::set_tray_status,
             commands::set_mini_height,
             commands::check_for_updates,

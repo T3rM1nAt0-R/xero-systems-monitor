@@ -11,6 +11,9 @@ import Machines from "./Machines.jsx";
 import Strip from "./Strip.jsx";
 import LoadBar from "./LoadBar.jsx";
 import Palette from "./Palette.jsx";
+import WindowButtons from "./WindowButtons.jsx";
+import useScrollbars from "./useScrollbars.js";
+import useMica from "./useMica.js";
 import ViewControl from "./ViewControl.jsx";
 import HiddenMachines from "./HiddenMachines.jsx";
 import { showStrip, fitsWindow, visibleMachines, hideName, showName } from "./view.js";
@@ -52,6 +55,7 @@ export default function App() {
   useEffect(() => publishHistory(hist), [hist]);
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
+  useScrollbars(); useMica();
   const { upd, fail, busy, act, apply, checkNow, ready, ver, restart } = useUpdates(auto);
   const [menu, setMenu] = useState(false), [pal, setPal] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [custDlg, setCustDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
   const [expanded, setExpanded] = useState(() => new Set()), [evSeen, setEvSeen] = useState(() => load("evseen", 0));
@@ -110,13 +114,18 @@ export default function App() {
   return (
     <div data-look="colors.bg" className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
-      <div data-look="shape.family" className="bar top">
-        {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
-        <span className="live"><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
-        <span className="grow" />
-        {!effCompact && <span className="live hide-s clock"><Clock /></span>}
+      <div data-look="shape.family" className="bar top" data-tauri-drag-region>
+        {!effCompact && <span className="brand" data-tauri-drag-region><b>XERO</b> SYSTEMS MONITOR</span>}
+        <span className="live" data-tauri-drag-region><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
+        <span className="grow" data-tauri-drag-region />
+        {!effCompact && <span className="live hide-s clock" data-tauri-drag-region><Clock /></span>}
         {<ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
         {mini && miniSize && <button onClick={forgetMini} data-tip="Forget the size you dragged; fit the content again">Fit</button>}
+        <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
+          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCustomize={() => setCustDlg(true)} onCheck={checkNow}
+          onMachines={() => setDlg(true)} onHelp={() => setHelp(true)} onMini={toggleMini} onRestart={() => act("r", () => api.restartCollector())}
+          onStop={() => act("s", () => api.stopEverything())} />
+        <WindowButtons mini={mini} />
       </div>
 
       {err && state && <div className="stalebar" role="status"><b>Collector not answering since {hm(stamp / 1000)}.</b> Showing the last numbers it sent; they are not live. Retrying every few seconds.<button onClick={retry}>Try now</button></div>}
@@ -140,10 +149,6 @@ export default function App() {
         <span className="grow" />
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
         {upd && !ready && <button className="cta" disabled={!!busy} onClick={apply}>{busy === "u" ? "Updating…" : "Update available"}</button>}
-        <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
-          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCustomize={() => setCustDlg(true)} onCheck={checkNow}
-          onMachines={() => setDlg(true)} onHelp={() => setHelp(true)} onMini={toggleMini} onRestart={() => act("r", () => api.restartCollector())}
-          onStop={() => act("s", () => api.stopEverything())} />
       </div>
       </div>
       <Toasts />

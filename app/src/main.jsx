@@ -27,6 +27,8 @@ import "./styles/runners.css";
 import "./styles/flat.css";
 import "./styles/stylefx.css";
 import "./styles/mini.css";
+import "./styles/scrollbars.css";
+import "./styles/titlebar.css";
 import { installTips } from "./tooltip.js";
 installTips();
 createRoot(document.getElementById("root")).render(<App />);
