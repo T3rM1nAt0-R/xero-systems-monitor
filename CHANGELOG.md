@@ -4,6 +4,10 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: drag across a graph to zoom all of that machine's graphs; double-click or "Reset zoom" returns.
+- Added: a "Compare" choice in the bottom bar (off / yesterday / last week) draws a faint dashed copy of each graph from the earlier time.
+- Added: click a graph title to open it full-window and overlay the same metric from other machines (Esc closes).
+- Added: each graph can be saved as a picture (PNG) or its numbers as a CSV file (local 12-hour times).
 - Added: containers on remote machines have Restart, Stop or Start (asks first) and Logs (last 50 lines, with Refresh and Copy).
 - Uptime and restart status: each machine card shows how long it has been on and when it last restarted, and "Restart needed for updates" in amber when the system says so (Debian and Ubuntu over ssh, and Windows on This PC). Other systems show no restart line.
 - Fixed: short GPU bursts on Linux machines are no longer missed. The probe now takes four quick GPU samples per check and reports the peak use and peak memory. The history graph keeps the peak (not the average) of GPU and GPU memory when it thins old data, so short peaks stay visible on long ranges. CPU and the other graphs still show averages. This PC reads the GPU once per poll and is unchanged.

@@ -6,7 +6,7 @@ import { isCalm } from "./calm.js";
 import { gb, upLine, restartWhy, isWarn, hm, hotMin, WATCH } from "./format.js";
 const GENERIC = /^(system product name|to be filled|default string|not specified|unknown|none|o\.?e\.?m)/i;
 const hwLine = d => d.hw && [GENERIC.test(d.hw.board || "") ? "" : d.hw.board, d.hw.os].filter(Boolean).join(" · ");
-function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, limits, auto, flat, onOpen: open, onTry }) {
+function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto, flat, onOpen: open, onTry }) {
   const d = m.d || {};
   const off = !!m.err;
   const warnings = WATCH.filter(k => !off && isWarn(k, d[k], limits));
@@ -27,7 +27,7 @@ function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, limits, auto, fla
       <div className="chead" {...head}>{chev}<i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
         {isOpen && d.uptime != null && <span className="up">{upLine(d.uptime, now)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed for updates</span>}
         {isOpen ? <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span> : <CardBar d={d} h={h} bad={bad} limits={limits} />}</div>
-      {isOpen && <MachineBody limits={limits} m={m} h={h} rows={rows} fc={fc} range={range} now={now} gone={gone} />}
+      {isOpen && <MachineBody limits={limits} m={m} h={h} h2={h2} rows={rows} fc={fc} range={range} now={now} gone={gone} />}
     </article>
   );
 }
