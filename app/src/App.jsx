@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import StatusDot from "./StatusDot.jsx";
+import useFlip from "./useFlip.js";
+import Toasts from "./Toasts.jsx";
 import Card from "./Card.jsx";
 import Compact from "./Compact.jsx";
 import ActivityDrawer from "./ActivityDrawer.jsx";
@@ -101,13 +104,15 @@ export default function App() {
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms: vms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });
 
+  const gridRef = useRef(null);
+  useFlip(gridRef, vms.map(m => m.name).join("|"));   // cards glide when they are reordered, hidden or shown
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
       <div className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
-        <span className="live"><i className={"dot" + (err ? " off" : "")} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
+        <span className="live"><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" />
         {!effCompact && <span className="live hide-s clock"><Clock /></span>}
         {!mini && <ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
@@ -116,12 +121,13 @@ export default function App() {
 
       {err && state && <div className="stalebar" role="status"><b>Collector not answering since {hm(stamp / 1000)}.</b> Showing the last numbers it sent; they are not live. Retrying every few seconds.<button onClick={retry}>Try now</button></div>}
       {!state && <div className="empty">{err ? <>Waiting for the collector…<small>{err}</small></> : "Loading…"}</div>}
+      {!state && !err && <div className="card skelcard" aria-busy="true" aria-label="Loading"><div className="skelrows"><i /><i /><i /><i /><i /></div></div>}
 
 
       {state && !effCompact && <div className={"stripwrap" + (stripOn ? " open" : "")} aria-hidden={!stripOn}><div><Strip ms={stripOrder(vms, localName)} hist={hist} lastOk={lastOk} onHide={hideMachine} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} /></div></div>}
       {state && !!ms.length && !vms.length && <div className="empty">All machines are hidden.<small><button onClick={() => setHidDlg(true)}>Hidden machines…</button></small></div>}
       {state && effCompact && <Compact limitsOf={limitsOf} ms={vms} now={now} lastOk={lastOk} hot={hot} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
-      {state && !effCompact && <main className="grid" onPointerDown={dragProps}>{vms.map(card)}</main>}
+      {state && !effCompact && <main className="grid" ref={gridRef} onPointerDown={dragProps}>{vms.map(card)}</main>}
 
       <div className="dock" hidden={mini} onClick={e => e.stopPropagation()}>
       {showEv && <ActivityDrawer events={log} muted={muted} onMute={onMute} onClose={closeEv} />}
@@ -136,9 +142,10 @@ export default function App() {
         <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
           auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCustomize={() => setCustDlg(true)} onCheck={checkNow}
           onMachines={() => setDlg(true)} onHelp={() => setHelp(true)} onMini={toggleMini} onRestart={() => act("r", () => api.restartCollector())}
-          onStop={() => window.confirm("Stop everything? The monitor and its collector will close until you open it again.") && act("s", () => api.stopEverything())} />
+          onStop={() => act("s", () => api.stopEverything())} />
       </div>
       </div>
+      <Toasts />
       {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
       {custDlg && <Customize c={look.custom} names={ms.map(m => m.name)} onClose={() => setCustDlg(false)} />}

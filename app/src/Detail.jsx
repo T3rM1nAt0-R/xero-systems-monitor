@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { flyTo } from "./fly.js";
 import { ZoomChip } from "./GraphTools.jsx";
 import { useZoom } from "./graphView.js";
 import { setJobsAt } from "./hoverGroup.js";
@@ -13,6 +14,7 @@ import { availableTabs, effectiveTab, tabParts } from "./sections/tabs.js";
 import { useMachineSettings, togglePinned } from "./machineSettings.js";
 import { graphShown, graphClass } from "./graphPrefs.js";
 import { autoMarks } from "./marks.js";
+import { svcFacts } from "./sections/meta.js";
 import { unusualNow, UNUSUAL_KEYS } from "./unusual.js";
 import useWeek from "./useWeek.js";
 import OutageStrip from "./OutageStrip.jsx";
@@ -41,11 +43,11 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
   return (
     <div className="detail">
       <ZoomChip machine={m.name} span={zoom} />
-      <Tabs tabs={availableTabs(m, h, tab)} tab={tab} onTab={t => patch({ tab: t })} base={base} />
+      <Tabs tabs={availableTabs(m, h, tab)} tab={tab} onTab={t => patch({ tab: t })} base={base} badges={{ services: svcFacts(m).bad, runners: gone.length }} />
       {tab === "overview" && <OutageStrip machine={m.name} events={events} pts={week?.cpu || NONE} now={now} offNow={!!m.err} span={settings.strip} onSpan={strip => patch({ strip })} />}
       <div className="tabpanel" key={tab} role="tabpanel" id={panelId(base)} aria-labelledby={tabId(base, tab)}>
         {tabParts(tab, m, h, settings.pinned).map(([id, view]) => { const s = SECTIONS.find(z => z.id === id); return (
-          <Grp key={id} id={m.name + "." + id} color={`var(${s.accent(m)})`} title={s.title} sub={s.sub(m, x)} summary={s.summary(m, x)} spark={s.spark ? P(s.spark) : undefined} def={s.def} cls={s.cls} pinned={settings.pinned.includes(id)} onPin={() => patch({ pinned: togglePinned(settings, id).pinned })}>
+          <Grp key={id} id={m.name + "." + id} color={`var(${s.accent(m)})`} title={s.title} sub={s.sub(m, x)} summary={s.summary(m, x)} spark={s.spark ? P(s.spark) : undefined} def={s.def} cls={s.cls} pinned={settings.pinned.includes(id)} onPin={() => { if (tab !== "overview" && !settings.pinned.includes(id)) flyTo(document.getElementById("g-" + m.name + "." + id), document.getElementById(tabId(base, "overview")), s.title); patch({ pinned: togglePinned(settings, id).pinned }); }}>
             <s.Component {...x} view={view} />
           </Grp>); })}
       </div>

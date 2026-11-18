@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "./toast.js";
 import Chart from "./Chart.jsx";
 import { saveCsv, savePng } from "./graphExport.js";
 import { shade } from "./graphTools.js";
@@ -7,8 +8,8 @@ import { setZoom, useAllHistory } from "./graphView.js";
 // The small things around a graph card: save buttons, the reset-zoom chip, and the full-window graph.
 export function SaveButtons({ title, series, card }) {
   const [err, setErr] = useState(false);
-  const png = () => savePng(title, card.current.querySelector(".chart")).then(() => setErr(false), () => setErr(true));
-  return <span className="gsave"><button onClick={png} data-tip="Save picture (PNG)" aria-label={`Save ${title} as a picture`}>Picture</button><button onClick={() => saveCsv(title, series)} data-tip="Save the numbers (CSV, opens in a spreadsheet)" aria-label={`Save ${title} data as CSV`}>CSV</button>{err && <em role="alert">Could not save</em>}</span>;
+  const png = () => savePng(title, card.current.querySelector(".chart")).then(() => { setErr(false); toast("Saved picture"); }, () => setErr(true));
+  return <span className="gsave"><button onClick={png} data-tip="Save picture (PNG)" aria-label={`Save ${title} as a picture`}>Picture</button><button onClick={() => { saveCsv(title, series); toast("Saved numbers"); }} data-tip="Save the numbers (CSV, opens in a spreadsheet)" aria-label={`Save ${title} data as CSV`}>CSV</button>{err && <em role="alert">Could not save</em>}</span>;
 }
 export const ZoomChip = ({ machine, span }) => span && <button className="zchip" onClick={() => setZoom(machine, null)} data-tip="Show the full time range again (or double-click a graph)">× Reset zoom</button>;
 

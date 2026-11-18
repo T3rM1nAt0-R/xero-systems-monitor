@@ -37,7 +37,7 @@ export const setPrefs = patch => call("set_prefs", { patch });
 export const windowMode = mode => call("set_window_mode", { mode });   // "mini" | "full" | "compact"
 export const setPinned = on => call("set_pinned", { on });
 export const setTheme = theme => call("set_theme", { theme });   // "light" | "dark"
-export const setTrayStatus = (status, tooltip) => call("set_tray_status", { status, tooltip });   // "calm" | "look" | "bad"
+export const setTrayStatus = (status, tooltip, pulse = false) => call("set_tray_status", { status, tooltip, pulse });   // "calm" | "look" | "bad"
 export const setMiniHeight = height => call("set_mini_height", { height });
 export const setMiniSize = (width, height) => call("set_mini_size", { width, height });   // mini only: the size you dragged it to, put back when mini opens
 export const getWorkSize = machine => call("get_work_size", { machine });   // [{ runner, bytes | null }], slow: on demand only

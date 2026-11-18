@@ -1,0 +1,49 @@
+/* Card, status and feedback motion: spring folds, card hover lift, the sliding tab underline, tab badges, breathing status dots with ripple and fade,
+   the near-limit number colour, button press, toasts, the pinned-section ghost and the loading card. Only transform, opacity and colour change.
+   Subtle drops the decorative ones; Off and reduced motion stop everything (see the end of motion.css). */
+
+/* Spring folds: the opened content settles with a tiny overshoot (Full only) */
+html[data-motion="full"] .collapse.open.busy>.collapse-in{animation:springin calc(var(--dur) * 2) cubic-bezier(.3,1.5,.5,1) both}
+@keyframes springin{from{transform:translateY(-8px);opacity:.4}}
+
+/* Hover lift: the individual `translate` property, so it never fights a glide (transform) */
+.card,.tile{transition:translate var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease),background-color var(--dur) var(--ease)}
+html[data-motion="full"] .card:hover:not(.dragging),html[data-motion="full"] .tile:hover{translate:0 -2px;box-shadow:var(--glass-sheen),var(--glass-shadow),0 14px 34px #0003}
+
+/* Sliding tab underline */
+.tabs{position:relative}
+.tabs button.on{border-bottom-color:transparent}
+.tabbar{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--acc);pointer-events:none}
+.tabbar.ready{transition:transform var(--dur) var(--ease),width var(--dur) var(--ease)}
+.tbadge{display:inline-block;min-width:1.5em;margin-left:var(--sp-5);padding:0 var(--sp-4);border-radius:var(--r-999);background:var(--bad);color:var(--on-strong);font-size:var(--fs-10);line-height:1.5;text-align:center}
+html[data-motion="full"] .tbadge.pop{animation:badgepop .55s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes badgepop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.35);opacity:1}100%{transform:scale(1)}}
+
+/* Status dots: a hollow grey ring when offline, a slow fade between the two */
+.dot{border:1.5px solid transparent;box-sizing:border-box;transition:background-color .3s ease,border-color .3s ease;position:relative}
+.dot.off{background:transparent;border-color:var(--dim2);transition-duration:2.4s}
+.dot.rising::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;border:2px solid var(--ok);animation:dotripple 1.6s ease-out both}
+/* A calm dot breathes twice when it appears (a loop under the frosted glass would keep every frame busy, so none of these run forever); a dot that needs a look breathes faster and amber, six times */
+html[data-motion="full"] .dot:not(.off){animation:breathe 4.5s ease-in-out 2}
+html[data-motion="full"] .dot.warn{animation:breathe 1.7s ease-in-out 6}
+@keyframes breathe{50%{opacity:.5}}
+@keyframes dotripple{from{transform:scale(1);opacity:.9}to{transform:scale(3.4);opacity:0}}
+html[data-motion="subtle"] .dot.rising::after{animation:none;opacity:0}
+
+/* Big numbers ease from normal to amber to red as they near their limit (--amber and --red are set from the value) */
+.ph .now[style]{color:color-mix(in srgb,var(--bad-text) var(--red,0%),color-mix(in srgb,var(--warn) var(--amber,0%),var(--fg)));transition:color .6s ease}
+
+/* Button press feel */
+html[data-motion="full"] button:active:not(:disabled){transform:scale(.96)}
+button{transition:background .12s,color .12s,border-color .12s,transform .1s var(--ease)}
+
+/* Toasts */
+.toasts{position:fixed;left:50%;bottom:calc(var(--sp-70) + var(--sp-8));transform:translateX(-50%);z-index:9500;display:flex;flex-direction:column;align-items:center;gap:var(--sp-6);pointer-events:none}
+.toast{pointer-events:auto;padding:var(--sp-6) var(--sp-14);border-radius:var(--r-999);background:var(--glass-bg-solid);border:1px solid var(--glass-line);box-shadow:var(--glass-sheen),var(--shadow-menu);color:var(--fg);font-size:var(--fs-12);-webkit-backdrop-filter:blur(var(--glass-blur));backdrop-filter:blur(var(--glass-blur));animation:toastin var(--dur) var(--ease) both}
+@keyframes toastin{from{transform:translateY(14px);opacity:0}}
+
+/* A pinned section's ghost flying to the Overview tab */
+.flyghost{position:fixed;z-index:9600;pointer-events:none;padding:var(--sp-4) var(--sp-10);border-radius:var(--r-999);background:var(--acc);color:var(--on-acc);font-size:var(--fs-11);font-weight:600;transform-origin:0 0}
+
+/* First load: a placeholder card that shimmers */
+.skelcard{min-height:var(--sz-150)}

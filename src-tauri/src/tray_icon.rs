@@ -42,11 +42,16 @@ impl Status {
 /// Copy of `rgba` (`width` x `height`, 4 bytes a pixel) with the status dot drawn on it.
 /// The dot's width is a quarter of the icon's, centred a quarter in from the corner.
 pub fn with_dot(rgba: &[u8], width: usize, status: Status) -> Vec<u8> {
+    with_pulse(rgba, width, status, 0)
+}
+
+/// Like [`with_dot`], with the dot `grow` pixels bigger all round: the frames of the "something went red" pulse.
+pub fn with_pulse(rgba: &[u8], width: usize, status: Status, grow: usize) -> Vec<u8> {
     let mut out = rgba.to_vec();
     if width == 0 {
         return out;
     }
-    let outer = width / 4;
+    let outer = width / 4 + grow;
     let inner = outer.saturating_sub((width / 16).max(1));
     let centre = width - outer;
     for (i, px) in out.chunks_exact_mut(4).enumerate() {
@@ -93,5 +98,18 @@ mod tests {
             assert_eq!(at(0, 0), [7, 7, 7, 7]);
         }
         assert_eq!(with_dot(&[], 0, Status::Calm), Vec::<u8>::new());
+    }
+
+    #[test]
+    fn a_pulse_frame_has_a_bigger_dot() {
+        let size = 32;
+        let base = vec![7_u8; size * size * 4];
+        let (plain, big) = (
+            with_dot(&base, size, Status::Bad),
+            with_pulse(&base, size, Status::Bad, 3),
+        );
+        let touched = |v: &[u8]| v.chunks_exact(4).filter(|p| p[..3] != [7, 7, 7]).count();
+        assert!(touched(&big) > touched(&plain));
+        assert_eq!(with_pulse(&base, size, Status::Bad, 0), plain);
     }
 }

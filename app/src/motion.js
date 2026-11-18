@@ -2,6 +2,8 @@
 export const MOTION_MS = 180;
 // How long the bigger effects take (a number rolling, a graph sliding or drawing in, a card gliding).
 export const SLOW_MS = 480;
+// How long a status dot plays its ripple (coming online) or its fade (going offline).
+export const DOT_FX_MS = 2400;
 // A soft ring pulse on the newest point of a graph.
 export const PULSE_MS = 800;
 // Does the person want less motion? (Guarded: tests and old webviews may have no matchMedia.)
