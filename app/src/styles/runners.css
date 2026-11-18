@@ -1,13 +1,8 @@
-/* Runners tab: the runner list and the queue (headings and hairlines, no boxes), and the mini window columns. */
+/* Runners tab: the runner list and the queue (headings and hairlines, no boxes). */
 .rlist{display:flex;flex-direction:column}
 .rrow.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-12);align-items:center;padding:var(--sp-8) 0;border-top:1px solid var(--hair);font-size:var(--fs-12)}
 .rrow.q span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rrow.q .rt{color:var(--dim)}
-/* Mini window: the machine rows flow into 1, 2 or 3 columns by the window's width */
-.mini .compact{column-count:1;column-gap:var(--sp-10)}
-.mini .compact .crow{break-inside:avoid}
-@media (min-width:480px){.mini .compact{column-count:2}}
-@media (min-width:720px){.mini .compact{column-count:3}}
 /* Runners, flat: three big numbers, the queue, a slim week heatmap and a zebra history table. */
 .rstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-16);padding:var(--sp-6) 0 var(--sp-10)}
 .rstats .lbl{display:block}

@@ -4,6 +4,7 @@
 mod commands;
 mod frame;
 mod links;
+mod mini_rect;
 mod prefs;
 mod terminal;
 mod tray;
