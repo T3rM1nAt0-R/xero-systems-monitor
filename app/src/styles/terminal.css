@@ -1,0 +1,20 @@
+/* The Terminal tab: sub-tabs, the terminal box and the "Connecting…" bar. The terminal's own colours and font come from xterm, set from the tokens in termHost.js. */
+.term{display:flex;flex-direction:column;gap:var(--sp-6)}
+.termtabs{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-4)}
+.termtab{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:var(--r-6);background:var(--s1);animation:termtab var(--dur) var(--ease)}
+.termtab.on{border-color:var(--acc);background:var(--s2)}
+.termtab button,.termadd{background:none;border:0;color:var(--mid);padding:var(--sp-2) var(--sp-8);font:inherit;font-size:var(--fs-12);cursor:pointer}
+.termtab.on button{color:var(--fg)}
+.termtab .x{padding:var(--sp-2) var(--sp-6);color:var(--dim)}
+.termtab .x:hover,.termadd:hover:not(:disabled){color:var(--fg)}
+.termadd{border:1px solid var(--line);border-radius:var(--r-6);padding:var(--sp-2) var(--sp-8)}
+.termadd:disabled{opacity:.4;cursor:default}
+.termbody{position:relative;height:clamp(240px,50vh,520px);border:1px solid var(--line);border-radius:var(--r-8);background:var(--bg);overflow:hidden}
+.termbox{position:absolute;inset:var(--sp-6)}
+.termhost,.termhost .xterm{height:100%}
+.termempty{display:grid;place-items:center;height:100%;color:var(--dim);font-size:var(--fs-12)}
+.termload{position:absolute;inset:0 0 auto 0;z-index:2;height:2px;overflow:hidden}
+.termload i{position:absolute;inset:0 auto 0 0;width:35%;background:var(--acc);animation:loadslide 1.1s var(--ease) infinite}
+.termload span{position:absolute;top:var(--sp-8);left:var(--sp-10);color:var(--dim);font-size:var(--fs-12)}
+@keyframes termtab{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.termtab,.termload i{animation:none}}
