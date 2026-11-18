@@ -74,6 +74,8 @@ const snap = (m, now) => {
   d.io = driveNames(m).map((n, i) => [n, Math.round(v("down") * 0.4 / (i + 1)), Math.round(v("up") * 0.6 / (i + 1))]);   // drive speeds, bytes per second
   if (gpu) d.smart = [["Example_SSD_1TB", "SSD", true, 38, 9400, 12], ["Example_HDD_2TB", "HDD", false, 41, 31000, null]]; else d.smart_note = "missing";   // drive health: the server shows the "install smartmontools" hint
   if (gpu) Object.assign(d, { mhz: 3900, cpu_w: +(40 + v("cpu") / 2).toFixed(0), gpu_w: 35, fans: [1180, 920], cores: Array.from({ length: 8 }, (_, i) => +((v("cpu") + i * 7) % 100).toFixed(0)), gpu: v("gpu"), gtemp: v("gtemp"), vram_gb: [+((v("vram") / 100) * 12).toFixed(1), 12] });
+  if (gpu) Object.assign(d, { ctemps: d.cores.map((c, i) => +(42 + c / 4 + i).toFixed(0)), bat: [Math.round(20 + v("cpu") / 2), false, 130], gpuapps: [["game", 5000, 1], ["browser", 800, 3], ["video_call", 0, 1]] });
+  if (!gpu) Object.assign(d, { cores: Array.from({ length: 4 }, (_, i) => +((v("cpu") + i * 9) % 100).toFixed(0)), ctemps: [51, 53, 50, 52], fans: [2100] });
   if (gpu) d.conns = [["browser", 42], ["video_call", 9], ["editor", 6], ["sync_tool", 4], ["build_tool", 2]];   // connections per program: This PC only (Windows)
   return d;
 };

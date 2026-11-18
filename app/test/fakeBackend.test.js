@@ -40,7 +40,8 @@ test("get_state: two machines in the documented shape", async () => {
     for (const [n, c, r, k] of m.d.top) assert.ok(typeof n === "string" && num(c) && num(r) && num(k));
   }
   const [pc, server] = machines;
-  assert.equal(pc.d.cores.length, 8); assert.ok(num(pc.d.mhz) && num(pc.d.cpu_w) && pc.d.fans.length === 2); assert.equal(server.d.cores, undefined);
+  assert.equal(pc.d.cores.length, 8); assert.ok(num(pc.d.mhz) && num(pc.d.cpu_w) && pc.d.fans.length === 2); assert.equal(server.d.cores.length, 4); assert.equal(server.d.ctemps.length, 4); assert.equal(server.d.bat, undefined);
+  assert.equal(pc.d.ctemps.length, 8); assert.equal(pc.d.bat.length, 3); assert.ok(pc.d.gpuapps.every(a => typeof a[0] === "string" && num(a[1]) && num(a[2])));
   assert.ok(num(pc.d.gpu) && pc.d.vram_gb.length === 2 && pc.d.runners === undefined);
   assert.deepEqual(Object.keys(server.d.runners), ["runner-1", "runner-2"]);
   assert.equal(server.d.gpu, undefined);

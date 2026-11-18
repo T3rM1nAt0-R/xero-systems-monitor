@@ -70,10 +70,13 @@ Reading = {                       // every field optional; absent means "not mea
   restart_pkgs: number,           // how many packages asked for it, when known
   updates: number,                // updates waiting, when known
   ip: string,
-  mhz: number,                    // CPU clock, average over cores (MHz). mhz, cpu_w, gpu_w, fans and cores come from
+  mhz: number,                    // CPU clock, average over cores (MHz). Linux machines report mhz, fans and ctemps too; cpu_w and gpu_w come from
   cpu_w, gpu_w: number,           // package power, watts. LibreHardwareMonitor and are absent when it is not running
   fans: number[],                 // fan speeds, RPM
-  cores: number[],                // load of each CPU core, %
+  cores: number[],                // load of each CPU core, % (Linux machines too, from /proc/stat)
+  ctemps: number[],               // temperature of each CPU core, C (Intel coretemp on Linux, LibreHardwareMonitor on Windows)
+  bat: [percent, plugged_in, minutes_left or null],   // only on a machine with a battery
+  gpuapps: [name, vram_mb, count][],   // programs using the NVIDIA card, biggest first; [] = none; absent = not asked yet (0 MB = driver does not say)
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
   io: [drive, read_bytes_per_s, write_bytes_per_s][],   // speed of each drive since the last reading

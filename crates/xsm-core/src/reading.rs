@@ -48,6 +48,32 @@ pub struct Reading {
     pub sensors: Option<SensorDetail>,
     /// Restart and update state (kept from the last frame that read the update count).
     pub updates: UpdateInfo,
+    /// The battery, when the machine has one.
+    pub battery: Option<BatteryReading>,
+    /// Programs using the graphics card (kept from the last frame that asked); `None` when never asked.
+    pub gpu_apps: Option<Vec<GpuApp>>,
+}
+
+/// The battery of a laptop.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct BatteryReading {
+    /// Charge left, percent.
+    pub charge_pct: f64,
+    /// True while plugged in (charging or full).
+    pub plugged_in: bool,
+    /// Minutes until empty (on battery) or full (charging); `None` when the machine does not say.
+    pub minutes_left: Option<u32>,
+}
+
+/// Graphics memory held by the processes of one program name.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct GpuApp {
+    /// Program name (spaces shown as `_`).
+    pub name: String,
+    /// Video memory in use, bytes; 0 when the driver does not say.
+    pub vram_bytes: u64,
+    /// How many processes have this name.
+    pub processes: u32,
 }
 
 /// Open network connections of one program name, all its processes added together.
@@ -68,6 +94,10 @@ pub struct CpuReading {
     pub idle_ticks: f64,
     /// All ticks so far.
     pub total_ticks: f64,
+    /// Idle and all ticks of each core so far (`cpu0`, `cpu1`, ...).
+    pub core_ticks: Vec<(f64, f64)>,
+    /// Load of each core since the previous frame, percent 0 to 100; empty on the first frame.
+    pub core_usage_pct: Vec<f64>,
 }
 
 /// Memory from `/proc/meminfo`.
@@ -228,6 +258,22 @@ pub struct TopProgram {
     pub processes: u32,
 }
 
+impl GpuApp {
+    /// Add one process to the list: the entry of its program name grows, or a new one starts.
+    pub fn add(apps: &mut Vec<GpuApp>, name: &str, vram_bytes: u64) {
+        if let Some(a) = apps.iter_mut().find(|a| a.name == name) {
+            a.vram_bytes += vram_bytes;
+            a.processes += 1;
+        } else {
+            apps.push(GpuApp {
+                name: name.to_owned(),
+                vram_bytes,
+                processes: 1,
+            });
+        }
+    }
+}
+
 /// Hardware names; read rarely.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct HardwareInfo {
@@ -254,6 +300,8 @@ pub struct SensorDetail {
     pub gpu_power_w: Option<f64>,
     /// Load of each CPU core, percent.
     pub core_load_pct: Vec<f64>,
+    /// Temperature of each CPU core, degrees Celsius.
+    pub core_temp_c: Vec<f64>,
 }
 /// Whether the machine wants a restart, and how many updates wait. `None` means not known.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

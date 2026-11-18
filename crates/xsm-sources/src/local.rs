@@ -1,6 +1,7 @@
 //! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor`, the system `ping` and CI runners.
 
 use crate::connections::open_pids;
+use crate::gpu_apps::{gpu_apps, windows_battery};
 use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
 use crate::slow::SlowWorker;
@@ -13,6 +14,7 @@ use sysinfo::{
 };
 use xsm_core::connections::by_program;
 use xsm_core::drives::DiskIo;
+use xsm_core::reading::{BatteryReading, GpuApp};
 use xsm_core::reading::{
     ConnCount, CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading,
     Reading, TopProgram, UpdateInfo,
@@ -24,6 +26,8 @@ const PERCENT: f64 = 100.0;
 const PING_EVERY_POLLS: u32 = 5;
 /// The program list is rebuilt on the 1st poll and every this many polls.
 const TOP_EVERY_POLLS: u32 = 5;
+/// The battery (a slow PowerShell call) is read on the 1st poll and every this many polls.
+const BATTERY_EVERY_POLLS: u32 = 20;
 /// Programs kept in the list.
 const TOP_COUNT: usize = 6;
 /// The connection list is rebuilt on the 1st poll and every this many polls (about every 10 seconds at the usual 3-second poll).
@@ -48,6 +52,8 @@ pub struct LocalSource {
     last_net: Option<(Instant, f64, f64)>,
     ping_ms: Option<f64>,
     updates: UpdateInfo,
+    battery: Option<BatteryReading>,
+    gpu_apps: Option<Vec<GpuApp>>,
     top: Vec<TopProgram>,
     connections: Vec<ConnCount>,
     hardware: HardwareInfo,
@@ -77,6 +83,8 @@ impl LocalSource {
             last_net: None,
             ping_ms: None,
             updates: UpdateInfo::default(),
+            battery: None,
+            gpu_apps: None,
             top: Vec::new(),
             connections: Vec::new(),
             hardware,
@@ -103,6 +111,7 @@ impl LocalSource {
         );
         if self.polls.is_multiple_of(TOP_EVERY_POLLS) {
             self.top = top_programs(&self.sys);
+            self.gpu_apps = self.nvml.as_ref().and_then(|n| gpu_apps(n, &self.sys));
         }
         if self.polls.is_multiple_of(CONN_EVERY_POLLS) {
             self.connections = by_program(
@@ -119,6 +128,9 @@ impl LocalSource {
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
             self.ping_ms = ping_once();
             self.updates.restart_needed = windows_restart_needed();
+        }
+        if self.polls.is_multiple_of(BATTERY_EVERY_POLLS) {
+            self.battery = windows_battery();
         }
         let lhm = lhm_text();
         let poll_no = self.polls;
@@ -146,6 +158,8 @@ impl LocalSource {
             hardware: self.hardware.clone(),
             sensors: lhm.as_deref().and_then(xsm_core::lhm::parse_lhm),
             updates: self.updates.clone(),
+            battery: self.battery.clone(),
+            gpu_apps: self.gpu_apps.clone(),
             runners: ci.runners,
             jobs: ci.jobs,
             ..Reading::default()

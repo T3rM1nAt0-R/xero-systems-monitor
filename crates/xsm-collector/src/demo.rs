@@ -1,6 +1,7 @@
 //! Made-up readings for two machines, so the shell runs end to end before the real collector exists.
 //! The numbers follow the same smooth waves as `app/src/fakeData.js`; nothing here is measured.
 
+use crate::demo_extras;
 use crate::demo_jobs::jobs;
 use crate::demo_waves::{
     history, phase_of, wave, CPU, DOWN, GPU, GTEMP, PING, RAM, TEMP, UP, VRAM,
@@ -102,7 +103,11 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             core_load_pct: (0..8)
                 .map(|i| (cpu_pct + f64::from(i) * 7.0) % 100.0)
                 .collect(),
+            core_temp_c: (0..8)
+                .map(|i| 45.0 + cpu_pct / 4.0 + f64::from(i))
+                .collect(),
         });
+        demo_extras::pc_extras(&mut r, cpu_pct, wave(CPU, phase, t));
         r.gpu = Some(GpuReading {
             util_pct: wave(GPU, phase, t),
             temp_c: wave(GTEMP, phase, t),
