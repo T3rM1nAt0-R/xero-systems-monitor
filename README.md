@@ -29,7 +29,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
 </tr>
 <tr>
-<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>).</td>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all.</td>
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 </table>

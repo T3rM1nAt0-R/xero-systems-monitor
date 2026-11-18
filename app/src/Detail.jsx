@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useEffect, memo, useMemo } from "react";
 import { setJobsAt } from "./hoverGroup.js";
 import Chart from "./Chart.jsx";
 import Timeline from "./Timeline.jsx";
@@ -7,20 +7,20 @@ import Smooth from "./Smooth.jsx";
 import Busy from "./Busy.jsx";
 import Trends from "./Trends.jsx";
 import { jobStats, containerBad } from "./alerts.js";
-import { load, save } from "./store.js";
+import { useFold, foldProps } from "./fold.js";
+import Sub from "./Sub.jsx";
+import Spark from "./Spark.jsx";
 import { gb, rateStr, since, avg, peak, isWarn } from "./format.js";
 import { DEFAULT_LIMITS } from "./limits.js";
 const C = { cpu: "#4ade80", temp: "#fb923c", ram: "#60a5fa", gpu: "#a78bfa", gtemp: "#fb5a72", vram: "#38bdf8", down: "#60a5fa", up: "#f472b6", ping: "#4cc9f0", disk: "#fbbf24" };
 const stat = (a, f) => a.length ? `usual ${f(avg(a))} · peak ${f(peak(a))}` : "";
-const lk = k => { const v = load("col." + k, null); return v == null ? null : v === 1; };   // 1 = open, 0 = shut
-// A group with a clickable label. The open/closed choice is remembered per machine.
-function Grp({ id, color, title, sub, summary, def = true, cls = "", children }) {
-  const [open, setOpen] = useState(() => lk(id) ?? def);
-  const flip = () => { setOpen(o => { save("col." + id, o ? 0 : 1); return !o; }); };
+// A group with a clickable label. The open/closed choice is remembered per machine. Folded, it shows a summary and a tiny line of its first graph.
+function Grp({ id, color, title, sub, summary, spark, def = true, cls = "", children }) {
+  const [open, flip] = useFold(id, def);
   return (
     <section className={"grp " + cls + (open ? "" : " shut")} style={{ "--g": color }}>
-      <h5 onClick={flip} role="button" tabIndex={0} aria-expanded={open} onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), flip())}>
-        <b className="chev">{open ? "▾" : "▸"}</b>{title}{sub && <span>{sub}</span>}{!open && summary && <em>{summary}</em>}
+      <h5 {...foldProps(open, flip)}>
+        <b className="chev">{open ? "▾" : "▸"}</b>{title}{sub && <span>{sub}</span>}{!open && summary && <em>{summary}</em>}{!open && spark && <Spark pts={spark} color={color} />}
       </h5>
       {open && children}
     </section>);
@@ -51,34 +51,34 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone, limits =
   const big = (v, u) => v == null ? null : <>{v}<small>{u}</small></>;
   return (
     <div className="detail inline">
-      <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
+      <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" spark={P("cpu")} sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
         <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
         <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
         <Pn title="Memory" k="ram" now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
-      {d.top?.length > 0 && <div className="procs"><h4>Busiest programs now</h4>{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</div>}</Grp>
-      {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
+      {d.top?.length > 0 && <div className="procs"><Sub id={m.name + ".procs"} title="Busiest programs now">{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</Sub></div>}</Grp>
+      {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" spark={P("gpu")} sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
         <Pn title="GPU" k="gpu" now={big(d.gpu?.toFixed(0), "%")} sm={stat(P("gpu"), v => v.toFixed(0) + "%")} max={100} unit="%" />
         <Pn title="GPU temp" k="gtemp" now={big(d.gtemp?.toFixed(0), "°C")} warn={isWarn("gtemp", d.gtemp, limits)} max={100} unit="°C" thr={limits.gtemp} thrLabel={`Warm above ${limits.gtemp}°C`} />
         <Pn title="GPU memory" k="vram" now={d.vram_gb ? big(gb(d.vram_gb[0]), `/ ${d.vram_gb[1].toFixed(0)} GB`) : big(d.vram?.toFixed(0), "%")} max={100} unit="%" />
       </div></Grp>}
-      <Grp id={m.name + ".net"} cls="full" color="#60a5fa" def={false} title="Network" sub={d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`} summary={`↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`}><div className="dgrid">
+      <Grp id={m.name + ".net"} cls="full" color="#60a5fa" def={false} title="Network" spark={P("down")} sub={d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`} summary={`↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`}><div className="dgrid">
         <Pn title="Download" k="down" now={d.down != null ? rateStr(d.down) : null} fmt={rateStr} />
         <Pn title="Upload" k="up" now={d.up != null ? rateStr(d.up) : null} fmt={rateStr} />
         <Pn title="Ping" k="ping" now={big(d.ping != null ? Number(d.ping).toFixed(0) : null, "ms")} sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
       </div></Grp>
-      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }}>
+      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" spark={P("disk")} sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }}>
           <div className="ph"><h4>Disk use</h4>{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days <= limits.days ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
           <Chart series={[{ name: "Disk use", pts: P("disk"), color: C.disk }]} t0={t0} t1={t1} max={100} unit="%" range={range} group={m.name} title="Disk use" />
-          <div className="drives">
+          <Sub id={m.name + ".drives"} title="Drives" hint={drives.length > 0 && `${drives.length}`}><div className="drives">
             {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (100 * u / t > limits.disk ? " crit" : 100 * u / t > limits.disk - 15 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
-          </div>
+          </div></Sub>
         </div>
       </Grp>
       {d.runners && <Grp id={m.name + ".run"} color="#4cc9f0" cls="runners" title="Runners" sub={`${Object.keys(d.jobs || {}).length} busy · ${Object.keys(d.runners).length - Object.keys(d.jobs || {}).length} idle${day && day.done ? ` · ${day.done} jobs in 24 h${day.failed ? `, ${day.failed} failed` : ""}${day.stopped ? `, ${day.stopped} stopped` : ""}` : ""}`} summary={`${Object.keys(d.jobs || {}).length} busy`}>
         <Smooth className="panel wide">
           <Jobs d={d} now={t1} started={m.started} gone={gone} />
-          <Timeline machine={m.name} rows={rows} runners={d.runners} jobs={d.jobs} started={m.started} t0={t0} t1={t1} range={range} />
+          <Sub id={m.name + ".tl"} title="Timeline"><Timeline machine={m.name} rows={rows} runners={d.runners} jobs={d.jobs} started={m.started} t0={t0} t1={t1} range={range} /></Sub>
           <Trends rows={rows} machine={m.name} now={t1} />
           <Busy rows={rows} machine={m.name} count={Object.keys(d.runners).length} running={Object.values(m.started || {})} now={t1} />
         </Smooth></Grp>}
