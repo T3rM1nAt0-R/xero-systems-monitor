@@ -5,9 +5,27 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 - Added: the tray icon now shows how things are: a green, amber or red dot on the icon, and a hover text such as "Xero Systems Monitor · 3 calm, 1 needs a look · CPU 23%". Red means a machine is offline, a container or service is failing, or a job failed that you have not looked at yet.
+- Added: "What was busy then?" Click any point on a CPU or memory graph to see the busiest programs at that moment (name, CPU, memory). The top 10 programs are kept once a minute for 3 days. Hover works as before.
+- Added: a machines strip at the top of the main window, one small tile per machine (This PC first) with status, CPU, memory, GPU, temperature and a tiny CPU line. Offline tiles go grey with the time last seen. Click a tile to jump to that machine's card.
+- Added: Ctrl+K search. Jump to a machine or one of its groups, or change a setting or the time range, from the keyboard.
+- Added: drag a machine card by its header to reorder; a "Groups..." option on each card hides groups you never use and moves the rest up or down. Both are remembered.
+- Changed: tighter spacing between groups, larger folded summaries, and the runner chips scroll sideways on one line.
+- Busy this week is now a heatmap: one row per day, one cell per hour (12-hour labels), darker when the runners were busier; hover a cell for the hour, how busy and the jobs and failures in it. A line per day lists its jobs and failures.
+- Click a job to open it on GitHub: running jobs, timeline bars, slowest jobs and failed jobs in Activity open the pull request, or the repository's Actions page when it is not a pull request. Jobs recorded before this update have no owner in their name and are not clickable.
+- Job history in the Runners group: the last 100 jobs of the machine, newest first, with search and result and workflow filters.
+- A finished job's label now names the repository as owner/name.
+- Added: drag across a graph to zoom all of that machine's graphs; double-click or "Reset zoom" returns.
+- Added: a "Compare" choice in the bottom bar (off / yesterday / last week) draws a faint dashed copy of each graph from the earlier time.
+- Added: click a graph title to open it full-window and overlay the same metric from other machines (Esc closes).
+- Added: each graph can be saved as a picture (PNG) or its numbers as a CSV file (local 12-hour times).
+- Added: containers on remote machines have Restart, Stop or Start (asks first) and Logs (last 50 lines, with Refresh and Copy).
+- Uptime and restart status: each machine card shows how long it has been on and when it last restarted, and "Restart needed for updates" in amber when the system says so (Debian and Ubuntu over ssh, and Windows on This PC). Other systems show no restart line.
+- Fixed: short GPU bursts on Linux machines are no longer missed. The probe now takes four quick GPU samples per check and reports the peak use and peak memory. The history graph keeps the peak (not the average) of GPU and GPU memory when it thins old data, so short peaks stay visible on long ranges. CPU and the other graphs still show averages. This PC reads the GPU once per poll and is unchanged.
+- Added: everything folds. Each machine card folds into one bar (status, CPU, temperature, memory, GPU, disk, runners busy, failing containers, and a tiny CPU line); the small sections (Timeline, Last 7 days, Slowest jobs, Busy per day, Busiest programs, Drives) fold on their own and are remembered. "Fold all" / "Unfold all" button, keys F and Shift+F, and a More menu switch "Fold calm machines". Busy per day starts folded.
 - Added: More > Limits… sets your own CPU %, CPU temp, GPU temp, disk % and "disk full in N days" limits for each machine (or the same for all). Colours, the red lines on the graphs and the alerts use them. The standard limits are unchanged.
 - Added: Quiet hours (More > Notify me when…, default 11 PM to 8 AM). Pop-ups wait during quiet hours except "A machine goes offline"; they still appear in Activity marked "(quiet hours)".
 - Added: a Mute button on each alert in the Activity drawer stops that kind of alert for that machine; a "Muted alerts" list in the menu unmutes it.
+- More hardware detail on This PC when LibreHardwareMonitor is running: fan speeds, CPU clock, CPU and GPU power, and a thin bar per CPU core, in the CPU group.
 
 ## [0.1.2] - 2026-11-17
 

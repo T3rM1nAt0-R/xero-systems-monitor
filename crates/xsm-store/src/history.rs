@@ -34,14 +34,18 @@ pub struct History {
     pub loss: Option<f64>,
 }
 
-/// Averages of one machine's samples since `now_s - range_s`, in buckets wide enough
+/// How rows of one key merge into one: the GPU series keep their PEAK so a short burst
+/// survives thinning, every other series keeps its average.
+pub(crate) const MERGE: &str = "CASE WHEN key IN ('gpu', 'vram') THEN max(v) ELSE avg(v) END";
+
+/// Averages (peaks for the GPU series) of one machine's samples since `now_s - range_s`, in buckets wide enough
 /// that no series has more than [`MAX_POINTS`] points. Each point sits mid-bucket.
 pub(crate) fn read(conn: &Connection, machine: &str, range_s: i64, now_s: i64) -> Result<History> {
     let step = range_s / MAX_POINTS + 1;
-    let mut q = conn.prepare_cached(
-        "SELECT key, ts / ?2 * ?2, avg(v) FROM samples
-         WHERE machine = ?1 AND ts >= ?3 AND ts <= ?4 GROUP BY key, 2 ORDER BY key, 2",
-    )?;
+    let mut q = conn.prepare_cached(&format!(
+        "SELECT key, ts / ?2 * ?2, {MERGE} FROM samples
+             WHERE machine = ?1 AND ts >= ?3 AND ts <= ?4 GROUP BY key, 2 ORDER BY key, 2"
+    ))?;
     let rows = q.query_map(params![machine, step, now_s - range_s, now_s], |r| {
         Ok((
             r.get::<_, String>(0)?,

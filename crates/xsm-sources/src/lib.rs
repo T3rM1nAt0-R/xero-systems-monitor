@@ -1,6 +1,7 @@
 //! Raw readings from this PC and from Linux machines over ssh.
 #![deny(missing_docs)]
 
+pub mod container;
 pub mod local;
 pub mod runners;
 pub mod sensors;

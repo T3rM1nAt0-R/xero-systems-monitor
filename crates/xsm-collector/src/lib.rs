@@ -2,19 +2,23 @@
 //! the [`Backend`] trait has one method per data command of `docs/window-api.md`.
 #![deny(missing_docs)]
 
+mod busy;
 mod config;
 mod demo;
+mod demo_jobs;
 mod history;
 mod live;
 mod machines;
 mod poller;
 
+pub use busy::{Busy, BusyReply};
 pub use config::alert_limits;
 pub use demo::DemoBackend;
 pub use history::{History, HistoryReply};
 pub use live::LiveBackend;
 pub use machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
+pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
@@ -40,6 +44,13 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when the history cannot be read.
     fn get_history(&self, machine: &str, range_s: f64) -> Result<HistoryReply, String>;
+
+    /// The busiest programs of one machine around time `t` (unix seconds): `{}` when
+    /// nothing was kept for that time.
+    ///
+    /// # Errors
+    /// Text for the window when the programs cannot be read.
+    fn get_busy_at(&self, machine: &str, t: f64) -> Result<BusyReply, String>;
 
     /// At most `n` events at or after `since` (unix seconds), newest first.
     ///
@@ -70,6 +81,13 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when saving fails.
     fn save_machines(&self, machines: Vec<MachineConfig>) -> Result<SaveOutcome, String>;
+
+    /// Run `restart`, `stop`, `start` or `logs` on one container of an ssh machine; returns the text to show.
+    ///
+    /// # Errors
+    /// Plain text for the window: not an ssh machine, a bad name, docker or ssh failing, or a timeout.
+    fn container_action(&self, machine: &str, action: Action, name: &str)
+        -> Result<String, String>;
 
     /// Restart polling.
     ///

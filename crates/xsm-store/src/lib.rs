@@ -3,12 +3,15 @@
 
 mod db;
 mod history;
+mod top;
 
 pub use history::{History, Points};
+pub use top::{Busiest, TOP_KEPT};
 
+use history::MERGE;
 use rusqlite::{params, Connection};
 use std::path::Path;
-use xsm_core::reading::Reading;
+use xsm_core::reading::{Reading, TopProgram};
 use xsm_core::tracker::{Event, FinishedJob};
 
 /// Every error here comes from `SQLite` (or the file system under it).
@@ -144,6 +147,11 @@ impl Store {
             )?;
             tx.execute(&format!("DELETE FROM {table} WHERE machine = ?1"), [old])?;
         }
+        tx.execute(
+            "UPDATE OR IGNORE top SET machine = ?2 WHERE machine = ?1",
+            params![old, new],
+        )?;
+        tx.execute("DELETE FROM top WHERE machine = ?1", [old])?;
         for table in ["ev", "jobs"] {
             tx.execute(
                 &format!("UPDATE {table} SET machine = ?2 WHERE machine = ?1"),
@@ -165,6 +173,23 @@ impl Store {
             range_s.clamp(MIN_RANGE_S, MAX_RANGE_S),
             now_s,
         )
+    }
+
+    /// Remember the busiest programs of one machine, once a minute: the first call in a
+    /// minute stores the [`TOP_KEPT`] busiest by CPU, later calls in that minute do nothing.
+    ///
+    /// # Errors
+    /// When `SQLite` fails.
+    pub fn add_top(&self, machine: &str, t: i64, top: &[TopProgram]) -> Result<()> {
+        top::add(&self.conn, machine, t, top)
+    }
+
+    /// The busiest programs nearest to time `t`, if a stored minute lies close enough.
+    ///
+    /// # Errors
+    /// When `SQLite` fails.
+    pub fn busiest_at(&self, machine: &str, t: i64) -> Result<Option<Busiest>> {
+        top::near(&self.conn, machine, t)
     }
 
     /// The newest `n` events at or after `since`, newest first.
@@ -236,6 +261,7 @@ impl Store {
         let tx = self.conn.unchecked_transaction()?;
         roll(&tx, "raw", "minute", MINUTE_S, now_s - RAW_KEEP_S)?;
         roll(&tx, "minute", "five", FIVE_MIN_S, now_s - MINUTE_KEEP_S)?;
+        top::prune(&tx, now_s - MINUTE_KEEP_S)?;
         let cut = now_s - history_days * DAY_S;
         tx.execute("DELETE FROM five WHERE ts < ?1", [cut])?;
         tx.execute("DELETE FROM ev WHERE ts < ?1", [cut])?;
@@ -253,13 +279,13 @@ impl Store {
     }
 }
 
-/// Average the rows of `from` older than `before` into `step`-second rows of `to`, then delete them.
+/// Merge (average, or peak for the GPU series) the rows of `from` older than `before` into `step`-second rows of `to`, then delete them.
 /// The cut is rounded down to a whole row so no row is split between two tables.
 fn roll(conn: &Connection, from: &str, to: &str, step: i64, before: i64) -> Result<()> {
     let cut = before.div_euclid(step) * step;
     conn.execute(
         &format!(
-            "INSERT OR REPLACE INTO {to} SELECT machine, key, ts / ?1 * ?1, avg(v) FROM {from}
+            "INSERT OR REPLACE INTO {to} SELECT machine, key, ts / ?1 * ?1, {MERGE} FROM {from}
              WHERE ts < ?2 GROUP BY machine, key, 3"
         ),
         params![step, cut],

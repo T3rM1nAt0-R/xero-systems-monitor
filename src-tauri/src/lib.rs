@@ -3,6 +3,7 @@
 
 mod commands;
 mod frame;
+mod links;
 mod prefs;
 mod tray;
 mod tray_icon;
@@ -87,11 +88,13 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_state,
             commands::get_history,
+            commands::get_busy_at,
             commands::get_events,
             commands::get_jobs,
             commands::get_forecast,
             commands::get_machines,
             commands::save_machines,
+            commands::container_action,
             commands::get_prefs,
             commands::set_prefs,
             commands::set_window_mode,
@@ -106,6 +109,7 @@ pub fn run() {
             commands::relaunch,
             commands::stop_everything,
             commands::quit,
+            commands::open_link,
         ])
         .build(tauri::generate_context!());
     match built {
