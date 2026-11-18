@@ -33,6 +33,14 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/view-control.png" alt="The view switch and View menu"></td>
+<td width="50%"><img src="docs/screenshots/hidden-machines.png" alt="The hidden machines dialog"></td>
+</tr>
+<tr>
+<td valign="top">One view switch: <b>Full | Compact | Mini</b>, a pin for keep-on-top (<b>T</b>), and a <b>View</b> menu with Fold all, the machines strip (Auto, On or Off) and Hidden machines.</td>
+<td valign="top">Hide machines you do not need (the <b>⋯</b> on a card or strip tile). They leave every view and the tray summary; Hidden machines lists them with Show again and Pause monitoring.</td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/tabs-overview.png" alt="A machine card on its Overview tab"></td>
 <td width="50%"><img src="docs/screenshots/tabs-runners.png" alt="The Runners tab"></td>
 </tr>

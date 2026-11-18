@@ -54,6 +54,7 @@ fn default_machines() -> Vec<MachineConfig> {
         host: None,
         runner: None,
         was: None,
+        paused: None,
     }]
 }
 

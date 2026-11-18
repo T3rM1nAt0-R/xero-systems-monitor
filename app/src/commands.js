@@ -22,6 +22,7 @@ export function buildCommands(a) {
   if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");
   add("Setting", "Machines…", a.onMachines, "add remove edit");
   if (a.onLimits) add("Setting", "Limits…", a.onLimits, "thresholds warn");
+  for (const n of a.hiddenNames || []) add("Machine", `Show hidden machine ${n}`, () => a.showMachine(n), "unhide hidden machine");
   add("Setting", "Check for updates", a.onCheck, "update version");
   return out;
 }
