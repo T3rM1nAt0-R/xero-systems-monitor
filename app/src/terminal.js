@@ -7,9 +7,9 @@ export const sessionId = (machine, uid) => `t${uid}-${String(machine).replace(/[
 export const validSessionId = id => /^[A-Za-z0-9_-]{1,64}$/.test(id);
 export const sessionTitle = s => `Shell ${s.n}`;
 // Add a session (and make it the active one). Nothing happens at the limit.
-export function addTerm(t, machine, uid) {
+export function addTerm(t, machine, uid, admin = false) {
   if (t.items.length >= MAX_SESSIONS) return t;
-  const s = { id: sessionId(machine, uid), n: t.next };
+  const s = { id: sessionId(machine, uid), n: t.next, ...(admin ? { admin: true } : {}) };
   return { items: [...t.items, s], active: s.id, next: t.next + 1 };
 }
 // Remove a session; if it was the active one, the neighbour to its left (or the first) takes over.

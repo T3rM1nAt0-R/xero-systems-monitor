@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: admin shells on This PC. The Terminal tab has "Admin shell…" with three ways: in this tab through Windows 11 sudo (only when sudo is set to Inline; otherwise shown off with how to turn it on), a separate admin window (Windows Terminal, else PowerShell), or Restart Xero as admin. An elevated app shows a red Admin badge on every This PC tab. The More menu has "Restart as admin" (reads "Running as admin" when already elevated) and an "Always start as admin" tick (off by default; it relaunches elevated before the window shows, never twice, and says "Started without admin (cancelled)" if you say no to Windows).
+
 - Fixed: the Customize panel jumped around when you changed spacing or text size (for example Compact to Spacious). The panel, menus, dialogs, Ctrl+K, toasts, tooltips and the top bar were sized with the same text-size and density tokens as the cards, so every change reflowed the very panel you were using, the scroll position stayed put while the rows moved under the cursor, and the scroll-spy chips changed under you. They now use one fixed size (fonts and colours still follow your look), and the row you are editing is held in place whenever a change reflows anything else.
 
 - Changed: the 24 h and 7 d chips are gone from the Overview outage strip and the Runners table; both now follow the "Graphs show" range at the bottom, like every graph.

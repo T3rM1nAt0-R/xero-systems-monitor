@@ -88,7 +88,7 @@ test("machines: saved, checked, and followed by get_state", async () => {
   assert.equal((await handle("get_machines")).machines[1].was, undefined);
 });
 test("prefs, window and lifecycle commands", async () => {
-  assert.deepEqual(Object.keys(await handle("get_prefs")).sort(), ["closeToTray", "login", "updates"]);
+  assert.deepEqual(Object.keys(await handle("get_prefs")).sort(), ["alwaysAdmin", "closeToTray", "elevated", "login", "startCancelled", "updates"]);
   assert.equal((await handle("set_prefs", { patch: { login: true } })).login, true);
   assert.equal(await handle("set_pinned", { on: 1 }), true);
   for (const c of ["set_theme", "set_mini_height", "restart_collector", "relaunch", "stop_everything", "quit"]) assert.equal(await handle(c, {}), null);

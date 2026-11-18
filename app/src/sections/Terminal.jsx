@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { get, set, useSetting } from "../store.js";
+import * as api from "../api.js";
+import AdminMenu from "./AdminMenu.jsx";
 import { emptyTerms, addTerm, closeTerm, pickTerm, sessionTitle, MAX_SESSIONS } from "../terminal.js";
 // The Terminal section: a real shell per machine, with several sessions as small sub-tabs (+ opens one, x closes it).
 // The terminal library (xterm) is loaded when this opens for the first time; the sessions live in termHost.js, so they survive switching tabs.
@@ -14,10 +16,14 @@ function Shell({ m }) {
   const [terms] = useSetting(key, emptyTerms);
   const [host, setHost] = useState(null), [, tick] = useState(0);
   const box = useRef(null);
+  const [local, setLocal] = useState(false), [elevated, setElevated] = useState(false), [sudo, setSudo] = useState("missing");
+  useEffect(() => {   // admin facts only matter on This PC
+    api.getMachines().then(c => { const isLocal = c?.machines?.find(x => x.kind === "local")?.name === m.name; setLocal(isLocal); if (isLocal) { api.isElevated().then(setElevated, () => {}); api.sudoInlineAvailable().then(setSudo, () => {}); } }, () => {});
+  }, [m.name]);
   useEffect(() => { let alive = true; loadHost().then(h => alive && setHost(h)); return () => { alive = false; }; }, []);
   const update = f => set(key, f(get(key, terms)), { persist: false });
   // Make sure every listed session is started (this also restarts the visible one after the window was reloaded).
-  useEffect(() => { if (host) for (const s of terms.items) host.open(s.id, m.name, () => tick(n => n + 1)); }, [host, terms.items, m.name]);
+  useEffect(() => { if (host) for (const s of terms.items) host.open(s.id, m.name, () => tick(n => n + 1), !!s.admin); }, [host, terms.items, m.name]);
   // The first time the tab opens, start one shell for the user.
   useEffect(() => { if (host && terms.items.length === 0 && terms.next === 1) update(t => addTerm(t, m.name, ++uid)); }, [host]);   // eslint-disable-line react-hooks/exhaustive-deps -- only when the library has arrived
   useEffect(() => (host && terms.active && box.current ? host.show(terms.active, box.current) : undefined), [host, terms.active]);
@@ -28,10 +34,11 @@ function Shell({ m }) {
       <div className="termtabs" role="tablist" aria-label="Terminals">
         {terms.items.map(s => (
           <span key={s.id} className={"termtab" + (s.id === terms.active ? " on" : "")}>
-            <button role="tab" aria-selected={s.id === terms.active} onClick={() => update(t => pickTerm(t, s.id))}>{sessionTitle(s)}</button>
+            <button role="tab" aria-selected={s.id === terms.active} onClick={() => update(t => pickTerm(t, s.id))}>{sessionTitle(s)}{local && (elevated || s.admin) && <b className="adminbadge">Admin</b>}</button>
             <button className="x" aria-label={`Close ${sessionTitle(s)}`} title="Close" onClick={() => close(s.id)}>×</button>
           </span>))}
         <button className="termadd" aria-label="New terminal" title="New terminal" disabled={terms.items.length >= MAX_SESSIONS} onClick={() => update(t => addTerm(t, m.name, ++uid))}>+</button>
+        {local && !elevated && <AdminMenu elevated={elevated} sudo={sudo} onTab={() => update(t => addTerm(t, m.name, ++uid, true))} />}
       </div>
       <div className="termbody">
         {terms.active && !st.got && <div className="termload" role="progressbar" aria-label="Connecting"><i /><span>Connecting…</span></div>}

@@ -1,0 +1,11 @@
+/* Admin shell: the red Admin badge on a tab, and the small "Admin shell…" menu of the Terminal tab. */
+.adminbadge{font-size:var(--fs-10-5);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--crit);border:1px solid var(--crit);border-radius:var(--r-6);padding:0 var(--sp-4);margin-left:var(--sp-4)}
+.adminmenu{position:relative;display:inline-flex}
+.adminpop{position:absolute;left:0;top:calc(100% + 4px);z-index:30;display:flex;flex-direction:column;min-width:var(--sz-270);padding:var(--sp-4);background:var(--s1);border:1px solid var(--line2);border-radius:var(--r-10);box-shadow:var(--shadow-menu);animation:adminpop var(--dur) var(--ease)}
+.adminpop button{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2);border:0;background:none;color:var(--fg);text-align:left;font:inherit;font-size:var(--fs-12);padding:var(--sp-8) var(--sp-12);border-radius:var(--r-6);cursor:pointer}
+.adminpop button:hover:not(:disabled){background:var(--s2)}
+.adminpop button:disabled{color:var(--dim);cursor:default}
+.adminpop em{font-style:normal;font-size:var(--fs-11-5);color:var(--dim2);white-space:normal}
+.adminnote{margin:0;padding:var(--sp-6) var(--sp-12) var(--sp-4);font-size:var(--fs-11-5);color:var(--dim2);border-top:1px solid var(--line)}
+@keyframes adminpop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.adminpop{animation:none}}

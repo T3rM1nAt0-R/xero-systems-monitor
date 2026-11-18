@@ -64,7 +64,11 @@ export const stopEverything = () => call("stop_everything");
 export const quit = () => call("quit");
 
 // Terminal tab (docs/window-api.md): output and exit arrive as events, see onShellEvent("terminal-output" | "terminal-exit", fn).
-export const terminalOpen = (id, machine, cols, rows) => call("terminal_open", { id, machine, cols, rows });
+export const terminalOpen = (id, machine, cols, rows, admin = false) => call("terminal_open", { id, machine, cols, rows, admin });   // admin: wrap the local shell in Windows sudo (Inline)
+export const isElevated = () => call("is_elevated");
+export const sudoInlineAvailable = () => call("sudo_inline_available");   // "missing" | "not_inline" | "inline"
+export const openAdminShellWindow = () => call("open_admin_shell_window");   // rejects "Cancelled" when the Windows question is answered no
+export const restartAsAdmin = () => call("restart_as_admin");
 export const terminalWrite = (id, data) => call("terminal_write", { id, data });
 export const terminalResize = (id, cols, rows) => call("terminal_resize", { id, cols, rows });
 export const terminalClose = id => call("terminal_close", { id });

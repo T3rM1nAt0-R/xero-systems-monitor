@@ -4,6 +4,8 @@ import { since } from "./format.js";
 import { ALERTS } from "./alerts.js";
 import { notify } from "./useAlerts.js";
 import * as api from "./api.js";
+import { moreAdminRows, asAdmin } from "./admin.js";
+import { toast } from "./toast.js";
 import QuietMenu from "./QuietMenu.jsx";
 export const REFRESH = [3, 5, 10, 30, 60];   // seconds; the collector itself samples every 3 s
 
@@ -46,7 +48,10 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
         <Row hint="theme, text size, colours" onClick={close(onCustomize)}>Customize…</Row>
         {prefs && <><hr /><Head>Window</Head>
           <Row on={prefs.closeToTray} onClick={() => api.setPrefs({ closeToTray: !prefs.closeToTray }).then(setPrefs)}>Close button hides to the tray</Row>
-          <Row on={prefs.login} onClick={() => api.setPrefs({ login: !prefs.login }).then(setPrefs)}>Start with Windows, hidden</Row></>}
+          <Row on={prefs.login} onClick={() => api.setPrefs({ login: !prefs.login }).then(setPrefs)}>Start with Windows, hidden</Row>
+          {moreAdminRows(prefs).map(r => r.on == null
+            ? <Row key={r.id} disabled={r.disabled} onClick={close(() => asAdmin(api.restartAsAdmin, toast))}>{r.label}</Row>
+            : <Row key={r.id} on={r.on} onClick={() => api.setPrefs({ alwaysAdmin: !r.on }).then(setPrefs)}>{r.label}</Row>)}</>}
         <Row on={calmFold} onClick={() => setCalmFold(!calmFold)}>Fold calm machines</Row>
         <Row hint="M" onClick={close(onMini)}>Mini corner view</Row>
 

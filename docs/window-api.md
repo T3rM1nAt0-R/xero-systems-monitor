@@ -32,7 +32,7 @@ Rules for every command:
 | `cancel_big_folders` | `job: number` | `null`; the search stops soon after |
 | `set_internet_host` | `url: string` (a plain `https://` address with no spaces; anything else, or empty, means `https://www.gstatic.com/generate_204`) | `null`. Sets what the internet check on This PC requests (a DNS lookup, then an HTTPS HEAD with `curl`, every minute) |
 | `get_prefs` | none | `Prefs` |
-| `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray` and `login` can change) | the new `Prefs` |
+| `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray`, `login` and `alwaysAdmin` can change) | the new `Prefs` |
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
 | `set_pinned` | `on: boolean` (always on top) | the pin now in effect (boolean) |
 | `set_theme` | `theme: "light" or "dark"` (title-bar buttons follow it) | `null` |
@@ -49,10 +49,14 @@ Rules for every command:
 | `stop_everything` | none | `null` (collector and window close) |
 | `quit` | none | `null` (the window closes, the app exits) |
 | `open_link` | `url: string` (must start with `https://github.com/` and hold only letters, digits and `. _ - /`; anything else is refused) | `null` (the address opens in the browser) |
-| `terminal_open` | `id: string` (letters, digits, `-`, `_`, up to 64), `machine: string`, `cols: number`, `rows: number` | `null`. Starts a shell on a pseudo-terminal: PowerShell (`pwsh`, else Windows PowerShell) for this PC, or the system `ssh -t` to the machine's configured host (your own ssh config and keys; no password is stored). Output arrives as `terminal-output` events |
+| `terminal_open` | `id: string` (letters, digits, `-`, `_`, up to 64), `machine: string`, `cols: number`, `rows: number`, `admin?: boolean` (This PC only: run the shell through Windows `sudo`, which must be set to Inline) | `null`. Starts a shell on a pseudo-terminal: PowerShell (`pwsh`, else Windows PowerShell) for this PC, or the system `ssh -t` to the machine's configured host (your own ssh config and keys; no password is stored). Output arrives as `terminal-output` events |
 | `terminal_write` | `id: string`, `data: string` | `null`. The keystrokes go to the shell; nothing else is ever run from the window |
 | `terminal_resize` | `id: string`, `cols: number`, `rows: number` | `null` |
 | `terminal_close` | `id: string` | `null`. Ends that session's process. All sessions also end when the app quits |
+| `is_elevated` | none | `boolean`: the app runs as administrator (always `false` off Windows) |
+| `sudo_inline_available` | none | `"missing"`, `"not_inline"` or `"inline"`: Windows 11 `sudo` (registry `Sudo\Enabled`, 3 = Inline) |
+| `open_admin_shell_window` | none | `null`. Starts Windows Terminal (`wt.exe` on `PATH`, else the PowerShell a tab would use) with the `runas` verb, so Windows asks for permission; rejects `"Cancelled"` when answered no |
+| `restart_as_admin` | none | `null`. Starts this app again with `runas` and the `--elevated-relaunch` flag, then quits (the new copy waits 2 seconds for the old one); rejects `"Cancelled"` and keeps running when answered no |
 
 `set_window_mode`: `mini` is the small always-on-top corner window; `full` and `compact` are the normal window (compact is the one-row-per-machine layout, which the window draws itself; the shell may remember the size per mode). Leaving `mini` restores the earlier size and place.
 
@@ -128,7 +132,7 @@ MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: 
           //   the window sets it from "Hidden machines > Pause monitoring". Which machines are *hidden* is only a window setting.
           // save_machines checks: at least one machine; names unique, non-empty, without "|"; every ssh machine has a host
 
-Prefs = { closeToTray: boolean, login: boolean, updates: boolean }  // updates: the More menu shows Check for updates (installed, not portable)
+Prefs = { closeToTray: boolean, login: boolean, updates: boolean, alwaysAdmin: boolean, elevated: boolean, startCancelled: boolean }  // alwaysAdmin: relaunch as administrator at start (never twice: the relaunched copy carries --elevated-relaunch); startCancelled: true once when that was asked but Windows' question was answered no  // updates: the More menu shows Check for updates (installed, not portable)
 ```
 
 ## Looking further back (graph compare)

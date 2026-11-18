@@ -3,6 +3,7 @@
 
 mod connections;
 pub mod container;
+pub mod elevation;
 pub mod folders;
 mod gpu_apps;
 pub mod local;

@@ -1,8 +1,13 @@
-//! The commands of `docs/window-api.md`, exactly 40. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 44. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
-// reason: Tauri hands commands owned arguments and expects a Result back from each
-#![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
+// reason: Tauri hands commands owned arguments and expects a Result back from each, and passes each window argument by name (terminal_open takes eight)
+#![allow(
+    clippy::needless_pass_by_value,
+    clippy::unnecessary_wraps,
+    clippy::too_many_arguments
+)]
 
+use crate::admin;
 use crate::frame::{self, Mode};
 use crate::links;
 use crate::mica;
@@ -286,9 +291,18 @@ pub fn terminal_open(
     machine: String,
     cols: u16,
     rows: u16,
+    admin: Option<bool>,
 ) -> Reply<()> {
     let size = Size::new(cols, rows);
-    terminal::open(&app, &*backend.0, &terms, &id, &machine, size)
+    terminal::open(
+        &app,
+        &*backend.0,
+        &terms,
+        &id,
+        &machine,
+        size,
+        admin == Some(true),
+    )
 }
 
 #[tauri::command]
@@ -304,5 +318,27 @@ pub fn terminal_resize(terms: State<'_, Terminals>, id: String, cols: u16, rows:
 #[tauri::command]
 pub fn terminal_close(terms: State<'_, Terminals>, id: String) -> Reply<()> {
     terms.0.close(&id);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn is_elevated() -> bool {
+    admin::elevated()
+}
+
+#[tauri::command]
+pub fn sudo_inline_available() -> &'static str {
+    admin::sudo_state().word()
+}
+
+#[tauri::command]
+pub fn open_admin_shell_window() -> Reply<()> {
+    admin::open_window()
+}
+
+#[tauri::command]
+pub fn restart_as_admin(app: AppHandle) -> Reply<()> {
+    admin::relaunch_elevated()?;
+    frame::quit(&app);
     Ok(())
 }
