@@ -19,7 +19,7 @@ export default function Tabs({ tabs, tab, onTab, base, badges = {} }) {
     e.preventDefault(); onTab(next); refs.current[next]?.focus();
   };
   return (
-    <div className="tabs" role="tablist" aria-label="Views" onKeyDown={onKey}>
+    <div className="tabs" data-look="layout.tabs" role="tablist" aria-label="Views" onKeyDown={onKey}>
       {tabs.map(([id, title]) => <button key={id} ref={el => { refs.current[id] = el; }} role="tab" id={tabId(base, id)} aria-selected={id === tab} aria-controls={panelId(base)} tabIndex={id === tab ? 0 : -1} className={id === tab ? "on" : ""} onClick={() => onTab(id)}>{title}{badges[id] > 0 && <span key={badges[id]} className={"tbadge" + (pops[id] ? " pop" : "")}>{badges[id]}</span>}</button>)}
       <i className="tabbar" ref={bar} aria-hidden="true" />
     </div>);

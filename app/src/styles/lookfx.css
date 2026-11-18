@@ -1,0 +1,25 @@
+/* What the Customize graph and layout settings do (the attributes are written on <html> by theme/css.js): graph fill, glow, dots, axes, grid; machine columns, tab and heading style. */
+.chart path.af{opacity:var(--area-op)}
+html[data-gradient="on"] .chart path.af{-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
+html[data-glow="on"] .chart path:not(.af):not(.cmp):not(.dp){filter:drop-shadow(0 0 3px currentColor)}
+.chart path.dp{stroke-dasharray:0 9;stroke-linecap:round;stroke-width:calc(var(--line-w) * 2.8)}
+html[data-axes="off"] .xax,html[data-axes="off"] .chart .gl span{display:none}
+html[data-axes="off"] .chart,html[data-axes="off"] .xax{margin-left:0}
+html[data-gridden="sparse"] .chart .vg:nth-child(even),html[data-gridden="sparse"] .chart .gl:first-of-type{display:none}
+html[data-gridden="dense"] .chart{background-image:repeating-linear-gradient(to right,color-mix(in srgb,var(--line) 70%,transparent) 0 1px,transparent 1px 8%),repeating-linear-gradient(to bottom,color-mix(in srgb,var(--line) 70%,transparent) 0 1px,transparent 1px 20%)}
+html[data-grid="off"] .chart{background-image:none}
+html[data-cols="2"] .grid{column-count:2;column-gap:var(--sp-8)}
+html[data-cols="3"] .grid{column-count:3;column-gap:var(--sp-8)}
+html[data-tabs="pill"] .tabs{border-bottom-color:transparent}
+html[data-tabs="pill"] .tabs button{border-radius:var(--r-99)}
+html[data-tabs="pill"] .tabs button.on{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc)}
+html[data-tabs="segmented"] .tabs{border:1px solid var(--line2);border-radius:var(--r-8);padding:var(--sp-2);width:fit-content;max-width:100%}
+html[data-tabs="segmented"] .tabs button{border-radius:var(--r-6)}
+html[data-tabs="segmented"] .tabs button.on{background:var(--s2);color:var(--fg)}
+html[data-tabs="pill"] .tabbar,html[data-tabs="segmented"] .tabbar{display:none}
+html[data-heading="normal"] .grp h5,html[data-heading="normal"] .lbl,html[data-heading="normal"] .fsub>h4,html[data-heading="normal"] .trends h4,html[data-heading="normal"] .procs h4{text-transform:none;letter-spacing:.02em}
+/* pick mode */
+.pickbox{position:fixed;z-index:60;pointer-events:none;outline:2px solid #ff2b8a;outline-offset:1px;background:#ff2b8a1f}
+.pickbox span{position:absolute;left:0;top:100%;margin-top:var(--sp-4);white-space:nowrap;background:#ff2b8a;color:#fff;border-radius:var(--r-6);padding:var(--sp-4) var(--sp-8);font-size:var(--fs-12);font-weight:600}
+.pickbanner{position:fixed;z-index:61;left:var(--sp-10);top:var(--sp-10);pointer-events:none;background:#ff2b8a;color:#fff;border-radius:var(--r-99);padding:var(--sp-4) var(--sp-12);font-size:var(--fs-12);font-weight:600}
+html[data-picking="on"] body{cursor:crosshair}

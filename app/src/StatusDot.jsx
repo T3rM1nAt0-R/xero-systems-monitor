@@ -10,5 +10,5 @@ export default function StatusDot({ off = false, warn = false }) {
     const t = setTimeout(() => setFx(""), DOT_FX_MS);
     return () => clearTimeout(t);
   }, [off]);
-  return <i className={"dot" + (off ? " off" : "") + (warn && !off ? " warn" : "") + (fx ? " " + fx : "")} />;
+  return <i data-look="colors.acc" className={"dot" + (off ? " off" : "") + (warn && !off ? " warn" : "") + (fx ? " " + fx : "")} />;
 }

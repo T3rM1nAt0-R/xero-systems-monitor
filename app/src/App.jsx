@@ -108,7 +108,7 @@ export default function App() {
   useFlip(gridRef, vms.map(m => m.name).join("|"));   // cards glide when they are reordered, hidden or shown
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
-    <div className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
+    <div data-look="colors.bg" className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
       <div className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
@@ -149,7 +149,7 @@ export default function App() {
       <Toasts />
       {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
-      {custDlg && <Customize c={look.custom} names={ms.map(m => m.name)} onClose={() => setCustDlg(false)} />}
+      {custDlg && <Customize c={look.custom} onClose={() => setCustDlg(false)} />}
       {hidDlg && <HiddenMachines hidden={hidden} onShow={showMachine} onClose={() => setHidDlg(false)} />}
       {dlg && <Machines onClose={() => setDlg(false)} />}
       {help && <div className="modal" onClick={() => setHelp(false)}><div className="dlg" onClick={e => e.stopPropagation()}><h3>Keyboard shortcuts</h3>{KEYS.map(([k, t]) => <div className="mrow" key={k}><kbd>{k}</kbd><span>{t}</span></div>)}<div className="mfoot"><button className="cta" onClick={() => setHelp(false)}>Close</button></div></div></div>}

@@ -44,11 +44,11 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Hide machines you do not need (the <b>⋯</b> on a card or strip tile). They leave every view and the tray summary; Hidden machines lists them with Show again and Pause monitoring.</td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/customize.png" alt="The Customize dialog, Text tab"></td>
+<td width="50%"><img src="docs/screenshots/customize.png" alt="The Customize panel docked beside the live window"></td>
 <td width="50%"><img src="docs/screenshots/customized.png" alt="The window with a customized look"></td>
 </tr>
 <tr>
-<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a font, size and weight for each kind of text (12 bundled fonts), every colour, graph style, sizes, glass and motion (Full, Subtle, Off), and themes, with a live preview. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point; cards glide, tabs slide, toasts confirm saves and copies, and risky actions (stop or restart a container, end a task, stop everything) need a hold.</td>
+<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a docked side panel (the window stays live beside it) with one scroll: a theme gallery (Dark, Light, Midnight, Contrast, Neon, Terminal and popular palettes such as Dracula, Nord, Catppuccin, Gruvbox, Tokyo Night and Solarized), three base colours that every other colour follows, a font, size and weight for each kind of text (12 bundled fonts), graph style, density, glass and motion (Full, Subtle, Off). Search, a pick mode (click anything in the window to jump to its setting), undo and redo (Ctrl+Z / Ctrl+Y), and hold the eye to compare with how it looked when you opened the panel. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point; cards glide, tabs slide, toasts confirm saves and copies, and risky actions (stop or restart a container, end a task, stop everything) need a hold.</td>
 <td valign="top">The same window with the Midnight theme, other fonts, filled smooth graphs and a purple tint for one machine.</td>
 </tr>
 <tr>
@@ -88,7 +88,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </table>
 
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V
-- Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
+- Customize: a theme holds the whole look; built-in themes and popular palettes, "Custom (based on ...)" with Save, Save as new and Revert; rename, delete, copy code, export and import your own; a colour-blind safe switch (status also by shape); a colour per machine in its ⋯ menu tints its card edge and tile; a warning when text and background are hard to read together
 - Network tab: adapters, Wi-Fi name and signal, an internet check with a 24-hour up/down strip, and a ping map of your other machines
 - Disks tab: read and write speed of every drive over time, drive health (OK or needs a look, temperature, hours, SSD wear; on Linux it needs smartmontools), and a "Find biggest folders" search you start yourself, with a loading bar and a Stop button, that only reads and never deletes
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
