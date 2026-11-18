@@ -9,7 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
-    RunnerState, TopProgram,
+    RunnerState, SensorDetail, TopProgram,
 };
 use xsm_core::tracker::{Event, FinishedJob, Rules, Tracker};
 
@@ -106,6 +106,15 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
         ..Reading::default()
     };
     if is_pc(m) {
+        r.sensors = Some(SensorDetail {
+            fans_rpm: vec![1180.0, 920.0],
+            cpu_clock_mhz: Some(3900.0),
+            cpu_power_w: Some(40.0 + cpu_pct / 2.0),
+            gpu_power_w: Some(35.0),
+            core_load_pct: (0..8)
+                .map(|i| (cpu_pct + f64::from(i) * 7.0) % 100.0)
+                .collect(),
+        });
         r.gpu = Some(GpuReading {
             util_pct: wave(GPU, phase, t),
             temp_c: wave(GTEMP, phase, t),

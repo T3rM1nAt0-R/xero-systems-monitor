@@ -56,6 +56,10 @@ Reading = {                       // every field optional; absent means "not mea
   speed: number,                  // link, Mbps
   uptime: number,                 // seconds
   ip: string,
+  mhz: number,                    // CPU clock, average over cores (MHz). mhz, cpu_w, gpu_w, fans and cores come from
+  cpu_w, gpu_w: number,           // package power, watts. LibreHardwareMonitor and are absent when it is not running
+  fans: number[],                 // fan speeds, RPM
+  cores: number[],                // load of each CPU core, %
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
   hw: { board?, os?, cpu?, gpu? },

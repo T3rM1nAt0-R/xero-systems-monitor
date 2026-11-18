@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { hwNumbers, coreBars } from "../src/hwStrip.js";
 import { hotMin, isWarn, WATCH, rate, prOf } from "../src/format.js";
 import { buildLanes } from "../src/lanes.js";
 
@@ -103,3 +104,10 @@ test("trends: workflow names, averages, change against the week before, slowest 
   assert.equal(t.slow[0].mins, 40); assert.equal(t.workflows[0].name, "Unity compile");   // most total time first
   assert.equal(jobTrends(rows, "other", now).workflows.length, 0);
 });
+
+test("hwNumbers: only what LibreHardwareMonitor reported", () => {
+  assert.deepEqual(hwNumbers({}), []);
+  assert.deepEqual(hwNumbers({ mhz: 3900, cpu_w: 45.4, gpu_w: 30, fans: [1200.4, 800] }), [["Clock", "3.90 GHz"], ["CPU power", "45 W"], ["GPU power", "30 W"], ["Fans", "1200 · 800 RPM"]]);
+  assert.deepEqual(hwNumbers({ mhz: 800, fans: [900] }), [["Clock", "800 MHz"], ["Fan", "900 RPM"]]);
+});
+test("coreBars: a sliver for idle cores, capped at 100", () => { assert.deepEqual(coreBars([0, 50, 120]), [4, 50, 100]); assert.deepEqual(coreBars(undefined), []); });

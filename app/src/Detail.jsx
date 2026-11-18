@@ -1,3 +1,4 @@
+import HwStrip from "./HwStrip.jsx";
 import { useState, useEffect, memo, useMemo } from "react";
 import { setJobsAt } from "./hoverGroup.js";
 import Chart from "./Chart.jsx";
@@ -56,6 +57,7 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone, limits =
         <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
         <Pn title="Memory" k="ram" now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
+      <HwStrip d={d} />
       {d.top?.length > 0 && <div className="procs"><h4>Busiest programs now</h4>{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</div>}</Grp>
       {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
         <Pn title="GPU" k="gpu" now={big(d.gpu?.toFixed(0), "%")} sm={stat(P("gpu"), v => v.toFixed(0) + "%")} max={100} unit="%" />

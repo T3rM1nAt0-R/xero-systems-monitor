@@ -30,7 +30,7 @@ const SENSOR_RANGE_C: std::ops::RangeInclusive<f64> = 5.0..=120.0;
 /// Hottest CPU sensor: the system sensors, then on Windows `LibreHardwareMonitor`, then the
 /// ACPI thermal zone. `polls` counts polls so far and `acpi_cache` keeps the last thermal-zone
 /// answer between the rare calls that ask Windows.
-pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>) -> Option<f64> {
+pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>, lhm: Option<&str>) -> Option<f64> {
     let from_system = Components::new_with_refreshed_list()
         .ok()
         .and_then(|components| {
@@ -50,12 +50,14 @@ pub(crate) fn cpu_temp(polls: u32, acpi_cache: &mut Option<f64>) -> Option<f64> 
     if !cfg!(windows) {
         return from_system;
     }
-    from_system.or_else(lhm_cpu_temp).or_else(|| {
-        if polls.is_multiple_of(ACPI_EVERY_POLLS) {
-            *acpi_cache = acpi_cpu_temp();
-        }
-        *acpi_cache
-    })
+    from_system
+        .or_else(|| lhm.and_then(parse_lhm_cpu_temp))
+        .or_else(|| {
+            if polls.is_multiple_of(ACPI_EVERY_POLLS) {
+                *acpi_cache = acpi_cpu_temp();
+            }
+            *acpi_cache
+        })
 }
 
 /// Ask Windows (WMI, through one hidden PowerShell) for the ACPI thermal zones.
@@ -80,8 +82,11 @@ pub fn parse_acpi_temps(text: &str) -> Option<f64> {
         })
 }
 
-/// Ask `LibreHardwareMonitor`'s local web server; `None` when it is not running.
-fn lhm_cpu_temp() -> Option<f64> {
+/// Ask `LibreHardwareMonitor`'s local web server for its JSON text; `None` off Windows or when it is not running.
+pub(crate) fn lhm_text() -> Option<String> {
+    if !cfg!(windows) {
+        return None;
+    }
     let timeout = Duration::from_millis(LHM_TIMEOUT_MS);
     let mut s = TcpStream::connect_timeout(&SocketAddr::from(LHM_ADDR), timeout).ok()?;
     s.set_read_timeout(Some(timeout)).ok()?;
@@ -89,7 +94,7 @@ fn lhm_cpu_temp() -> Option<f64> {
         .ok()?;
     let mut text = String::new();
     s.read_to_string(&mut text).ok()?;
-    parse_lhm_cpu_temp(&text)
+    Some(text)
 }
 
 /// The text of the string value that follows `"key"` in JSON text, from `from` on.
