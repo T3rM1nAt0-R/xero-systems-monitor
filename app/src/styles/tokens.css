@@ -24,6 +24,7 @@
   --font-number: var(--font-ui); --font-label: var(--font-ui); --font-small: var(--font-ui);
   /* text scale: 1 is normal, the Large text setting raises it */
   --scale: 1; --dens: 1; --graph-k: 1; --line-w: 2; --area-op: .08;
+  --dur: 180ms; --ease: cubic-bezier(.2,.7,.2,1);   /* open and close motion; keep --dur in step with MOTION_MS in src/motion.js */
   --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
   --size-number: calc(16px * var(--scale)); --size-label: calc(13px * var(--scale)); --size-small: calc(11px * var(--scale));
   /* font sizes */

@@ -11,7 +11,6 @@ test("registry: one entry per section, unique ids, every tab known, every functi
   assert.equal(new Set(TAB_IDS).size, TABS.length);
   assert.deepEqual(TAB_IDS.slice(0, 2), ["overview", "hardware"]);
   for (const s of SECTION_META) {
-    assert.ok(TAB_IDS.includes(s.tab), s.id + " names a known tab");
     for (const f of ["accent", "available", "sub", "summary"]) assert.equal(typeof s[f], "function", s.id + "." + f);
     assert.match(s.accent({}), /^--[a-z-]+$/);
   }

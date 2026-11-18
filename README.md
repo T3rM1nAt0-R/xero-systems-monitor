@@ -48,11 +48,20 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>): a font, size and weight for each kind of text (12 bundled fonts), every colour, graph style, sizes, and themes, with a live preview.</td>
 <td valign="top">The same window with the Midnight theme, other fonts, filled smooth graphs and a purple tint for one machine.</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/tabs-overview.png" alt="A machine card on its Overview tab"></td>
+<td width="50%"><img src="docs/screenshots/tabs-runners.png" alt="The Runners tab"></td>
+</tr>
+<tr>
+<td valign="top">Tabs on every machine card: Overview, Hardware, Processes, Disks, Network, Services and Runners (only the ones that machine has). Overview keeps the main graphs, a short runners block and any failing containers. Use the arrow keys to move between tabs; each machine remembers its tab. Hover the <b>i</b> in the header for the board, system and address.</td>
+<td valign="top">The Runners tab: runner chips, running jobs, timeline, last 7 days, slowest jobs, the busy heatmap and job history. Click the pin on any section header to pin that section to Overview.</td>
+</tr>
 </table>
 
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
+- Smooth folds, tab changes and menus, a thin loading bar and graph placeholders while data arrives (all off with the system "reduce motion" setting)
 - Every machine card: uptime, last restart time and "Restart needed for updates" (Debian/Ubuntu and Windows)
 - Remote Linux machines over your own SSH config, no agent to install on them
 - Runner insights: a busy-hours heatmap for the week, a searchable job history, and a click on any job opens it on GitHub (its pull request, or the Actions page)

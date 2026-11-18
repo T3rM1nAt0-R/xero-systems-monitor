@@ -4,6 +4,7 @@ import Compact from "./Compact.jsx";
 import ActivityDrawer from "./ActivityDrawer.jsx";
 import Machines from "./Machines.jsx";
 import Strip from "./Strip.jsx";
+import LoadBar from "./LoadBar.jsx";
 import Palette from "./Palette.jsx";
 import ViewControl from "./ViewControl.jsx";
 import HiddenMachines from "./HiddenMachines.jsx";
@@ -40,7 +41,7 @@ export default function App() {
   const [range, setRange] = usePersisted("range", () => 300), [refresh, setRefresh] = usePersisted("refresh", 3), [auto, setAuto] = usePersisted("auto", true);
   const safeRange = snapRange(range);
   const back = useCompare();
-  const { state, err, stamp, now, hist, hist2, events, rows, fc, retry } = useCollectorData(safeRange, refresh, back);
+  const { state, err, stamp, now, hist, hist2, events, rows, fc, retry, loading } = useCollectorData(safeRange, refresh, back);
   useEffect(() => publishHistory(hist), [hist]);
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
@@ -101,6 +102,7 @@ export default function App() {
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
+      <LoadBar active={!state || loading} />
       <div className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
         <span className="live"><i className={"dot" + (err ? " off" : "")} /><Ago err={err} stamp={stamp} short={effCompact} /></span>

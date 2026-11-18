@@ -4,9 +4,8 @@ import { containerBad } from "../alerts.js";
 // This file is pure (no React): the group order and "hide a section" choices (order.js), the Groups menu, the Ctrl+K palette and the tests all read it.
 // The drawing of each section is in the file next to it (Cpu.jsx, Gpu.jsx, ...); sections/index.js joins the two.
 //
-// A section is { id, title, tab, spark, def, cls, accent(m, x), available(m, h), sub(m, x), summary(m, x) }:
+// A section is { id, title, spark, def, cls, accent(m, x), available(m, h), sub(m, x), summary(m, x) }:
 //   id, title  the short key (also the fold and layout key) and the name shown to people
-//   tab        which tab it lives on once tabs exist (see TABS)
 //   spark      the history series drawn as a tiny line when the section is folded, or null
 //   def, cls   open by default or not, and an extra class for the section's element
 //   accent     the CSS colour variable that marks the section ("--c-cpu"); depends on the machine for services
@@ -27,25 +26,25 @@ export function svcFacts(m) {
 }
 
 export const SECTION_META = [
-  { id: "cpu", title: "CPU", tab: "hardware", spark: "cpu", def: true, cls: "", accent: () => "--c-cpu", available: () => true,
+  { id: "cpu", title: "CPU", spark: "cpu", def: true, cls: "", accent: () => "--c-cpu", available: () => true,
     sub: m => m.d?.hw?.cpu && `${m.d.hw.cpu}${m.d.ram_gb ? ` · ${m.d.ram_gb[1].toFixed(0)} GB RAM` : ""}`,
     summary: m => `${pct(m.d?.cpu)} · ${deg(m.d?.temp)}` },
-  { id: "gpu", title: "GPU", tab: "hardware", spark: "gpu", def: true, cls: "", accent: () => "--c-gpu", available: (m, h) => m.d?.gpu != null || (h?.gpu || []).some(p => p[1] > 0),
+  { id: "gpu", title: "GPU", spark: "gpu", def: true, cls: "", accent: () => "--c-gpu", available: (m, h) => m.d?.gpu != null || (h?.gpu || []).some(p => p[1] > 0),
     sub: m => m.d?.hw?.gpu && `${m.d.hw.gpu}${m.d.vram_gb ? ` · ${m.d.vram_gb[1].toFixed(0)} GB` : ""}`,
     summary: m => `${pct(m.d?.gpu)} · ${deg(m.d?.gtemp)}` },
-  { id: "net", title: "Network", tab: "network", spark: "down", def: false, cls: "full", accent: () => "--c-net", available: () => true,
+  { id: "net", title: "Network", spark: "down", def: false, cls: "full", accent: () => "--c-net", available: () => true,
     sub: m => { const d = m.d || {}; return d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`; },
     summary: m => { const d = m.d || {}; return `↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`; } },
-  { id: "disk", title: "Disk", tab: "disks", spark: "disk", def: true, cls: "full", accent: () => "--c-disk", available: () => true,
+  { id: "disk", title: "Disk", spark: "disk", def: true, cls: "full", accent: () => "--c-disk", available: () => true,
     sub: m => { const n = (m.d?.storage || []).length; return n > 0 && `${n} drive${n === 1 ? "" : "s"}`; },
     summary: (m, x) => `${m.d?.disk != null ? m.d.disk.toFixed(0) + "% used" : ""}${x?.full ? " · " + x.full : ""}` },
-  { id: "run", title: "Runners", tab: "runners", spark: null, def: true, cls: "runners", accent: () => "--c-run", available: m => !!m.d?.runners,
+  { id: "run", title: "Runners", spark: null, def: true, cls: "runners", accent: () => "--c-run", available: m => !!m.d?.runners,
     sub: (m, x) => {
       const busy = keys(m.d?.jobs), day = x?.day;
       return `${busy} busy · ${keys(m.d?.runners) - busy} idle${day && day.done ? ` · ${day.done} jobs in 24 h${day.failed ? `, ${day.failed} failed` : ""}${day.stopped ? `, ${day.stopped} stopped` : ""}` : ""}`;
     },
     summary: m => `${keys(m.d?.jobs)} busy` },
-  { id: "svc", title: "Containers & services", tab: "services", spark: null, def: true, cls: "", available: m => !!(m.d?.docker || m.d?.failed?.length),
+  { id: "svc", title: "Containers & services", spark: null, def: true, cls: "", available: m => !!(m.d?.docker || m.d?.failed?.length),
     accent: m => (svcFacts(m).bad || m.d?.docker_err ? "--bad" : "--c-svc"),
     sub: m => { const { cs, cgone, bad, up } = svcFacts(m); return m.d?.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`; },
     summary: m => { const { bad, up } = svcFacts(m); return bad ? `${bad} failing` : `${up} running`; } },

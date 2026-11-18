@@ -6,7 +6,7 @@ const perMachine = async (names, ask) => (await Promise.all(names.split("|").map
 // Each piece refreshes on its own timer and pauses while the window is hidden.
 export default function useCollectorData(range, refresh, back = 0) {
   const [state, setState] = useState(null), [err, setErr] = useState(null), [stamp, setStamp] = useState(0), [now, setNow] = useState(Date.now());
-  const [hist, setHist] = useState({}), [hist2, setHist2] = useState({}), [events, setEvents] = useState([]), [rows, setRows] = useState([]), [fc, setFc] = useState({}), [tick, setTick] = useState(0);
+  const [hist, setHist] = useState({}), [hist2, setHist2] = useState({}), [events, setEvents] = useState([]), [rows, setRows] = useState([]), [fc, setFc] = useState({}), [tick, setTick] = useState(0), [loadH, setLoadH] = useState(false), [loadC, setLoadC] = useState(false);   // loadH / loadC: a graph history (or compare) fetch is on its way
   const poll = useCallback(async () => {
     if (document.hidden) return;
     try { const s = await api.getState(); setState(s); setErr(null); setStamp(Date.now()); setNow(Date.now()); } catch (e) { setErr(String(e.message || e)); }
@@ -17,12 +17,12 @@ export default function useCollectorData(range, refresh, back = 0) {
   useEffect(() => {   // graph history for the chosen range; the old graph stays until the new one arrives
     if (!names) return; let live = true;
     const go = async () => { if (document.hidden) return; const got = await perMachine(names, n => api.getHistory(n, range)); if (live) setHist(p => ({ ...p, ...Object.fromEntries(got) })); };
-    go(); const id = setInterval(go, range >= 604800 ? 300000 : range >= 3600 ? 60000 : 10000); return () => { live = false; clearInterval(id); };
+    setLoadH(true); go().finally(() => live && setLoadH(false)); const id = setInterval(go, range >= 604800 ? 300000 : range >= 3600 ? 60000 : 10000); return () => { live = false; clearInterval(id); };
   }, [names, range, tick]);
   useEffect(() => {   // compare mode: the same graphs from `back` seconds ago. get_history always ends now, so ask for a longer range; the graphs cut out the older part and slide it forward.
-    if (!names || !back) { setHist2({}); return; } let live = true;
+    if (!names || !back) { setHist2({}); setLoadC(false); return; } let live = true;
     const go = async () => { if (document.hidden) return; const got = await perMachine(names, n => api.getHistory(n, range + back)); if (live) setHist2(Object.fromEntries(got)); };
-    go(); const id = setInterval(go, 300000); return () => { live = false; clearInterval(id); };
+    setLoadC(true); go().finally(() => live && setLoadC(false)); const id = setInterval(go, 300000); return () => { live = false; clearInterval(id); };
   }, [names, range, back, tick]);
   useEffect(() => {   // the Activity list: what happened in the last day
     let live = true;
@@ -40,5 +40,5 @@ export default function useCollectorData(range, refresh, back = 0) {
     go(); const id = setInterval(go, 600000); return () => { live = false; clearInterval(id); };
   }, [names]);
   const retry = useCallback(() => { poll(); setTick(x => x + 1); }, [poll]);
-  return { state, err, stamp, now, hist, hist2, events, rows, fc, retry };
+  return { state, err, stamp, now, hist, hist2, events, rows, fc, retry, loading: loadH || loadC };
 }

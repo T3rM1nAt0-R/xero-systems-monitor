@@ -8,6 +8,7 @@ import "./styles/graphs.css";
 import "./styles/sections.css";
 import "./styles/compact.css";
 import "./styles/menus.css";
+import "./styles/motion.css";
 import "./styles/customize.css";
 import "./styles/view.css";
 import { installTips } from "./tooltip.js";
