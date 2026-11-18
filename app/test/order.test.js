@@ -50,9 +50,9 @@ const acts = extra => ({ machines: [{ name: "Hoarder", d: {} }], groupsOf: () =>
 test("commands: machines, groups, ranges, settings; optional ones only when given", () => {
   const labels = buildCommands(acts()).map(c => c.label);
   for (const l of ["Go to Hoarder", "Hoarder > GPU", "Show 5 min", "Theme: Light", "Text size: Large", "Refresh every 1 min", "Always on top: turn off", "Compact view: turn on", "Alert: A machine goes offline: turn off", "Alert: A job fails: turn on", "Snooze alerts for 1 hour", "Machines…", "Check for updates"]) assert.ok(labels.includes(l), l);
-  assert.ok(!labels.includes("Limits…") && !labels.includes("Fold all cards") && !labels.includes("Quiet hours…"));
-  const more = buildCommands(acts({ onLimits: () => {}, foldAll: () => {}, quietHours: () => {} })).map(c => c.label);
-  for (const l of ["Limits…", "Fold all cards", "Unfold all cards", "Quiet hours…"]) assert.ok(more.includes(l));
+  assert.ok(!labels.includes("Limits…") && !labels.includes("Fold all cards") && !labels.some(l => l.startsWith("Quiet hours")));
+  const more = buildCommands(acts({ onLimits: () => {}, foldAll: () => {}, setQuietOn: () => {}, quietOn: false })).map(c => c.label);
+  for (const l of ["Limits…", "Fold all cards", "Unfold all cards", "Quiet hours: turn on"]) assert.ok(more.includes(l));
 });
 test("commands run the action they wrap", () => {
   const seen = [], cs = buildCommands(acts({ goGroup: (n, k) => seen.push([n, k]), setAlert: (k, on) => seen.push([k, on]), setPin: v => seen.push(["pin", v]) }));

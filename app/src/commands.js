@@ -1,7 +1,7 @@
 import { ALERTS } from "./alerts.js";
 import { groupLabel } from "./order.js";
 // The one list of everything the Ctrl+K palette can do. It only wraps actions the app already has; `a` is a bag of them.
-// Items: { id, section, label, words (extra search text), run }. Optional actions (foldAll, onLimits, quietHours) add their item only when passed in.
+// Items: { id, section, label, words (extra search text), run }. Optional actions (foldAll, onLimits, setQuietOn) add their item only when passed in.
 export function buildCommands(a) {
   const out = [], add = (section, label, run, words = "") => out.push({ id: section + ":" + label, section, label, words, run });
   for (const m of a.machines) {
@@ -19,7 +19,7 @@ export function buildCommands(a) {
   if (a.foldAll) { add("Setting", "Fold all cards", () => a.foldAll(true), "collapse"); add("Setting", "Unfold all cards", () => a.foldAll(false), "expand"); }
   for (const [k, l] of ALERTS) flip(`Alert: ${l}`, !!a.alertPrefs[k], on => a.setAlert(k, on), "notify notification");
   add("Setting", "Snooze alerts for 1 hour", a.snooze1h, "mute notifications");
-  if (a.quietHours) add("Setting", "Quiet hours…", a.quietHours, "night mute");
+  if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");
   add("Setting", "Machines…", a.onMachines, "add remove edit");
   if (a.onLimits) add("Setting", "Limits…", a.onLimits, "thresholds warn");
   add("Setting", "Check for updates", a.onCheck, "update version");
