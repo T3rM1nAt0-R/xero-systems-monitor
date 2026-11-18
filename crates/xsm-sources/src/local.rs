@@ -1,7 +1,7 @@
 //! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor`, the system `ping` and CI runners.
 
 use crate::runners::RunnerWatch;
-use crate::sensors::{cpu_temp, ping_once, windows_restart_needed};
+use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
@@ -96,6 +96,7 @@ impl LocalSource {
             self.ping_ms = ping_once();
             self.updates.restart_needed = windows_restart_needed();
         }
+        let lhm = lhm_text();
         let poll_no = self.polls;
         self.polls = self.polls.wrapping_add(1);
         let disks = disk_readings(&self.disks);
@@ -104,7 +105,7 @@ impl LocalSource {
                 usage_pct: (!first).then(|| f64::from(self.sys.global_cpu_usage())),
                 ..CpuReading::default()
             }),
-            cpu_temp_c: cpu_temp(poll_no, &mut self.acpi_temp),
+            cpu_temp_c: cpu_temp(poll_no, &mut self.acpi_temp, lhm.as_deref()),
             memory: memory_reading(&self.sys),
             disk_used_pct: root_used_pct(&self.disks),
             disks,
@@ -113,6 +114,7 @@ impl LocalSource {
             ping_ms: self.ping_ms,
             top: self.top.clone(),
             hardware: self.hardware.clone(),
+            sensors: lhm.as_deref().and_then(xsm_core::lhm::parse_lhm),
             updates: self.updates.clone(),
             runners: ci.runners,
             jobs: ci.jobs,

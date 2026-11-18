@@ -4,6 +4,7 @@
 pub mod alerts;
 pub mod container;
 pub mod forecast;
+pub mod lhm;
 pub mod parse;
 pub mod reading;
 pub mod tracker;

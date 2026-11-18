@@ -75,6 +75,13 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
         .map(|d| (&d.mount, gib(d.used_bytes), gib(d.total_bytes)))
         .collect();
     put_some(&mut m, "storage", disks);
+    if let Some(s) = &r.sensors {
+        put(&mut m, "mhz", s.cpu_clock_mhz);
+        put(&mut m, "cpu_w", s.cpu_power_w);
+        put(&mut m, "gpu_w", s.gpu_power_w);
+        put_some(&mut m, "fans", &s.fans_rpm);
+        put_some(&mut m, "cores", &s.core_load_pct);
+    }
     lists(r, &mut m);
     Value::Object(m).serialize(s)
 }

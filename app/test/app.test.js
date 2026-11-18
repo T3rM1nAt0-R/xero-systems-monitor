@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { hwNumbers, coreBars } from "../src/hwStrip.js";
 import { hotMin, isWarn, WATCH, rate, prOf, upLine, restartWhy } from "../src/format.js";
 import { buildLanes } from "../src/lanes.js";
 
@@ -104,6 +105,12 @@ test("trends: workflow names, averages, change against the week before, slowest 
   assert.equal(jobTrends(rows, "other", now).workflows.length, 0);
 });
 
+test("hwNumbers: only what LibreHardwareMonitor reported", () => {
+  assert.deepEqual(hwNumbers({}), []);
+  assert.deepEqual(hwNumbers({ mhz: 3900, cpu_w: 45.4, gpu_w: 30, fans: [1200.4, 800] }), [["Clock", "3.90 GHz"], ["CPU power", "45 W"], ["GPU power", "30 W"], ["Fans", "1200 · 800 RPM"]]);
+  assert.deepEqual(hwNumbers({ mhz: 800, fans: [900] }), [["Clock", "800 MHz"], ["Fan", "900 RPM"]]);
+});
+test("coreBars: a sliver for idle cores, capped at 100", () => { assert.deepEqual(coreBars([0, 50, 120]), [4, 50, 100]); assert.deepEqual(coreBars(undefined), []); });
 test("upLine: how long on and when it restarted, 12-hour", () => {
   const now = new Date(2026, 10, 18, 12, 0).getTime() / 1000;   // a Wednesday, local time
   const flat = x => x.replace(/\s/g, " ");   // newer ICU puts a narrow no-break space before AM

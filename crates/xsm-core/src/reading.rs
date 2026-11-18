@@ -35,6 +35,8 @@ pub struct Reading {
     pub top: Vec<TopProgram>,
     /// Hardware names (kept from the last frame that read them).
     pub hardware: HardwareInfo,
+    /// Fans, clock and power from `LibreHardwareMonitor`; `None` when it is not running.
+    pub sensors: Option<SensorDetail>,
     /// Restart and update state (kept from the last frame that read the update count).
     pub updates: UpdateInfo,
 }
@@ -221,6 +223,20 @@ pub struct HardwareInfo {
     pub board: Option<String>,
 }
 
+/// Extra hardware numbers from `LibreHardwareMonitor`. A number it did not report is `None` or empty.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct SensorDetail {
+    /// Fan speeds, revolutions per minute.
+    pub fans_rpm: Vec<f64>,
+    /// Average clock of the CPU cores, megahertz.
+    pub cpu_clock_mhz: Option<f64>,
+    /// CPU package power, watts.
+    pub cpu_power_w: Option<f64>,
+    /// Graphics card power, watts.
+    pub gpu_power_w: Option<f64>,
+    /// Load of each CPU core, percent.
+    pub core_load_pct: Vec<f64>,
+}
 /// Whether the machine wants a restart, and how many updates wait. `None` means not known.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdateInfo {

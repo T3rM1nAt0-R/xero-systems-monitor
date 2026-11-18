@@ -34,6 +34,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </tr>
 </table>
 
+- This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Every machine card: uptime, last restart time and "Restart needed for updates" (Debian/Ubuntu and Windows)
 - This PC: CPU, memory, disk, network, ping, top programs, GPU (NVIDIA), CPU temperature
 - Remote Linux machines over your own SSH config, no agent to install on them
