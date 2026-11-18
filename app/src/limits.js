@@ -22,6 +22,12 @@ export function limitsFor(all, name) {
   for (const k of Object.keys(DEFAULT_LIMITS)) out[k] = k in mine ? cleanLimit(k, mine[k]) : DEFAULT_LIMITS[k];
   return out;
 }
+// limitsFor with a memory: `limitsOf(name)` returns the same object every time for the same saved limits, so a card that gets it as a prop can skip re-rendering.
+// Build a new one when the saved limits change. This is the one way the window hands limits around (cards, compact rows, tray, alerts).
+export function memoLimitsFor(all) {
+  const seen = new Map();
+  return name => { let v = seen.get(name); if (!v) seen.set(name, v = limitsFor(all, name)); return v; };
+}
 // Set one limit for one machine, or for every machine in `names` when `name` is null ("Same for all").
 // An empty string is kept while typing; it counts as the default.
 export function setLimit(all, names, name, k, v) {

@@ -1,14 +1,13 @@
-import { limitsFor } from "./limits.js";
 import { isWarn, prOf, hm, hotMin, WATCH } from "./format.js";
 import N from "./Pill.jsx";
 // The compact view: one row per machine, one attention line on top. Click a row and its full card opens right under it.
-export default function Compact({ limits, ms, now, lastOk, hot, expanded, onToggle, renderCard }) {
-  const attn = ms.filter(m => m.err || hot[m.name]?.cpu || WATCH.some(k => isWarn(k, m.d?.[k], limitsFor(limits, m.name))));
+export default function Compact({ limitsOf, ms, now, lastOk, hot, expanded, onToggle, renderCard }) {
+  const attn = ms.filter(m => m.err || hot[m.name]?.cpu || WATCH.some(k => isWarn(k, m.d?.[k], limitsOf(m.name))));
   const first = attn[0];
   return (
     <div className="compact">
       {first && <div className="cattn"><b>▲ {first.name}</b> {first.err ? `offline${lastOk[first.name] ? " since " + hm(lastOk[first.name]) : ""}` : hot[first.name]?.cpu ? `CPU high for ${hotMin(hot[first.name].cpu, now)} min` : "needs a look"}{attn.length > 1 ? ` · +${attn.length - 1} more` : ""}</div>}
-      {ms.map(m => { const d = m.d || {}, jobs = Object.entries(d.jobs || {}), total = Object.keys(d.runners || {}).length, lm = limitsFor(limits, m.name), bad = !m.err && (hot[m.name]?.cpu || WATCH.some(k => isWarn(k, d[k], lm))), open = expanded.has(m.name);
+      {ms.map(m => { const d = m.d || {}, jobs = Object.entries(d.jobs || {}), total = Object.keys(d.runners || {}).length, lm = limitsOf(m.name), bad = !m.err && (hot[m.name]?.cpu || WATCH.some(k => isWarn(k, d[k], lm))), open = expanded.has(m.name);
         return (
           <div className={"crow" + (open ? " open" : "")} key={m.name}>
             <button className="chead2" onClick={() => onToggle(m.name)} aria-expanded={open}>

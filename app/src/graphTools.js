@@ -2,6 +2,7 @@
 export const DAY = 86400;
 export const COMPARE = [["off", 0], ["yesterday", DAY], ["last week", 7 * DAY]];   // [label, seconds back]
 export const MIN_ZOOM = 60;       // the smallest zoom span, seconds
+export const CLICK_PX = 4;       // the pointer moved at most this many pixels since it went down: a click
 export const MIN_DRAG = 0.02;     // a drag shorter than this share of the graph width is a click, not a zoom
 
 // Points inside [a, b], with the line cut exactly at the edges (a straight line between the neighbours outside).
@@ -21,6 +22,9 @@ const edge = ([t1, v1], [t2, v2], t) => [t, v1 + ((v2 - v1) * (t - t1)) / (t2 - 
 
 // An older series moved forward by `offset` seconds so it lines up with the live window, then cut to it.
 export const shiftSeries = (pts, offset, a, b) => clipSeries((pts || []).map(([t, v]) => [t + offset, v]), a, b);
+
+// Was this a click? `from` is where the pointer went down ([x, y], or null when unknown), (x, y) is where it came up. A drag across the graph (to zoom) is not a click.
+export const isClick = (from, x, y) => !from || Math.hypot(x - from[0], y - from[1]) <= CLICK_PX;
 
 // The span picked by dragging from share qa to share qb (0..1) across a graph showing [t0, t1]. null when it was only a click.
 export function zoomRange(t0, t1, qa, qb) {

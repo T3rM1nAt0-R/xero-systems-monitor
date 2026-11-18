@@ -3,7 +3,8 @@ import Sub from "./Sub.jsx";
 import { busyHeat, heatTip, dayLine, hour12, HEAT_AXIS } from "./busy.js";
 // "Busy this week": a heatmap, one row per day (today last) and one cell per hour. A darker cell means more of the runners' time was busy.
 export default function Busy({ rows, machine, count, running, now }) {
-  const days = useMemo(() => busyHeat(rows, machine, count, running, now, 7), [rows, machine, count, running.length, Math.floor(now / 300)]);
+  const runs = running.length, slot = Math.floor(now / 300);   // the heatmap only moves every 5 minutes
+  const days = useMemo(() => busyHeat(rows, machine, count, running, now, 7), [rows, machine, count, runs, slot]);   // eslint-disable-line react-hooks/exhaustive-deps -- `running` and `now` are read through their narrowed forms `runs` and `slot`
   if (!count) return null;
   return (
     <Sub id={machine + ".busy"} def={false} title="Busy this week"><div className="heat">

@@ -2,3 +2,5 @@ export const RANGES = [["5 min", 300], ["1 hour", 3600], ["1 day", 86400], ["1 w
 export const snapRange = r => RANGES.reduce((b, [, s]) => Math.abs(s - r) < Math.abs(b - r) ? s : b, 300);   // old saved ranges map to the nearest new one
 export const SHORT = l => l.replace(" min", "m").replace(" hour", "h").replace(" day", "d").replace(" week", "w").replace(" month", "mo").replace(" year", "y");
 export const KEYS = [["1", "Jump to machine 1, 2, 3…"], ["Esc", "Close a window"], ["C", "Compact view"], ["F", "Fold all machines"], ["Shift+F", "Unfold all machines"], ["M", "Mini corner view"], ["[ ]", "Shorter / longer range"], ["E", "Activity drawer"], ["T", "Always on top"], ["Ctrl+K", "Search: jump to a machine, change a setting"], ["?", "This list"]];
+export const NONE = Object.freeze([]);   // one shared empty list, so a prop that is "nothing" keeps its identity
+export const NO_HOT = Object.freeze({});

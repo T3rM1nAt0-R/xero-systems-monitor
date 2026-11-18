@@ -4,20 +4,19 @@
 //   calm (green): none of that
 import { isWarn } from "./format.js";
 import { containerBad } from "./alerts.js";
-import { limitsFor } from "./limits.js";
 
-export function machineStatus(m, limits) {
+// `l` is this machine's limits (limitsOf(m.name)).
+export function machineStatus(m, l) {
   if (m.err) return "bad";
   const d = m.d || {};
   if ((d.docker || []).some(containerBad) || (d.failed || []).length > 0) return "bad";
-  const l = limitsFor(limits, m.name);
   if (["cpu", "temp", "gtemp", "ram", "vram"].some(k => isWarn(k, d[k], l)) || (d.disk != null && d.disk >= l.disk)) return "look";
   return "calm";
 }
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-// machines: the snapshots; limits: the saved per-machine limits; failedJobs: failures not seen yet.
-export function trayStatus(machines, limits, failedJobs = 0) {
-  const all = machines.map(m => machineStatus(m, limits)), count = s => all.filter(x => x === s).length;
+// machines: the snapshots; limitsOf: name -> that machine's limits; failedJobs: failures not seen yet.
+export function trayStatus(machines, limitsOf, failedJobs = 0) {
+  const all = machines.map(m => machineStatus(m, limitsOf(m.name))), count = s => all.filter(x => x === s).length;
   const calm = count("calm"), look = count("look"), bad = count("bad");
   const state = bad || failedJobs > 0 ? "bad" : look ? "look" : "calm";
   const parts = [];

@@ -7,7 +7,8 @@ import { linkProps, linkClass } from "./jobLink.js";
 const mm = m => m < 1 ? "<1 min" : m < 90 ? Math.round(m) + " min" : (m / 60).toFixed(1) + " h";
 // "Last 7 days": which workflows take the time, whether they got slower than the week before, and the slowest jobs.
 export default function Trends({ rows, machine, now }) {
-  const tr = useMemo(() => jobTrends(rows, machine, Math.floor(now)), [rows, machine, Math.floor(now / 300)]);
+  const slot = Math.floor(now / 300);   // the numbers only move every 5 minutes
+  const tr = useMemo(() => jobTrends(rows, machine, Math.floor(now)), [rows, machine, slot]);   // eslint-disable-line react-hooks/exhaustive-deps -- `now` is read through its narrowed form `slot`
   if (!tr.workflows.length) return null;
   return (
     <div className="trends">
