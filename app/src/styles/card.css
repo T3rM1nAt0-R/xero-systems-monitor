@@ -37,7 +37,6 @@
 .detail .ph .sum{font-size:var(--size-small);font-family:var(--font-small);font-weight:var(--weight-small,400);white-space:nowrap}
 @container (max-width:420px){.detail .ph .sum{display:none}}
 .chead .meta{margin-left:auto;color:var(--dim);font-size:var(--fs-11-5)}
-.card.full .jobs{margin-bottom:var(--sp-4)}
 .detail .xax{font-size:var(--fs-10);margin-left:0;margin-top:var(--sp-2)}
 .detail .chart .gl span{font-size:var(--fs-9-5)}
 .grp h5::before{content:"";width:var(--sz-8);height:var(--sz-8);border-radius:var(--r-2);background:var(--g,var(--acc));order:0}
@@ -47,12 +46,7 @@
 .detail .ph .now small{color:var(--dim)}
 .detail .chart .thr span{color:var(--crit);font-size:var(--fs-9-5)}
 .detail .chart .thr{border-top-color:color-mix(in srgb,var(--crit) 60%,transparent)}
-.detail .tl .xax,.detail .tlx{margin-left:var(--sp-70)}
-.detail .track{height:var(--sz-15)}
 .detail .jb{top:var(--sp-1);bottom:var(--sp-1);line-height:11px;font-size:var(--fs-10)}
-.detail .tl{gap:var(--sp-3)}
-.detail .lane{grid-template-columns:62px 1fr;gap:var(--sp-6)}
-.detail .lane>.tick{font-size:var(--fs-11)}
 @container (min-width:860px){.tabpanel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.detail .grp.runners,.detail .grp.full{grid-column:1/-1}}
 .grp h5:hover{color:var(--fg)}
 .grp h5 .chev{font-weight:400;color:var(--dim);width:var(--sz-10);display:inline-block;font-size:var(--fs-11)}
