@@ -62,7 +62,7 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
           {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color } : { stroke: s.color }} />; })}
         </svg>
         {thr != null && thr <= top && <div className="thr" style={{ bottom: (thr / top) * 100 + "%" }}><span>{thrLabel}</span></div>}
-        {marks.map((m, i) => m.t >= t0 && <div key={i} className="ev" data-tip={m.text} style={{ left: ((m.t - t0) / (t1 - t0)) * 100 + "%" }} />)}
+        {marks.map((m, i) => m.t >= t0 && m.t <= t1 && <div key={i} className={"ev " + (m.kind || "")} style={{ left: ((m.t - t0) / (t1 - t0)) * 100 + "%" }}><b data-tip={m.text} /></div>)}
         <div className="x" ref={x} /><div className="sel" ref={sel} />
       </div>
       <Axis t0={t0} t1={t1} range={range} live={live} />

@@ -15,7 +15,7 @@ import { gb, upLine, uptime, restartWhy, isWarn, hm, hotMin, WATCH } from "./for
 // The details that used to fill the header (hardware names, address, uptime and restart time): one hover tooltip on the (i) icon.
 const infoTip = (d, now) => [...hwFacts(d).map(([k, v]) => `${k}: ${v}`), d.ip && `Address: ${d.ip}`, d.uptime != null && upLine(d.uptime, now), d.restart && "Restart needed for updates" + (restartWhy(d) ? ": " + restartWhy(d) : "")].filter(Boolean).join("\n");
 function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto, flat, onOpen: open, onTry, onHide }) {
-  const d = m.d || {}, [groups, setGroups] = useGroupPrefs(m.name), [settings] = useMachineSettings(m.name);   // settings: this machine's colour (the tab and pins are read in Detail)
+  const d = m.d || {}, [groups, setGroups] = useGroupPrefs(m.name), [settings, patch] = useMachineSettings(m.name);   // settings: this machine's colour and graph choices (the tab and pins are read in Detail)
   const off = !!m.err;
   const warnings = WATCH.filter(k => !off && isWarn(k, d[k], limits));
   const state = off ? `Offline` : hot.cpu ? `Working hard for ${hotMin(hot.cpu, now * 1000)} min` : warnings.length ? "Needs a look" : "All calm";
@@ -35,7 +35,7 @@ function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto,
       <div className="chead" {...head}>{chev}<i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
         {isOpen && d.uptime != null && <span className="up">up {uptime(d.uptime)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed</span>}
         {isOpen && <span className="info" tabIndex={0} role="img" aria-label="Machine details" data-tip={infoTip(d, now)} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>i</span>}
-        {isOpen ? <span className="grow" /> : <CardBar d={d} h={h} bad={bad} limits={limits} />}{isOpen && <GroupsMenu name={m.name} g={groups} set={setGroups} avail={groupsFor(d, h)} />}{onHide && <MachineMenu name={m.name} onHide={onHide} />}</div>
+        {isOpen ? <span className="grow" /> : <CardBar d={d} h={h} bad={bad} limits={limits} />}{isOpen && <GroupsMenu name={m.name} g={groups} set={setGroups} avail={groupsFor(d, h)} />}{onHide && <MachineMenu name={m.name} onHide={onHide} m={m} h={h} settings={settings} patch={patch} />}</div>
       <Collapse open={isOpen}><GroupLayout.Provider value={groups}><MachineBody limits={limits} m={m} h={h} h2={h2} rows={rows} fc={fc} range={range} now={now} gone={gone} /></GroupLayout.Provider></Collapse>
     </article>
   );

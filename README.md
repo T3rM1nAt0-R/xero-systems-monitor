@@ -74,6 +74,14 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/network.png" alt="The Network tab with adapters, the internet check and the ping map"></td>
 <td width="50%" valign="top">The Network tab: adapters and Wi-Fi, an internet check every minute with a 24-hour up/down strip (you can change the address it checks), and a ping map of your other machines with a latency graph.</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/overview-graphs.png" alt="The graph list in a machine's menu, the outage strip and the Unusual for this time chip"></td>
+<td width="50%"></td>
+</tr>
+<tr>
+<td valign="top">Choose your graphs: the ⋯ menu on a card lists its graphs with show/hide, size S/M/L and pin. Graphs get small markers for restarts, jobs (failed ones in red), container restarts and going offline; hover one for the time. A graph that is far above its usual level for this hour of the day shows "Unusual for this time". A thin strip under the tabs shows the last 24 hours or 7 days online, offline or without data.</td>
+<td></td>
+</tr>
 </table>
 
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V

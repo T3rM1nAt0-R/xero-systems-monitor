@@ -1,0 +1,24 @@
+/* Overview extras: outage strip, auto marks on graphs, "Unusual for this time" chip, graph sizes and pins, the graph list in the machine menu. */
+.outage{display:flex;align-items:center;gap:var(--sp-8)}
+.ostrip{flex:1;display:flex;height:var(--sz-6);border-radius:var(--r-3);overflow:hidden;background:var(--line)}
+.ostrip i{display:block;height:100%}
+.ostrip i.on{background:color-mix(in srgb,var(--ok) 70%,transparent)}
+.ostrip i.off{background:var(--bad)}
+.ostrip i.none{background:var(--line2)}
+.outage .seg button{padding:var(--sp-2) var(--sp-6);font-size:var(--fs-10-5)}
+.chart .ev b{position:absolute;bottom:0;left:calc(-1 * var(--sz-4));width:var(--sz-8);height:var(--sz-8);border-radius:50%;background:var(--dim);pointer-events:auto;cursor:default}
+.chart .ev.fail,.chart .ev.offline{border-left-color:var(--bad)}
+.chart .ev.fail b,.chart .ev.offline b{background:var(--bad)}
+.chart .ev.online b,.chart .ev.restart b{background:var(--ok)}
+.chart .ev.container b{background:var(--warn)}
+.ph .unusual{flex-basis:100%;order:3;color:var(--warn);font-size:var(--fs-11);border-bottom:1px dotted var(--warn);white-space:nowrap}
+.detail .panel.gs-s .chart{height:calc(var(--sz-34) * var(--graph-k))}
+.detail .panel.gs-l .chart{height:calc(var(--sz-46) * 2 * var(--graph-k))}
+.detail .panel.gs-l{grid-column:span 2}
+.detail .panel.gpinned{order:-1}
+.menu .grow3{display:flex;align-items:center;gap:var(--sp-6)}
+.menu .grow3 .mrow2{flex:1}
+.menu .grow3 .seg button{padding:var(--sp-2) var(--sp-6);text-align:center}
+.menu .grow3 .pin{font-size:var(--fs-11);color:var(--dim2);padding:var(--sp-2) var(--sp-4)}
+.menu .grow3 .pin.on{color:var(--acc)}
+@media (max-width:520px){.detail .panel.gs-l{grid-column:auto}}
