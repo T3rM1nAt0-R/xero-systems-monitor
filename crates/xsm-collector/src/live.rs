@@ -4,7 +4,7 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
-use crate::{Action, Backend, BusyReply, HistoryReply, MachineKind, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, MachineKind, State, WorkSize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -13,6 +13,7 @@ use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
 use xsm_sources::ssh::ssh_command;
+use xsm_sources::workdir::{local_sizes, remote_sizes};
 use xsm_store::Store;
 
 /// The history file in the data folder.
@@ -157,6 +158,22 @@ impl Backend for LiveBackend {
             .and_then(|m| m.host.clone())
             .ok_or_else(|| "Container actions work only on remote machines.".to_owned())?;
         run_container_action(&host, action, name)
+    }
+
+    fn get_work_size(&self, machine: &str) -> Result<Vec<WorkSize>, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .map(|m| (m.kind, m.host.clone()))
+            .ok_or_else(|| "That machine is not in the list.".to_owned())?;
+        let sizes = match found {
+            (MachineKind::Local, _) => local_sizes(),
+            (MachineKind::Ssh, host) => remote_sizes(&host.unwrap_or_default())?,
+        };
+        Ok(sizes
+            .into_iter()
+            .map(|(runner, bytes)| WorkSize { runner, bytes })
+            .collect())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

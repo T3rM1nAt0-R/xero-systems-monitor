@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 24. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 26. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -11,7 +11,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
     Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
-    MachineList, SaveOutcome, State as Readings,
+    MachineList, SaveOutcome, State as Readings, WorkSize,
 };
 
 /// The collector the commands talk to.
@@ -85,6 +85,19 @@ pub async fn save_machines(
     machines: Vec<MachineConfig>,
 ) -> Reply<SaveOutcome> {
     blocking(&backend, move |b| b.save_machines(machines)).await
+}
+
+#[tauri::command]
+pub fn set_mini_size(app: AppHandle, width: f64, height: f64) -> Reply<()> {
+    frame::set_mini_size(&app, width, height)
+}
+
+#[tauri::command]
+pub async fn get_work_size(
+    backend: State<'_, BackendState>,
+    machine: String,
+) -> Reply<Vec<WorkSize>> {
+    blocking(&backend, move |b| b.get_work_size(&machine)).await
 }
 
 #[tauri::command]

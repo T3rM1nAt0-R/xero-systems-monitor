@@ -46,7 +46,7 @@ const commands = {
   set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },
   set_window_mode: ({ mode }) => (store.mode = mode),
   set_pinned: ({ on }) => (store.pinned = !!on),
-  set_theme: ok, set_tray_status: ok, set_mini_height: ok, restart_collector: ok, relaunch: ok, quit: ok, stop_everything: ok,
+  get_work_size: () => [{ runner: "runner-1", bytes: 3.4e9 }, { runner: "runner-2", bytes: 8.12e8 }], set_mini_size: ok, set_theme: ok, set_tray_status: ok, set_mini_height: ok, restart_collector: ok, relaunch: ok, quit: ok, stop_everything: ok,
   check_for_updates: () => false,
   apply_update: () => false,
   get_version: () => ({ version: "demo", date: 0, packaged: false }),

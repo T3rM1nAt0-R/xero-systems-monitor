@@ -1,0 +1,18 @@
+/* Runners tab: the runner list and the queue (headings and hairlines, no boxes), and the mini window columns. */
+.rlist{display:flex;flex-direction:column}
+.rrow{display:grid;grid-template-columns:minmax(90px,1.2fr) 90px minmax(0,3fr) 80px 70px;gap:var(--sp-10);align-items:center;padding:var(--sp-5) 0;border-top:1px solid var(--line);font-size:var(--fs-12)}
+.rrow.q{grid-template-columns:minmax(0,1fr) auto}
+.rrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rname{display:flex;align-items:center;gap:var(--sp-6);color:var(--fg)}
+.rname i{width:var(--sz-8);height:var(--sz-8);border-radius:50%;background:var(--dim2);flex:none}
+.rname.busy i{background:var(--c-run)}
+.rname.gone i{background:var(--bad)}
+.rst,.rt,.rsz{color:var(--dim)}
+.rt,.rsz{text-align:right}
+.rfoot{display:flex;align-items:center;gap:var(--sp-10);padding-top:var(--sp-6);border-top:1px solid var(--line)}
+@media (max-width:620px){.rrow{grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto}.rrow .rst,.rrow .rsz{display:none}}
+/* Mini window: the machine rows flow into 1, 2 or 3 columns by the window's width */
+.mini .compact{column-count:1;column-gap:var(--sp-10)}
+.mini .compact .crow{break-inside:avoid}
+@media (min-width:480px){.mini .compact{column-count:2}}
+@media (min-width:720px){.mini .compact{column-count:3}}

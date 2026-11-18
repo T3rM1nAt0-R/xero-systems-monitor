@@ -4,7 +4,7 @@
 use crate::demo_jobs::jobs;
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Action, Backend, BusyReply, HistoryReply, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, State, WorkSize};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
@@ -40,6 +40,9 @@ const PING: Wave = (12.0, 8.0, 300.0);
 fn wave((base, swing, period): Wave, phase: f64, t: f64) -> f64 {
     base + swing * (0.5 + 0.5 * (t / period * TAU + phase).sin())
 }
+
+/// Made-up work-folder sizes of the two demo runners.
+const DEMO_WORK_BYTES: [u64; 2] = [3_400_000_000, 812_000_000];
 
 fn is_pc(m: &MachineConfig) -> bool {
     m.kind == MachineKind::Local
@@ -298,6 +301,17 @@ impl Backend for DemoBackend {
         Ok(format!(
             "Demo: {action:?} {name} did nothing, there is no real docker here."
         ))
+    }
+
+    fn get_work_size(&self, _machine: &str) -> Result<Vec<WorkSize>, String> {
+        Ok(["runner-1", "runner-2"]
+            .iter()
+            .zip(DEMO_WORK_BYTES)
+            .map(|(runner, bytes)| WorkSize {
+                runner: (*runner).to_owned(),
+                bytes: Some(bytes),
+            })
+            .collect())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

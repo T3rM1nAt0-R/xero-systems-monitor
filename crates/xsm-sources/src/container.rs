@@ -23,7 +23,7 @@ pub fn run_container_action(host: &str, action: Action, name: &str) -> Result<St
     run_command(ssh_command_with(host, &args), TIMEOUT, action, name)
 }
 
-fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
+pub(crate) fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
     thread::spawn(move || {
         let mut bytes = Vec::new();
         let _ = pipe.by_ref().take(MAX_OUTPUT).read_to_end(&mut bytes);
@@ -34,7 +34,7 @@ fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
 }
 
 /// `Some(success)` when the child ended in time, `None` when it was killed for taking too long.
-fn wait(child: &mut Child, timeout: Duration) -> Option<bool> {
+pub(crate) fn wait(child: &mut Child, timeout: Duration) -> Option<bool> {
     let end = Instant::now() + timeout;
     loop {
         match child.try_wait() {
@@ -49,7 +49,7 @@ fn wait(child: &mut Child, timeout: Duration) -> Option<bool> {
     }
 }
 
-fn text_of(handle: Option<JoinHandle<String>>) -> String {
+pub(crate) fn text_of(handle: Option<JoinHandle<String>>) -> String {
     handle.and_then(|h| h.join().ok()).unwrap_or_default()
 }
 

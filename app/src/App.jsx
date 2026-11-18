@@ -22,6 +22,7 @@ import { DEFAULT_QUIET, mute, unmute } from "./quiet.js";
 import Limits from "./Limits.jsx";
 import Customize from "./customize/Customize.jsx";
 import { DEFAULT_PREFS } from "./alerts.js";
+import useMiniSize, { quietFor, MINI_SETTLE_MS } from "./useMiniSize.js";
 import { unseenFailures } from "./events.js";
 import { RANGES, snapRange, SHORT, KEYS, NONE, NO_HOT } from "./consts.js";
 import { trackMachines } from "./calm.js";
@@ -51,6 +52,7 @@ export default function App() {
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
   const foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
+  const [miniSize, forgetMini] = useMiniSize(mini);
   const appRef = useRef(null), seen = useRef({ hot: {}, lastOk: {} });
   useEffect(() => save("alerts", alertPrefs), [alertPrefs]);
   const [limits, setLimits] = usePersisted("limits", {}), [quiet, setQuiet] = usePersisted("quiet", DEFAULT_QUIET), [muted, setMuted] = usePersisted("muted", []);
@@ -76,9 +78,9 @@ export default function App() {
   const open = useCallback(n => { if (effRef.current) toggleOpen(n); else setTimeout(() => document.getElementById("m-" + n)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); }, [toggleOpen]);
   useEffect(() => {   // in mini mode the window is exactly as tall as its content
     if (!mini) return;
-    const fit = () => { const el = appRef.current; if (!el) return; let h = 0; for (const c of el.children) if (!c.classList.contains("dock") && !c.classList.contains("modal")) h += c.offsetHeight; api.setMiniHeight(h + 2); };
+    const fit = () => { const el = appRef.current; if (!el || miniSize) return; let h = 0; for (const c of el.children) if (!c.classList.contains("dock") && !c.classList.contains("modal")) h += c.offsetHeight; quietFor(MINI_SETTLE_MS); api.setMiniHeight(h + 2); };
     fit(); const id = setInterval(fit, 1500); const tm = setTimeout(fit, 250); return () => { clearInterval(id); clearTimeout(tm); };
-  }, [mini, state]);
+  }, [mini, state, miniSize]);
 
   useEffect(() => {   // "Auto" strip: measure everything but the strip; when it all fits the window, the strip is not needed
     const fit = () => { const el = appRef.current; if (!el) return; let h = 0; for (const c of el.children) if (!c.classList.contains("stripwrap") && !c.classList.contains("modal") && !c.classList.contains("dock")) h += c.offsetHeight; setFits(fitsWindow(h + (el.querySelector(".dock")?.offsetHeight || 0), window.innerHeight)); };
@@ -101,7 +103,7 @@ export default function App() {
 
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
-    <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
+    <div className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
       <div className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
@@ -109,7 +111,7 @@ export default function App() {
         <span className="grow" />
         {!effCompact && <span className="live hide-s clock"><Clock /></span>}
         {!mini && <ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
-        {mini && <button className="on" onClick={toggleMini} data-tip="Back to the normal window (M)">Expand</button>}
+        {mini && <button className="on" onClick={toggleMini} data-tip="Back to the normal window (M)">Expand</button>}{mini && miniSize && <button onClick={forgetMini} data-tip="Forget the size you dragged; fit the content again">Fit</button>}
       </div>
 
       {err && state && <div className="stalebar" role="status"><b>Collector not answering since {hm(stamp / 1000)}.</b> Showing the last numbers it sent; they are not live. Retrying every few seconds.<button onClick={retry}>Try now</button></div>}

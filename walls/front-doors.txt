@@ -1,5 +1,8 @@
 # Public items per crate. A new public item adds a line here, so a growing API shows in review.
 xsm_collector::Backend trait
+xsm_collector::WorkSize struct
+xsm_collector::WorkSize.bytes field
+xsm_collector::WorkSize.runner field
 xsm_collector::State struct
 xsm_collector::State.machines field
 xsm_collector::busy::Busy use
