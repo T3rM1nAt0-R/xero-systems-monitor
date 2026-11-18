@@ -9,6 +9,8 @@ import { migrateLook, migrateThemeId } from "../src/theme/migrate.js";
 import { startHistory, record, undo, redo, canUndo, canRedo, HISTORY_LIMIT } from "../src/theme/history.js";
 import { matches, activeSection, SECTIONS } from "../src/customize/find.js";
 import { PRESETS, resolveTheme, makeTheme, cleanSaved, themeTitle, isCustom, migrateStored } from "../src/theme/presets.js";
+import { familyEdits } from "../src/customize/family.js";
+import { rgbToHex, fitSize } from "../src/theme/os.js";
 import { FONTS, fontStack } from "../src/theme/fonts.js";
 import { seriesPaths } from "../src/theme/graphStyle.js";
 
@@ -194,4 +196,20 @@ test("pick mode names the element and its setting; unknown elements and the pane
   assert.equal(lookTarget({ closest: () => ({ dataset: { look: "graph.style" }, closest: () => ({}) }) }), null);
   assert.equal(lookTarget(null), null); assert.equal(lookTarget({ closest: () => null }), null);
   assert.ok(Object.keys(LOOKS).every(id => id.includes(".")));
+});
+
+test("style families start with their own corners, borders and shadow; the person's choice wins", () => {
+  assert.equal(valueOf({}, "shape.radius"), 35); assert.equal(valueOf({ shape: { family: "sharp" } }, "shape.radius"), 0); assert.equal(valueOf({ shape: { family: "soft" } }, "shape.border"), "none");
+  assert.equal(valueOf({ shape: { family: "soft", radius: 90 } }, "shape.radius"), 90); assert.equal(valueOf({ shape: { family: "terminal" } }, "shape.scan"), false); assert.equal(valueOf({ shape: { family: "terminal" } }, "shape.family"), "terminal");
+  const sharp = lookToCss({ shape: { family: "sharp" } }); assert.equal(sharp.vars["--rk"], "0"); assert.equal(sharp.vars["--shadow-k"], "0"); assert.equal(sharp.attrs["data-family"], "sharp");
+  assert.deepEqual(familyEdits("rounded"), [["shape.family", undefined]]); assert.equal(familyEdits("terminal").length, 5); assert.deepEqual(familyEdits("blueprint")[1], ["colors.bg", "#0b2e63"]);
+});
+
+test("surfaces: grain switches its overlay on, a picture becomes a CSS variable, system colours and pictures are read safely", () => {
+  assert.equal(lookToCss({}).attrs["data-grain"], "off"); assert.equal(lookToCss({ surface: { grain: 20 } }).attrs["data-grain"], "on");
+  const img = "data:image/png;base64,iVBORw0KGgo=";
+  assert.equal(lookToCss({ surface: { bg: "image", image: img } }).vars["--bg-image"], `url(${img})`); assert.equal(lookToCss({ surface: { image: img } }).vars["--bg-image"], undefined);
+  assert.equal(lookToCss({ surface: { bg: "solid" } }).attrs["data-bg"], "solid"); assert.equal(lookToCss({}).attrs["data-bg"], "gradient");
+  assert.equal(rgbToHex("rgb(0, 120, 215)"), "#0078d7"); assert.equal(rgbToHex("rgba(255 0 9 / 1)"), "#ff0009"); assert.equal(rgbToHex("red"), "");
+  assert.deepEqual(fitSize(3200, 1600), [1600, 800]); assert.deepEqual(fitSize(800, 600), [800, 600]); assert.deepEqual(fitSize(1, 5000, 100), [1, 100]);
 });

@@ -67,8 +67,15 @@ export function setPath(look, path, value) {
   if (child === undefined || (typeof child === "object" && !nonEmpty(child))) delete next[head]; else next[head] = child;
   return next;
 }
-// The value of a setting in `look`, or what the plain window has.
-export const valueOf = (look, field) => getPath(look, field.split(".")) ?? FIELDS[field][1];
+// What each style family starts with for corner radius, borders and shadow (Rounded is today's look); the person's own choice still wins.
+export const FAMILY_DEFAULTS = { rounded: { radius: 35, border: "hair", shadow: 40 }, sharp: { radius: 0, border: "hair", shadow: 0 }, terminal: { radius: 0, border: "hair", shadow: 0 }, soft: { radius: 60, border: "none", shadow: 80 }, blueprint: { radius: 0, border: "hair", shadow: 0 } };
+// The value of a setting in `look`, or what its style family or the plain window has.
+export function valueOf(look, field) {
+  const own = getPath(look, field.split("."));
+  if (own !== undefined) return own;
+  const fam = field.startsWith("shape.") && field !== "shape.family" ? FAMILY_DEFAULTS[getPath(look, ["shape", "family"])]?.[field.slice(6)] : undefined;
+  return fam !== undefined ? fam : FIELDS[field][1];
+}
 const groupOf = (look, g) => Object.fromEntries(Object.keys(FIELDS).filter(f => f.startsWith(g + ".")).map(f => [f.slice(g.length + 1), valueOf(look, f)]));
 export const graphOf = look => groupOf(look, "graph");
 export const shapeOf = look => groupOf(look, "shape");

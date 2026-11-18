@@ -16,10 +16,10 @@
   --on-acc:#04121a; --on-strong:#fff; --hover-mix:#fff; --mask-solid:#000;
   --tip-bg:#12151c; --scrim:#000a; --chart-cursor:#ffffff38; --c-fallback:#888;
   /* glass: the machine cards, header and dock, menus and dialogs are frosted; blur and opacity come from the Glass setting (data-glass on <html>) */
-  --glass-bg: color-mix(in srgb, var(--s1) 62%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 88%, transparent);
+  --glass-bg: color-mix(in srgb, var(--glass-tint, var(--s1)) 62%, transparent); --glass-bg-solid: color-mix(in srgb, var(--glass-tint, var(--s1)) 88%, transparent);
   --glass-blur: 18px; --glass-sat: 1.4;
   --glass-line: #ffffff17; --glass-sheen: inset 0 1px 0 #ffffff24, inset 0 18px 24px -18px #ffffff12;
-  --glass-shadow: 0 10px 34px #0006; --glass-radius: var(--r-14);
+  --glass-shadow: 0 calc(10px * var(--shadow-k)) calc(34px * var(--shadow-k)) #0006; --glass-radius: var(--r-14);
   --blob-a:#4cc9f02e; --blob-b:#a78bfa29; --blob-c:#4ade8019; --blob-op: 1;
   --hair: color-mix(in srgb, var(--line2) 70%, transparent);
   /* shadows */
@@ -30,7 +30,7 @@
   --font-machine: var(--font-ui); --font-group: var(--font-ui); --font-section: var(--font-ui);
   --font-number: var(--font-ui); --font-label: var(--font-ui); --font-small: var(--font-ui);
   /* text scale: 1 is normal, the Large text setting raises it */
-  --scale: 1; --dens: 1; --graph-k: 1; --line-w: 2; --area-op: .08;
+  --scale: 1; --rk: 1; --shadow-k: 1; --dens: 1; --graph-k: 1; --line-w: 2; --area-op: .08;
   --dur: 180ms; --ease: cubic-bezier(.2,.7,.2,1);   /* open and close motion; keep --dur in step with MOTION_MS in src/motion.js */
   --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
   --size-number: calc(16px * var(--scale)); --size-label: calc(13px * var(--scale)); --size-small: calc(11px * var(--scale));
@@ -72,18 +72,18 @@
   --sp-70: calc(70px * var(--scale) * var(--dens));
   --sp-150: calc(150px * var(--scale) * var(--dens));
   /* radii */
-  --r-1: calc(1px * var(--scale));
-  --r-2: calc(2px * var(--scale));
-  --r-3: calc(3px * var(--scale));
-  --r-4: calc(4px * var(--scale));
-  --r-5: calc(5px * var(--scale));
-  --r-6: calc(6px * var(--scale));
-  --r-7: calc(7px * var(--scale));
-  --r-8: calc(8px * var(--scale));
-  --r-9: calc(9px * var(--scale));
-  --r-10: calc(10px * var(--scale));
-  --r-12: calc(12px * var(--scale));
-  --r-14: calc(14px * var(--scale));
+  --r-1: calc(1px * var(--scale) * var(--rk));
+  --r-2: calc(2px * var(--scale) * var(--rk));
+  --r-3: calc(3px * var(--scale) * var(--rk));
+  --r-4: calc(4px * var(--scale) * var(--rk));
+  --r-5: calc(5px * var(--scale) * var(--rk));
+  --r-6: calc(6px * var(--scale) * var(--rk));
+  --r-7: calc(7px * var(--scale) * var(--rk));
+  --r-8: calc(8px * var(--scale) * var(--rk));
+  --r-9: calc(9px * var(--scale) * var(--rk));
+  --r-10: calc(10px * var(--scale) * var(--rk));
+  --r-12: calc(12px * var(--scale) * var(--rk));
+  --r-14: calc(14px * var(--scale) * var(--rk));
   --r-99: calc(99px * var(--scale));
   --r-999: calc(999px * var(--scale));
   /* fixed sizes (heights and widths of dots, meters, tracks, ...) */
@@ -123,13 +123,13 @@
   color-scheme: light;
   --on-acc:#fff;
   --shadow-menu: 0 8px 28px #0003; --shadow-drawer: 0 8px 28px #0003; --shadow-dlg: 0 8px 28px #0003;
-  --glass-bg: color-mix(in srgb, var(--s1) 66%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 90%, transparent);
+  --glass-bg: color-mix(in srgb, var(--glass-tint, var(--s1)) 66%, transparent); --glass-bg-solid: color-mix(in srgb, var(--glass-tint, var(--s1)) 90%, transparent);
   --glass-line: #ffffffcc; --glass-sheen: inset 0 1px 0 #ffffffe6, inset 0 18px 24px -18px #ffffffaa;
-  --glass-shadow: 0 8px 28px #1a233a1f;
+  --glass-shadow: 0 calc(8px * var(--shadow-k)) calc(28px * var(--shadow-k)) #1a233a1f;
   --blob-a:#0a7ea42e; --blob-b:#8b5cf624; --blob-c:#16a34a1a;
 }
 html[data-size="large"] { --scale: 1.16; }
 /* Glass setting (Customize > Size): Subtle is the default above. Off is flat and solid; Full is clearer and more blurred. */
 html[data-glass="off"] { --glass-bg: var(--s1); --glass-bg-solid: var(--s1); --glass-blur: 0px; --glass-sat: 1; --glass-sheen: none; --glass-shadow: none; --blob-op: 0; --glass-line: var(--line); }
-html[data-glass="full"] { --glass-bg: color-mix(in srgb, var(--s1) 42%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 78%, transparent); --glass-blur: 28px; --glass-sat: 1.7; --blob-op: 1.6; }
+html[data-glass="full"] { --glass-bg: color-mix(in srgb, var(--glass-tint, var(--s1)) 42%, transparent); --glass-bg-solid: color-mix(in srgb, var(--glass-tint, var(--s1)) 78%, transparent); --glass-blur: 28px; --glass-sat: 1.7; --blob-op: 1.6; }
 @media (prefers-reduced-transparency: reduce) { :root, html[data-glass] { --glass-bg: var(--s1); --glass-bg-solid: var(--s1); --glass-blur: 0px; --glass-sat: 1; --glass-sheen: none; --glass-shadow: none; --blob-op: 0; --glass-line: var(--line); } }

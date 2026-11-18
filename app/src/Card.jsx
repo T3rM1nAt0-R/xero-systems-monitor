@@ -25,14 +25,14 @@ function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto,
   const head = flat ? {} : { ...foldProps(isOpen, flip), className: "chead fold" };
   const chev = !flat && <b className="chev">{isOpen ? "▾" : "▸"}</b>;
   if (off) return (
-    <article className={"card off" + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
+    <article data-look="shape.radius" className={"card off" + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
       <div className="chead" {...head}>{chev}<StatusDot off /><h3 data-look="text.machine">{m.name}</h3><span className="state">Offline{lastOk ? ` since ${hm(lastOk)}` : ""}</span><button className="open" onClick={e => { e.stopPropagation(); open(m.name); }}>Open</button>{onHide && <MachineMenu name={m.name} onHide={onHide} />}</div>
       {isOpen && <div className="offbox"><strong>Can&apos;t reach {m.name}</strong><span>{lastOk ? `Last heard from at ${hm(lastOk)}. ` : ""}It may be restarting, or the network dropped.</span>
         {m.d && <div className="last">{d.cpu != null && <span>Last seen: CPU {d.cpu.toFixed(0)}%</span>}{d.temp != null && <span>{d.temp.toFixed(0)}°C</span>}{d.ram_gb && <span>Memory {gb(d.ram_gb[0])} / {d.ram_gb[1].toFixed(0)} GB</span>}</div>}
         <button onClick={() => onTry(m.name)}>Try again now</button><small>Checking again automatically every few seconds.</small></div>}
     </article>);
   return (
-    <article className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
+    <article data-look="shape.radius" className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
       <div className="chead" {...head}>{chev}<StatusDot warn={!!bad} /><h3 data-look="text.machine">{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
         {isOpen && d.uptime != null && <span className="up">up {uptime(d.uptime)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed</span>}
         {isOpen && <span className="info" tabIndex={0} role="img" aria-label="Machine details" data-tip={infoTip(d, now)} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>i</span>}

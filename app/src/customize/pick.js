@@ -3,7 +3,7 @@
 export const LOOKS = {
   "text.machine": ["Machine name", "Text", "Machine name"], "text.section": ["Section heading", "Text", "Section"], "text.number": ["Big number", "Text", "Numbers"], "text.label": ["Graph label", "Text", "Labels"],
   "graph.style": ["Graph", "Graphs", "Style"], "layout.tabs": ["Tabs", "Layout", "Tab style"], "colors.bg": ["Background", "Colours", "Background"], "colors.acc": ["Status dot", "Colours", "Accent"],
-  "shape.radius": ["Card", "Shape", "Corner radius"], "shape.family": ["Button", "Shape", "Style family"],
+  "shape.radius": ["Card", "Shape", "Corner radius"], "shape.family": ["Top bar", "Shape", "Style family"],
 };
 // "Section heading — Text › Section", or "" for an id nobody knows.
 export function lookLabel(id) {

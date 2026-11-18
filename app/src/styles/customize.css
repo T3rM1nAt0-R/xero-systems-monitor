@@ -49,6 +49,9 @@ input[type=color]{width:var(--sz-32);height:var(--sz-20);padding:0;border:1px so
 .cthumb{display:block;width:100%;height:auto;aspect-ratio:100/44}
 .ctname{padding:0 var(--sp-6) var(--sp-4);font-size:var(--fs-11-5);color:var(--fg)}
 .ctile em{position:absolute;right:var(--sp-5);bottom:var(--sp-3);font-style:normal;font-size:var(--fs-10);color:var(--acc)}
+.cfam{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cfam .cthumb{color:var(--acc);background:var(--bg);aspect-ratio:100/38}
+.ctname small{display:block;color:var(--dim);font-size:var(--fs-10-5)}
 .cmine{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-3)}
 .cmine li{display:flex;align-items:center;gap:var(--sp-6);font-size:var(--fs-12)}
 .cmine li span,.cmine li input{flex:1}
