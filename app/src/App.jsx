@@ -110,7 +110,7 @@ export default function App() {
   return (
     <div data-look="colors.bg" className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
-      <div className="bar top">
+      <div data-look="shape.family" className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}
         <span className="live"><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" />

@@ -30,7 +30,7 @@ export function contrastWarning(look, base) {
 const ATTRS = { "data-grid": l => (valueOf(l, "graph.grid") ? "on" : "off"), "data-limits": l => (valueOf(l, "graph.limits") ? "on" : "off"), "data-glass": l => valueOf(l, "surface.glass"), "data-motion": l => valueOf(l, "motion"),
   "data-cb": l => (valueOf(l, "cb") ? "on" : "off"), "data-family": l => valueOf(l, "shape.family"), "data-border": l => valueOf(l, "shape.border"), "data-scan": l => (valueOf(l, "shape.scan") ? "on" : "off"),
   "data-bg": l => valueOf(l, "surface.bg"), "data-gridden": l => valueOf(l, "graph.density"), "data-axes": l => (valueOf(l, "graph.axes") ? "on" : "off"), "data-gradient": l => (valueOf(l, "graph.gradient") ? "on" : "off"),
-  "data-glow": l => (valueOf(l, "graph.glow") ? "on" : "off"), "data-dots": l => (valueOf(l, "graph.dots") ? "on" : "off"), "data-cols": l => String(valueOf(l, "layout.cols")), "data-tabs": l => valueOf(l, "layout.tabs"), "data-heading": l => valueOf(l, "layout.heading") };
+  "data-glow": l => (valueOf(l, "graph.glow") ? "on" : "off"), "data-dots": l => (valueOf(l, "graph.dots") ? "on" : "off"), "data-cols": l => String(valueOf(l, "layout.cols")), "data-tabs": l => valueOf(l, "layout.tabs"), "data-heading": l => valueOf(l, "layout.heading"), "data-grain": l => (valueOf(l, "surface.grain") > 0 ? "on" : "off") };
 // The custom properties and <html> attributes a look sets. `large` is the older Large text switch (it multiplies with the text scale).
 export function lookToCss(look, { large = false, base: theme = "dark" } = {}) {
   const vars = {}, map = colorMap(look, theme);
@@ -46,6 +46,7 @@ export function lookToCss(look, { large = false, base: theme = "dark" } = {}) {
   Object.assign(vars, { "--line-w": String(g.width), "--area-op": String(g.gradient && AREA_OP[g.style] ? GRADIENT_OP : AREA_OP[g.style]), "--graph-k": String(GRAPH_K[l.card]), "--dens": String(DENS_K[l.density]),
     "--rk": String(radiusK(sh.radius)), "--shadow-k": String(shadowK(sh.shadow)), "--bw": BORDER_W[sh.border] + "px", "--grain": String(s.grain / PERCENT) });
   if (s.tint) vars["--glass-tint"] = s.tint;
+  if (s.bg === "image" && s.image) vars["--bg-image"] = `url(${s.image})`;
   if (scale !== floor) vars["--scale"] = String(scale);
   return { vars, attrs: Object.fromEntries(Object.entries(ATTRS).map(([k, f]) => [k, f(look)])) };
 }

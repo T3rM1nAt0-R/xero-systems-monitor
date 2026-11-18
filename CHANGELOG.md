@@ -4,6 +4,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: Customize Shape: style families Rounded (today), Sharp / Metro, Terminal (monospace, green on black, optional scanlines drawn as one static gradient), Soft (raised, neumorphic shadows) and Blueprint (blue grid paper, white lines); a corner radius slider from sharp to pill; borders none, hairline or bold; shadow depth.
+- Added: Customize Surfaces: a glass tint colour, a solid, gradient or picture background (a picture from disk, scaled down and kept in the window's settings, nothing is uploaded), grain, and "Match Windows" (follows the system dark or light setting and uses the system accent colour where the window can read it).
+
 ## [0.3.1] - 2026-11-18
 
 - Added: Customize pick mode (the crosshair button): hover anything in the window to see what it is and where its setting lives ("Section heading - Text > Section"), click it and the panel scrolls to that setting and flashes it.

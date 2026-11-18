@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { usePersisted, get, set } from "../store.js";
-import { getPath, setPath } from "./model.js";
+import { getPath, setPath, mergeLook } from "./model.js";
+import { useOsAccent } from "./os.js";
 import { lookToCss } from "./css.js";
 import { normTheme, exportTheme, parseTheme, newId } from "./files.js";
 import { allThemes, cleanSaved, resolveTheme, makeTheme, isCustom, migrateStored } from "./presets.js";
@@ -35,15 +36,20 @@ export default function useCustom({ base, setTheme, large }) {
   const was = useMemo(() => (opened.current ? resolveTheme(themes, opened.current.id, opened.current.edits) : null), [themes, comparing]);   // eslint-disable-line react-hooks/exhaustive-deps -- the look from when the panel opened
   const shown = comparing && was ? was : { theme, look: own };
   const shownBase = shown.theme?.base || base;
-  const css = useMemo(() => lookToCss(shown.look, { large, base: shownBase }), [shown.look, large, shownBase]);
+  const osOn = !!getPath(own, ["surface", "os"]), accent = useOsAccent(osOn), wasOs = useRef(false);   // "Match Windows": follow the system light/dark and accent
+  const lookNow = useMemo(() => (osOn && accent ? mergeLook(shown.look, { colors: { acc: accent } }) : shown.look), [shown.look, osOn, accent]);
+  const css = useMemo(() => lookToCss(lookNow, { large, base: shownBase }), [lookNow, large, shownBase]);
+  const setBase = useCallback(b => setTheme(osOn ? "system" : b), [setTheme, osOn]);
+  useEffect(() => { if (osOn) setTheme("system"); else if (wasOs.current && theme) setTheme(theme.base); wasOs.current = osOn; }, [osOn]);   // eslint-disable-line react-hooks/exhaustive-deps -- only when the switch changes
   useEffect(() => apply(css), [css]);
   useEffect(() => { if (comparing && was?.theme) setTheme(was.theme.base); else if (!comparing && theme) setTheme(theme.base); }, [comparing]);   // eslint-disable-line react-hooks/exhaustive-deps -- only when the eye is pressed or let go
 
   const commit = useCallback((nextId, nextEdits, key) => { hist.current = record(hist.current, { id: nextId, edits: nextEdits }, key); setId(nextId); setEdits(nextEdits); bump(); }, [setId, setEdits]);
-  const jump = useCallback(h => { hist.current = h; const t = allThemes(themes).find(x => x.id === h.present.id); if (t) setTheme(t.base); setId(h.present.id); setEdits(h.present.edits); bump(); }, [themes, setTheme, setId, setEdits]);
-  const pick = useCallback(next => { const t = allThemes(themes).find(x => x.id === next); if (t) setTheme(t.base); commit(t ? next : "", {}); }, [themes, setTheme, commit]);
+  const jump = useCallback(h => { hist.current = h; const t = allThemes(themes).find(x => x.id === h.present.id); if (t) setBase(t.base); setId(h.present.id); setEdits(h.present.edits); bump(); }, [themes, setBase, setId, setEdits]);
+  const pick = useCallback(next => { const t = allThemes(themes).find(x => x.id === next); if (t) setBase(t.base); commit(t ? next : "", {}); }, [themes, setBase, commit]);
+  const editMany = useCallback((pairs, key) => commit(id, pairs.reduce((e, [p, v]) => setPath(e, p.split("."), v), edits), key), [commit, id, edits]);
   const edit = useCallback((path, value) => commit(id, setPath(edits, path, value), path.join(".")), [commit, id, edits]);
-  const addTheme = useCallback(t => { setSaved([...themes, t]); setTheme(t.base); commit(t.id, {}); }, [themes, setSaved, setTheme, commit]);
+  const addTheme = useCallback(t => { setSaved([...themes, t]); setBase(t.base); commit(t.id, {}); }, [themes, setSaved, setBase, commit]);
   const saveAs = useCallback(name => addTheme(makeTheme(themes, name, shownBase, own)), [addTheme, themes, shownBase, own]);
   const save = useCallback(() => { if (theme && !theme.builtIn) { setSaved(themes.map(t => (t.id === id ? { ...t, look: own } : t))); commit(id, {}); } }, [theme, themes, id, own, setSaved, commit]);
   const rename = useCallback((tid, name) => setSaved(themes.map(t => (t.id === tid ? normTheme({ ...t, name }) : t))), [themes, setSaved]);
@@ -55,7 +61,7 @@ export default function useCustom({ base, setTheme, large }) {
   const exportText = useCallback(() => exportTheme({ name: theme?.name || "My look", base: shownBase, look: own }), [theme, shownBase, own]);
   // Called when the panel opens: what you see now is what the eye button shows again.
   const remember = useCallback(() => { opened.current = { id, edits }; }, [id, edits]);
-  return { themes, id, theme, look: shown.look, own, base: shownBase, dirty: isCustom(theme, own), canSave: !!theme && !theme.builtIn, edits, pick, edit, reset: path => edit(path, undefined), resetAll: () => commit(id, {}), has: path => getPath(edits, path) !== undefined,
+  return { themes, id, theme, look: shown.look, own, base: shownBase, dirty: isCustom(theme, own), canSave: !!theme && !theme.builtIn, edits, pick, edit, editMany, reset: path => edit(path, undefined), resetAll: () => commit(id, {}), has: path => getPath(edits, path) !== undefined,
     save, saveAs, rename, remove, importText, exportText, remember, setComparing, comparing,
     undo: () => jump(undo(hist.current)), redo: () => jump(redo(hist.current)), canUndo: canUndo(hist.current), canRedo: canRedo(hist.current) };
 }

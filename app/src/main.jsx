@@ -25,6 +25,7 @@ import "./styles/terminal.css";
 import "./styles/network.css";
 import "./styles/runners.css";
 import "./styles/flat.css";
+import "./styles/stylefx.css";
 import "./styles/mini.css";
 import { installTips } from "./tooltip.js";
 installTips();

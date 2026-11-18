@@ -5,14 +5,15 @@ import { Find } from "./controls.jsx";
 import ThemeSection from "./ThemeSection.jsx";
 import ColoursSection from "./ColoursSection.jsx";
 import TextSection from "./TextSection.jsx";
+import ShapeSection from "./ShapeSection.jsx";
 import SurfacesSection from "./SurfacesSection.jsx";
 import GraphsSection from "./GraphsSection.jsx";
 import LayoutSection from "./LayoutSection.jsx";
 import MotionSection from "./MotionSection.jsx";
 import { themeTitle } from "../theme/presets.js";
 import usePick from "./usePick.js";
-const BODY = { theme: ThemeSection, colors: ColoursSection, text: TextSection, surfaces: SurfacesSection, graphs: GraphsSection, layout: LayoutSection, motion: MotionSection };
-const NOTES = { theme: "holds colours, text, glass, graphs, layout, motion", colors: "3 base colours" };
+const BODY = { theme: ThemeSection, colors: ColoursSection, text: TextSection, shape: ShapeSection, surfaces: SurfacesSection, graphs: GraphsSection, layout: LayoutSection, motion: MotionSection };
+const NOTES = { theme: "holds colours, text, glass, graphs, layout, motion", colors: "3 base colours", shape: "style, corners, borders, depth", surfaces: "glass, background, grain" };
 const SPY_PAD = 24, PICK_PAD = 80;
 // Ctrl+Z belongs to the text box while someone types in one (search, a name, pasted code); everywhere else it undoes the last change.
 const typing = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && ["text", "search"].includes(el.type));

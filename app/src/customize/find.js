@@ -1,5 +1,5 @@
 // The sections of the Customize panel, in order, and the search over its settings. Pure.
-export const SECTIONS = [["theme", "Theme"], ["colors", "Colours"], ["text", "Text"], ["surfaces", "Surfaces"], ["graphs", "Graphs"], ["layout", "Layout"], ["motion", "Motion"]];
+export const SECTIONS = [["theme", "Theme"], ["colors", "Colours"], ["text", "Text"], ["shape", "Shape"], ["surfaces", "Surfaces"], ["graphs", "Graphs"], ["layout", "Layout"], ["motion", "Motion"]];
 // Does every word of `query` appear in the setting's label, its keywords or its id?
 export function matches(query, ...texts) {
   const hay = texts.join(" ").toLowerCase();
