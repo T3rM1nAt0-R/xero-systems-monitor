@@ -97,6 +97,24 @@ pub(super) fn reading<S: Serializer>(r: &Reading, s: S) -> Result<S::Ok, S::Erro
         .collect();
     put_some(&mut m, "smart", health);
     put(&mut m, "smart_note", r.health_note.as_ref());
+    let adapters: Vec<_> = r
+        .adapters
+        .iter()
+        .map(|a| (&a.name, a.up, a.speed_mbps, &a.ip))
+        .collect();
+    put_some(&mut m, "adapters", adapters);
+    put(
+        &mut m,
+        "wifi",
+        r.wifi.as_ref().map(|w| (&w.name, w.signal_pct)),
+    );
+    put(
+        &mut m,
+        "inet",
+        r.internet.as_ref().map(|i| (i.up, i.dns_ms, i.latency_ms)),
+    );
+    let pings: Vec<_> = r.pings.iter().map(|p| (&p.machine, p.ms)).collect();
+    put_some(&mut m, "pings", pings);
     if let Some(s) = &r.sensors {
         put(&mut m, "mhz", s.cpu_clock_mhz);
         put(&mut m, "cpu_w", s.cpu_power_w);

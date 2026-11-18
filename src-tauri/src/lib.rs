@@ -100,6 +100,7 @@ pub fn run() {
             commands::find_big_folders,
             commands::get_big_folders,
             commands::cancel_big_folders,
+            commands::set_internet_host,
             commands::get_prefs,
             commands::set_prefs,
             commands::set_window_mode,

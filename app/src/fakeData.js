@@ -28,6 +28,14 @@ const inGap = (hs, t) => hs.some(h => (h.what === "offline" || h.what === "nodat
 export const driveNames = m => (kindOf(m) === "pc" ? ["C:", "D:"] : ["/"]);
 export function history(m, rng, now) {
   const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1), extra: {} }, gaps = happenings(m, now);
+  if (kind === "pc") {   // the internet check (a short outage a few hours ago) and the ping times to the other machines
+    out.extra.inet = []; out.extra.inet_ms = []; out.extra["pm:example-server"] = []; out.extra["pm:example-nas"] = [];
+    for (let t = now - rng; t <= now; t += Math.max(60, step)) {
+      const down = Math.abs(t - (now - 5 * 3600)) < 600;
+      out.extra.inet.push([Math.round(t), down ? 0 : 1]);
+      if (!down) { out.extra.inet_ms.push([Math.round(t), +(35 + hash(Math.floor(t / 60)) * 20).toFixed(0)]); out.extra["pm:example-server"].push([Math.round(t), +(3 + hash(Math.floor(t / 30)) * 2).toFixed(1)]); out.extra["pm:example-nas"].push([Math.round(t), +(150 + hash(Math.floor(t / 30) + 9) * 120).toFixed(0)]); }
+    }
+  }
   for (const [i, n] of driveNames(m).entries()) for (const [p, key, f] of [["dr:", "down", 0.4 / (i + 1)], ["dw:", "up", 0.6 / (i + 1)]]) {
     out.extra[p + n] = [];
     for (let t = now - rng; t <= now; t += step) out.extra[p + n].push([Math.round(t), +(metric(kind, seed, key, t, now) * f).toFixed(0)]);
@@ -82,6 +90,8 @@ const snap = (m, now) => {
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
   d.io = driveNames(m).map((n, i) => [n, Math.round(v("down") * 0.4 / (i + 1)), Math.round(v("up") * 0.6 / (i + 1))]);   // drive speeds, bytes per second
+  if (gpu) Object.assign(d, { adapters: [["Ethernet", true, 1000, "192.0.2.20"], ["Wi-Fi", true, 866, "192.0.2.21"], ["VPN", false, null, null]], wifi: ["Example Wi-Fi", 82], inet: [true, 14, 38 + Math.round(hash(Math.floor(now / 60)) * 20)], pings: [["example-server", 3.4], ["example-nas", 240], ["example-laptop", null]] });
+  else d.adapters = [["eth0", true, 1000, "192.0.2.10"]];
   if (gpu) d.smart = [["Example_SSD_1TB", "SSD", true, 38, 9400, 12], ["Example_HDD_2TB", "HDD", false, 41, 31000, null]]; else d.smart_note = "missing";   // drive health: the server shows the "install smartmontools" hint
   if (gpu) Object.assign(d, { mhz: 3900, cpu_w: +(40 + v("cpu") / 2).toFixed(0), gpu_w: 35, fans: [1180, 920], cores: Array.from({ length: 8 }, (_, i) => +((v("cpu") + i * 7) % 100).toFixed(0)), gpu: v("gpu"), gtemp: v("gtemp"), vram_gb: [+((v("vram") / 100) * 12).toFixed(1), 12] });
   if (gpu) Object.assign(d, { ctemps: d.cores.map((c, i) => +(42 + c / 4 + i).toFixed(0)), bat: [Math.round(20 + v("cpu") / 2), false, 130], gpuapps: [["game", 5000, 1], ["browser", 800, 3], ["video_call", 0, 1]] });

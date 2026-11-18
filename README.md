@@ -69,6 +69,10 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/network.png" alt="The Network tab with adapters, the internet check and the ping map"></td>
+<td width="50%" valign="top">The Network tab: adapters and Wi-Fi, an internet check every minute with a 24-hour up/down strip (you can change the address it checks), and a ping map of your other machines with a latency graph.</td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/overview-graphs.png" alt="The graph list in a machine's menu, the outage strip and the Unusual for this time chip"></td>
 <td width="50%"></td>
 </tr>
@@ -80,6 +84,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
+- Network tab: adapters, Wi-Fi name and signal, an internet check with a 24-hour up/down strip, and a ping map of your other machines
 - Disks tab: read and write speed of every drive over time, drive health (OK or needs a look, temperature, hours, SSD wear; on Linux it needs smartmontools), and a "Find biggest folders" search you start yourself, with a loading bar and a Stop button, that only reads and never deletes
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load

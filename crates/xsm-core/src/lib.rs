@@ -7,6 +7,7 @@ pub mod container;
 pub mod drives;
 pub mod forecast;
 pub mod lhm;
+pub mod netfacts;
 pub mod parse;
 pub mod reading;
 pub mod series;
