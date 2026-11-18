@@ -8,7 +8,7 @@ use crate::demo_waves::{
 };
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 use crate::scan::{ScanReply, Scans};
-use crate::{Act, Action, Backend, BusyReply, HistoryReply, Query, Ranking, State};
+use crate::{Act, Action, Backend, BusyReply, HistoryReply, Priority, Query, Ranking, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::drives::{biggest, DiskIo, Folder};
@@ -270,6 +270,10 @@ impl Backend for DemoBackend {
     }
 
     fn system_query(&self, _machine: &str, _query: Query) -> Result<String, String> {
+        Err("Demo: there is no real machine to ask.".to_owned())
+    }
+
+    fn system_logs(&self, _m: &str, _p: Priority, _u: Option<String>) -> Result<String, String> {
         Err("Demo: there is no real machine to ask.".to_owned())
     }
 

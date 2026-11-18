@@ -13,7 +13,7 @@ export const TAB_PARTS = {
   network: [["net", FULL]],
   services: [["svc", FULL]],
   runners: [["run", FULL]],
-  logs: [],
+  logs: [["logs", FULL]],
   terminal: [["term", FULL]],
 };
 // Does this view of a section have anything to show for this machine? (Parts not listed here always do, once the section itself is there.)

@@ -53,6 +53,8 @@ export const SECTION_META = [
     accent: m => (svcFacts(m).bad || m.d?.docker_err ? "--bad" : "--c-svc"),
     sub: m => { const { cs, cgone, bad, up } = svcFacts(m); return m.d?.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`; },
     summary: m => { const { bad, up } = svcFacts(m); return bad ? `${bad} failing` : `${up} running`; } },
+  { id: "logs", title: "Logs", spark: null, def: true, cls: "full", accent: () => "--acc", available: m => m.d?.uptime != null,
+    sub: () => "recent system messages", summary: () => "System log" },
   { id: "term", title: "Terminal", spark: null, def: true, cls: "full", accent: () => "--acc", available: () => true,
     sub: () => "a shell on this machine", summary: () => "Shell" },
 ];

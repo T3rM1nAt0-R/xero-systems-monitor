@@ -5,7 +5,9 @@ use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
 use crate::scan::{ScanReply, Scans};
-use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, Ranking, State};
+use crate::{
+    Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Priority, Query, Ranking, State,
+};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -18,7 +20,7 @@ use xsm_sources::folders::{scan_local, scan_ssh};
 use xsm_sources::process_list::{end_local, end_remote};
 use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::ssh_command;
-use xsm_sources::system::{run_action, run_query, Target};
+use xsm_sources::system::{run_action, run_logs, run_query, Target};
 use xsm_store::Store;
 
 /// The history file in the data folder.
@@ -212,6 +214,15 @@ impl Backend for LiveBackend {
 
     fn system_query(&self, machine: &str, query: Query) -> Result<String, String> {
         self.with_target(machine, |t| run_query(t, query))
+    }
+
+    fn system_logs(
+        &self,
+        machine: &str,
+        priority: Priority,
+        unit: Option<String>,
+    ) -> Result<String, String> {
+        self.with_target(machine, |t| run_logs(t, priority, unit.as_deref()))
     }
 
     fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String> {

@@ -24,7 +24,7 @@ pub use scan::ScanReply;
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
 pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
-pub use xsm_core::system::{Act, Query};
+pub use xsm_core::system::{Act, Priority, Query};
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
 use serde::Serialize;
@@ -136,6 +136,17 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Plain text for the window: no such machine, ssh or PowerShell failing, or a timeout.
     fn system_query(&self, machine: &str, query: Query) -> Result<String, String>;
+
+    /// Read the recent system log lines of a machine at this priority (Linux: optionally one unit); returns text for the window to read.
+    ///
+    /// # Errors
+    /// Plain text for the window: no such machine, a bad unit name, ssh or PowerShell failing, or a timeout.
+    fn system_logs(
+        &self,
+        machine: &str,
+        priority: Priority,
+        unit: Option<String>,
+    ) -> Result<String, String>;
 
     /// Restart, stop or start a service, install updates or restart a Linux machine. Linux uses `sudo -n` only: when it needs
     /// a password the error starts with `needs-password:` and then the command for the person to run themselves.

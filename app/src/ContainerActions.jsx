@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import * as api from "./api.js";
 const VERB = { restart: "Restart", stop: "Stop", start: "Start" };
 // The Logs dialog: the last 50 lines, with Refresh and Copy.
-function Logs({ machine, name, onClose }) {
+export function ContainerLogs({ machine, name, onClose }) {
   const [text, setText] = useState("Loading…"), [copied, setCopied] = useState(false);
   const load = useCallback(() => { setText("Loading…"); api.containerAction(machine, "logs", name).then(t => setText(t || "(no log lines)"), e => setText(String(e))); }, [machine, name]);
   useEffect(load, [load]);
@@ -31,6 +31,6 @@ export default function ContainerActions({ machine, name, running }) {
         : <>{acts.map(a => <button key={a} className="ghost" disabled={busy} onClick={() => { setNote(null); setAsk(a); }}>{VERB[a]}</button>)}<button className="ghost" onClick={() => setLogs(true)}>Logs</button></>}
       {busy && <span className="cnote">Working…</span>}
       {note && <span className={"cnote" + (note.ok ? "" : " bad")} role={note.ok ? "status" : "alert"}>{note.text}</span>}
-      {logs && <Logs machine={machine} name={name} onClose={() => setLogs(false)} />}
+      {logs && <ContainerLogs machine={machine} name={name} onClose={() => setLogs(false)} />}
     </span>);
 }
