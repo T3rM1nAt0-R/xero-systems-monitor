@@ -2,6 +2,7 @@
 
 use crate::connections::open_pids;
 use crate::gpu_apps::{gpu_apps, windows_battery};
+use crate::process_list::process_rows;
 use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
 use crate::slow::{NetConfig, SlowWorker};
@@ -15,7 +16,7 @@ use sysinfo::{
 };
 use xsm_core::connections::by_program;
 use xsm_core::drives::DiskIo;
-use xsm_core::reading::{BatteryReading, GpuApp};
+use xsm_core::reading::{BatteryReading, GpuApp, ProcessRow};
 use xsm_core::reading::{
     ConnCount, CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading,
     Reading, TopProgram, UpdateInfo,
@@ -26,10 +27,10 @@ const PERCENT: f64 = 100.0;
 /// The ping runs on the 1st poll and every this many polls after (it costs up to a second).
 const PING_EVERY_POLLS: u32 = 5;
 /// The program list is rebuilt on the 1st poll and every this many polls.
-const TOP_EVERY_POLLS: u32 = 5;
+const TOP_EVERY_POLLS: u32 = 3;
 /// The battery (a slow PowerShell call) is read on the 1st poll and every this many polls.
 const BATTERY_EVERY_POLLS: u32 = 20;
-/// Programs kept in the list.
+/// Programs kept in the list by CPU, and again by memory (a program can be in both).
 const TOP_COUNT: usize = 6;
 /// The connection list is rebuilt on the 1st poll and every this many polls (about every 10 seconds at the usual 3-second poll).
 const CONN_EVERY_POLLS: u32 = 3;
@@ -56,6 +57,7 @@ pub struct LocalSource {
     battery: Option<BatteryReading>,
     gpu_apps: Option<Vec<GpuApp>>,
     top: Vec<TopProgram>,
+    processes: Vec<ProcessRow>,
     connections: Vec<ConnCount>,
     hardware: HardwareInfo,
     runners: RunnerWatch,
@@ -87,6 +89,7 @@ impl LocalSource {
             battery: None,
             gpu_apps: None,
             top: Vec::new(),
+            processes: Vec::new(),
             connections: Vec::new(),
             hardware,
             runners: RunnerWatch::default(),
@@ -112,6 +115,7 @@ impl LocalSource {
         );
         if self.polls.is_multiple_of(TOP_EVERY_POLLS) {
             self.top = top_programs(&self.sys);
+            self.processes = process_rows(&self.sys);
             self.gpu_apps = self.nvml.as_ref().and_then(|n| gpu_apps(n, &self.sys));
         }
         if self.polls.is_multiple_of(CONN_EVERY_POLLS) {
@@ -159,6 +163,7 @@ impl LocalSource {
             gpu: self.nvml.as_ref().and_then(gpu_reading),
             ping_ms: self.ping_ms,
             top: self.top.clone(),
+            processes: self.processes.clone(),
             connections: self.connections.clone(),
             hardware: self.hardware.clone(),
             sensors: lhm.as_deref().and_then(xsm_core::lhm::parse_lhm),
@@ -309,7 +314,14 @@ fn top_programs(sys: &System) -> Vec<TopProgram> {
             .total_cmp(&a.cpu_pct)
             .then(b.ram_bytes.cmp(&a.ram_bytes))
     });
+    let mut by_ram = all.clone();
+    by_ram.sort_by_key(|p| std::cmp::Reverse(p.ram_bytes));
     all.truncate(TOP_COUNT);
+    for p in by_ram.into_iter().take(TOP_COUNT) {
+        if !all.iter().any(|a| a.name == p.name) {
+            all.push(p);
+        }
+    }
     all
 }
 

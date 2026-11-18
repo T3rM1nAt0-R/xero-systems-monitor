@@ -2,7 +2,7 @@
 import { systemQuery, systemAction } from "./fakeSystem.js";
 import { createShell } from "./fakeShell.js";
 import { validSessionId } from "./terminal.js";
-import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt } from "./fakeData.js";
+import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt, busiest } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
 const store = { machines: FIRST.map(m => ({ ...m })), prefs: { closeToTray: true, login: false, updates: true }, mode: "full", pinned: true };
@@ -47,6 +47,12 @@ const commands = {
   get_state: () => ({ machines: store.machines.filter(m => !m.paused).map(m => demoMachine(m, clock())) }),
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
   get_busy_at: ({ machine, t }) => (named(machine) ? busyAt(named(machine), t) : {}),
+  get_busiest: ({ machine, range }) => (named(machine) ? busiest(named(machine), range, clock()) : { minutes: 0, top: [] }),
+  end_task: ({ machine, pid, name }) => {
+    if (!named(machine)) throw new Error("That machine is not in the list.");
+    if (!(pid >= 2)) throw new Error("That is part of the system and cannot be ended here.");
+    return `Ended ${String(name).replace(/_/g, " ")}. (demo: nothing was really ended)`;
+  },
   get_events:({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
   get_jobs: ({ since }) => finishedJobs(store.machines, since, clock()),
   open_link: ({ url }) => { if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer"); return null; },

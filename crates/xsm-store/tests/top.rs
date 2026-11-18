@@ -42,9 +42,12 @@ fn first_list_of_a_minute_wins_and_is_found_by_time() {
 #[test]
 fn only_the_busiest_ten_are_kept() {
     let s = Store::open_in_memory().unwrap();
-    let many: Vec<_> = (0..15)
+    let mut many: Vec<_> = (0..15)
         .map(|i| prog(&format!("p{i}"), f64::from(i)))
         .collect();
+    for (i, p) in many.iter_mut().enumerate() {
+        p.ram_bytes = (15 - i as u64) * MIB; // the lightest programs are the biggest
+    }
     s.add_top("a", T, &many).unwrap();
     let got = s.busiest_at("a", T).unwrap().unwrap();
     assert_eq!(got.programs.len(), TOP_KEPT);
@@ -84,4 +87,39 @@ fn rename_moves_them_and_prune_forgets_old_ones() {
     assert!(s.busiest_at("new", T).unwrap().is_some());
     s.prune(T + 4 * 86_400, 365).unwrap();
     assert!(s.busiest_at("new", T).unwrap().is_none());
+}
+
+#[test]
+fn the_top_five_by_cpu_and_the_top_five_by_memory_are_kept() {
+    let s = Store::open_in_memory().unwrap();
+    let mut many: Vec<_> = (0..12)
+        .map(|i| prog(&format!("p{i}"), f64::from(i)))
+        .collect();
+    for (i, p) in many.iter_mut().enumerate() {
+        p.ram_bytes = if i < 3 { 9000 * MIB } else { MIB };
+    }
+    s.add_top("a", T, &many).unwrap();
+    let got = s.busiest_at("a", T).unwrap().unwrap();
+    let names: Vec<_> = got.programs.into_iter().map(|p| p.name).collect();
+    assert_eq!(names.len(), 8, "five by CPU plus three memory hogs");
+    assert!(names.contains(&"p0".to_owned()) && names.contains(&"p11".to_owned()));
+}
+
+#[test]
+fn a_range_is_ranked_by_average_cpu() {
+    let s = Store::open_in_memory().unwrap();
+    s.add_top("a", T, &[prog("steady", 10.0), prog("burst", 40.0)])
+        .unwrap();
+    s.add_top("a", T + 60, &[prog("steady", 10.0)]).unwrap();
+    s.add_top("a", T + 7200, &[prog("late", 90.0)]).unwrap();
+    let got = s.busiest_between("a", T, T + 3600).unwrap();
+    assert_eq!(got.minutes, 2);
+    let rows: Vec<_> = got
+        .programs
+        .iter()
+        .map(|p| (p.name.as_str(), p.cpu_pct, p.minutes))
+        .collect();
+    assert_eq!(rows, [("burst", 20.0, 1), ("steady", 10.0, 2)]);
+    let none = s.busiest_between("b", T, T + 3600).unwrap();
+    assert_eq!((none.minutes, none.programs.len()), (0, 0));
 }

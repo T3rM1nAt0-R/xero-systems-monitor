@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { handle } from "../src/fakeBackend.js";
-import { parseUnits, parseWinServices, parseServices, parseUpdates, countStates, filterServices, passwordCommand, HOLD_MS, UPDATES_EVERY_MS } from "../src/system.js";
+import { parseUnits, parseWinServices, parseServices, parseUpdates, countStates, filterServices, passwordCommand, UPDATES_EVERY_MS } from "../src/system.js";
 
 const UNITS = `ssh.service loaded active running OpenBSD Secure Shell server
 ● backup.service loaded failed failed Nightly backup
@@ -44,7 +44,6 @@ test("passwordCommand finds the command to copy, from an error or a string", () 
   assert.equal(passwordCommand(new Error("needs-password:sudo reboot")), "sudo reboot");
   assert.equal(passwordCommand("boom"), null);
   assert.equal(passwordCommand(undefined), null);
-  assert.equal(HOLD_MS, 800);
   assert.equal(UPDATES_EVERY_MS, 1800000);
 });
 test("demo backend: services and updates for both machines, actions, bad input", async () => {

@@ -7,10 +7,6 @@
 .fchip{padding:var(--sp-1) var(--sp-9);border-radius:var(--r-99);background:var(--s2);border:1px solid var(--line2);font-size:var(--fs-11-5);color:var(--dim);transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
 .fchip.on{color:var(--fg);border-color:var(--acc)}
 .sysrow{grid-template-columns:10px minmax(80px,200px) minmax(70px,.5fr) minmax(0,1.4fr) auto}
-.hold{position:relative;overflow:hidden;white-space:nowrap}
-.hold>i{position:absolute;inset:0 auto 0 0;width:0;background:color-mix(in srgb,var(--acc) 35%,transparent);pointer-events:none}
-.hold.danger>i{background:color-mix(in srgb,var(--bad) 40%,transparent)}
-.hold.on>i{width:100%;transition:width var(--hold) linear}
 .sysnote{display:flex;gap:var(--sp-8);align-items:center;flex-wrap:wrap;padding:var(--sp-6) var(--sp-10);margin-bottom:var(--sp-4);border-radius:var(--r-8);font-size:var(--fs-12);background:var(--s1);border:1px solid var(--line);animation:fadein var(--dur) var(--ease)}
 .sysnote.ok{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
 .sysnote.bad{color:var(--bad-text);border-color:var(--danger-line)}

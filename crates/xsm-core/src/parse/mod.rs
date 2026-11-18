@@ -10,6 +10,7 @@ mod gpu;
 mod hardware;
 mod memory;
 mod net;
+mod processes;
 mod runners;
 mod services;
 mod top;
@@ -65,6 +66,7 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
             "DOCK" | "DOCKON" | "DOCKERR" => docker::line(tag, &mut r, rest),
             "ADAPTER" | "DISKIO" | "SMART" | "SMARTNOTE" => drives::line(tag, &mut r, rest),
             "SVCF" => services::line(&mut r, rest),
+            "PROC" => processes::line(&mut r, rest),
             "TOP" => top::line(&mut r, rest),
             "BAT" => battery::line(&mut r, rest),
             "FAN" => extras::fan(&mut r, rest),
@@ -93,6 +95,9 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
         }
         if r.top.is_empty() {
             r.top.clone_from(&p.top);
+        }
+        if r.processes.is_empty() {
+            r.processes.clone_from(&p.processes);
         }
         if r.gpu_apps.is_none() {
             r.gpu_apps.clone_from(&p.gpu_apps);

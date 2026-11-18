@@ -345,3 +345,19 @@ fn windows_battery_text() {
     assert!(parse_windows_battery("87 1").is_none());
     assert!(parse_windows_battery("x 1 5").is_none());
 }
+
+#[test]
+fn single_processes_with_users_and_kept_between_frames() {
+    let r = read("processes.txt");
+    assert_eq!(r.processes.len(), 3, "bad lines are skipped");
+    let p = &r.processes[0];
+    assert_eq!(
+        (p.pid, p.name.as_str(), p.user.as_str()),
+        (812, "node", "user")
+    );
+    assert_eq!(p.ram_bytes, 800 * MIB);
+    close(Some(p.cpu_pct), 12.5);
+    assert_eq!(r.processes[2].user, "", "a dash means unknown");
+    let kept = parse_frame("cpu 1 1 1 1 1 0 0 0\n", Some(&r));
+    assert_eq!(kept.processes.len(), 3);
+}

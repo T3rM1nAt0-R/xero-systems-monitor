@@ -1,16 +1,22 @@
-import { useState, useRef, useEffect } from "react";
-import { HOLD_MS } from "./system.js";
-// A button that does its job only after it is held down for about 800 ms (mouse, touch, or Space/Enter), so it cannot be clicked by accident.
-// A quick press just shows the hint. The fill that grows while holding is drawn by CSS (.hold.on i).
-export default function HoldButton({ children, onHold, disabled, className = "", hint = "Hold to confirm" }) {
-  const [on, setOn] = useState(false), timer = useRef(0);
-  const stop = () => { clearTimeout(timer.current); setOn(false); };
-  const start = () => { if (disabled || on) return; setOn(true); timer.current = setTimeout(() => { setOn(false); onHold(); }, HOLD_MS); };
-  useEffect(() => () => clearTimeout(timer.current), []);
-  const key = fn => e => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); fn(); } };
+import { useEffect, useRef, useState } from "react";
+import { HOLD_MS, holdProgress } from "./procs.js";
+// A button that only acts after being held down (mouse, touch, or Space / Enter): a fill grows across it, and letting go early cancels.
+// It protects actions that cannot be undone, such as ending a program.
+export default function HoldButton({ label, title, onDone, ms = HOLD_MS, disabled }) {
+  const [p, setP] = useState(0), start = useRef(0), raf = useRef(0);
+  const stop = () => { cancelAnimationFrame(raf.current); start.current = 0; setP(0); };
+  const tick = () => {
+    const v = holdProgress(performance.now() - start.current, ms);
+    if (v >= 1) { stop(); onDone(); return; }
+    setP(v); raf.current = requestAnimationFrame(tick);
+  };
+  const begin = () => { if (disabled || start.current) return; start.current = performance.now(); raf.current = requestAnimationFrame(tick); };
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  const key = e => e.key === " " || e.key === "Enter";
   return (
-    <button type="button" className={`hold ${className}${on ? " on" : ""}`} disabled={disabled} data-tip={hint} aria-label={`${typeof children === "string" ? children : "Action"}. ${hint}`}
-      onPointerDown={start} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop} onKeyDown={key(start)} onKeyUp={key(stop)} onBlur={stop} onContextMenu={e => e.preventDefault()}>
-      <i style={{ "--hold": HOLD_MS + "ms" }} />{children}
+    <button type="button" className="holdbtn" disabled={disabled} data-tip={title} aria-label={`${label}: ${title}`}
+      onPointerDown={begin} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={e => e.preventDefault()}
+      onKeyDown={e => { if (key(e)) { e.preventDefault(); begin(); } }} onKeyUp={e => key(e) && stop()} onBlur={stop}>
+      <i style={{ width: p * 100 + "%" }} /><span>{p > 0 ? "Keep holding…" : label}</span>
     </button>);
 }

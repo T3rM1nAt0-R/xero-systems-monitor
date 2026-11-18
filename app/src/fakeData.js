@@ -5,6 +5,7 @@ const SLOT = 7200, MAX_BACK = 60 * DAY;   // one chance of a job per runner ever
 const HW = { pc: { board: "Example Board", os: "Windows 11", cpu: "Example CPU 8-core", gpu: "Example GPU 12 GB" }, server: { board: "", os: "Linux", cpu: "Example CPU 16-core" } };
 // [base, swing, period in seconds] for each series; the numbers only have to look alive.
 const SHAPE = { cpu: [18, 40, 900], ram: [48, 12, 5400], temp: [46, 18, 900], gpu: [8, 45, 1300], gtemp: [40, 22, 1300], vram: [25, 20, 3000], down: [2e5, 3e6, 700], up: [5e4, 6e5, 500], ping: [12, 8, 300] };
+const BURST_SECS = 1800, BURST_CPU = 82;
 const PERCENT = ["cpu", "ram", "gpu", "vram", "disk"], RUNNERS = ["runner-1", "runner-2"], WORKFLOWS = ["Fast check", "Unit tests", "Build"];
 
 export const hash = n => { let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b); x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35); x ^= x >>> 16; return (x >>> 0) / 4294967296; };
@@ -17,11 +18,16 @@ export function metric(kind, seed, key, t, now) {
   if (key === "disk") return +(62 - ((now - t) / DAY) * 0.4).toFixed(2);
   const [base, swing, period] = SHAPE[key], k = KEYS.indexOf(key);
   const v = base + swing * (0.5 + 0.5 * Math.sin((t / period) * TAU + seed + k)) + (hash(Math.floor(t / 3) + seed + k) - 0.5) * swing * 0.2;
+  if (key === "cpu" && kind === "pc" && now - t < BURST_SECS) return BURST_CPU;   // This PC has been working hard for the last half hour, so "Unusual for this time" shows in the demo
   return Math.max(0, PERCENT.includes(key) ? Math.min(100, v) : v);
 }
+// Made-up happenings per machine, as [seconds before now, length, what]: an outage with events, a stretch with no readings, a container that keeps restarting.
+const HAPPENINGS = { pc: [[3 * DAY, 2400, "offline"], [5 * DAY, 7200, "nodata"]], server: [[20 * 3600, 1800, "offline"], [4 * 3600, 0, "container"]] };
+const happenings = (m, now) => HAPPENINGS[kindOf(m)].map(([ago, len, what]) => ({ t: now - ago, len, what }));
+const inGap = (hs, t) => hs.some(h => (h.what === "offline" || h.what === "nodata") && t >= h.t && t <= h.t + h.len);
 export const driveNames = m => (kindOf(m) === "pc" ? ["C:", "D:"] : ["/"]);
 export function history(m, rng, now) {
-  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1), extra: {} };
+  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1), extra: {} }, gaps = happenings(m, now);
   if (kind === "pc") {   // the internet check (a short outage a few hours ago) and the ping times to the other machines
     out.extra.inet = []; out.extra.inet_ms = []; out.extra["pm:example-server"] = []; out.extra["pm:example-nas"] = [];
     for (let t = now - rng; t <= now; t += Math.max(60, step)) {
@@ -36,7 +42,7 @@ export function history(m, rng, now) {
   }
   for (const key of KEYS) {
     out[key] = [];
-    for (let t = now - rng; t <= now; t += step) { const v = metric(kind, seed, key, t, now); if (v != null) out[key].push([Math.round(t), +v.toFixed(2)]); }
+    for (let t = now - rng; t <= now; t += step) { if (inGap(gaps, t)) continue; const v = metric(kind, seed, key, t, now); if (v != null) out[key].push([Math.round(t), +v.toFixed(2)]); }
   }
   return out;
 }
@@ -62,6 +68,10 @@ export const demoEvents = (machines, since, now, n) => {
     rows.push([j.t0, m.name, `${j.runner} started: PR #${j.n} · ${j.flow}`]);
     if (j.t1 <= now) rows.push([j.t1, m.name, `${j.runner} finished (${Math.round((j.t1 - j.t0) / 60)} min, ${j.res}): PR #${j.n}`]);
   }
+  for (const m of machines) for (const h of happenings(m, now)) {
+    if (h.what === "offline") rows.push([h.t, m.name, "went offline"], [h.t + h.len, m.name, "back online"]);
+    if (h.what === "container") rows.push([h.t, m.name, "container web keeps restarting"]);
+  }
   return rows.filter(r => r[0] >= since).sort((a, b) => b[0] - a[0]).slice(0, n);
 };
 // What was busy around time t (the stored minute nearest to it): a few made-up programs that share the machine's CPU at that moment.
@@ -74,10 +84,20 @@ export function busyAt(m, t) {
 }
 export const forecast = m => (kindOf(m) === "server" ? { per_day: 0.4, days: 95 } : { per_day: null, days: null });
 
+// Made-up processes: [pid, name, share of the CPU use, MB]. The server shows who runs each (This PC does not report users).
+const PROCS = [["browser", 0.3, 1800], ["browser", 0.1, 650], ["editor", 0.2, 900], ["build_tool", 0.15, 600], ["video_call", 0.12, 700], ["backup", 0.08, 300], ["indexer", 0.05, 250], ["sync_tool", 0.02, 120], ["browser", 0.02, 410], ["shell", 0, 20]];
+const procs = (cpu, kind) => PROCS.map(([name, w, mb], i) => [1000 + i * 37, name, +(cpu * w).toFixed(1), mb, kind === "pc" ? "" : i % 3 ? "user" : "root"]);
+// What was busy over a range: the same programs, ranked by their average CPU and how many minutes each was among the busiest.
+export function busiest(m, range, now) {
+  const minutes = Math.max(0, Math.floor(range / 60)), cpu = metric(kindOf(m), seedOf(m.name), "cpu", now, now), seen = new Map();
+  for (const [, name, c, mb] of procs(cpu, kindOf(m))) { const e = seen.get(name) || [name, 0, 0, minutes]; e[1] += c; e[2] = Math.max(e[2], mb); seen.set(name, e); }
+  return { minutes, top: [...seen.values()].map(([n, c, mb, k], i) => [n, +c.toFixed(1), mb, Math.max(1, Math.round(k * (1 - i * 0.07)))]).sort((a, b) => b[1] - a[1]) };
+}
 const snap = (m, now) => {
   const kind = kindOf(m), seed = seedOf(m.name), v = k => metric(kind, seed, k, now, now), gpu = kind === "pc";
   const d = { cpu: v("cpu"), temp: v("temp"), ram: v("ram"), disk: v("disk"), down: v("down"), up: v("up"), ping: v("ping"), uptime: 3 * DAY + 5400, restart: gpu, restart_pkgs: gpu ? 2 : undefined, updates: gpu ? 5 : 0, ip: gpu ? "192.0.2.20" : "192.0.2.10", speed: 1000, hw: HW[kind],
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
+    procs: procs(v("cpu"), kind),
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
   d.io = driveNames(m).map((n, i) => [n, Math.round(v("down") * 0.4 / (i + 1)), Math.round(v("up") * 0.6 / (i + 1))]);   // drive speeds, bytes per second
   if (gpu) Object.assign(d, { adapters: [["Ethernet", true, 1000, "192.0.2.20"], ["Wi-Fi", true, 866, "192.0.2.21"], ["VPN", false, null, null]], wifi: ["Example Wi-Fi", 82], inet: [true, 14, 38 + Math.round(hash(Math.floor(now / 60)) * 20)], pings: [["example-server", 3.4], ["example-nas", 240], ["example-laptop", null]] });

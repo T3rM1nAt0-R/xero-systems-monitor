@@ -3,11 +3,12 @@ import assert from "node:assert/strict";
 import { handle } from "../src/fakeBackend.js";
 import { SECTION_META, SECTION_IDS, TABS, TAB_IDS, availableIds, sectionTitle, svcFacts } from "../src/sections/meta.js";
 import { groupsFor, groupLabel, normGroups } from "../src/order.js";
+import { DEFAULT_GRAPHS } from "../src/graphPrefs.js";
 import { normMachine, patchMachine, togglePinned, DEFAULT_MACHINE } from "../src/machineSettings.js";
 
 test("registry: one entry per section, unique ids, every tab known, every function present", () => {
   assert.equal(new Set(SECTION_IDS).size, SECTION_META.length);
-  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "bat", "net", "disk", "run", "svc", "term"]);
+  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "term"]);
   assert.equal(new Set(TAB_IDS).size, TABS.length);
   assert.deepEqual(TAB_IDS.slice(0, 2), ["overview", "hardware"]);
   for (const s of SECTION_META) {
@@ -62,11 +63,11 @@ test("summaries say what the folded section shows", () => {
 test("machine settings: defaults are one frozen object, junk is cleaned, pins are known sections once", () => {
   assert.equal(normMachine(null), DEFAULT_MACHINE);
   assert.equal(normMachine("x"), DEFAULT_MACHINE);
-  assert.deepEqual(normMachine({ color: "#4ade80", tab: "disks", pinned: ["cpu", "cpu", "nope", "svc"] }), { color: "#4ade80", tab: "disks", pinned: ["cpu", "svc"] });
-  assert.deepEqual(normMachine({ color: "red; x", tab: "nope", pinned: "cpu" }), { color: "", tab: "overview", pinned: [] });
+  assert.deepEqual(normMachine({ color: "#4ade80", tab: "disks", pinned: ["cpu", "cpu", "nope", "svc"] }), { color: "#4ade80", tab: "disks", pinned: ["cpu", "svc"], graphs: DEFAULT_GRAPHS, strip: "day" });
+  assert.deepEqual(normMachine({ color: "red; x", tab: "nope", pinned: "cpu" }), { color: "", tab: "overview", pinned: [], graphs: DEFAULT_GRAPHS, strip: "day" });
   assert.equal(normMachine({ color: "hsl(120 50% 40%)" }).color, "hsl(120 50% 40%)");
   const p = patchMachine({ tab: "network" }, { color: "#fff" });
-  assert.deepEqual(p, { color: "#fff", tab: "network", pinned: [] });
+  assert.deepEqual(p, { color: "#fff", tab: "network", pinned: [], graphs: DEFAULT_GRAPHS, strip: "day" });
   assert.deepEqual(togglePinned(p, "gpu").pinned, ["gpu"]);
   assert.deepEqual(togglePinned(togglePinned(p, "gpu"), "gpu").pinned, []);
 });

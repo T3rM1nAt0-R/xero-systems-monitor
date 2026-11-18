@@ -5,7 +5,7 @@ use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
 use crate::scan::{ScanReply, Scans};
-use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, State};
+use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, Ranking, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -15,6 +15,7 @@ use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
 use xsm_sources::folders::{scan_local, scan_ssh};
+use xsm_sources::process_list::{end_local, end_remote};
 use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::ssh_command;
 use xsm_sources::system::{run_action, run_query, Target};
@@ -149,6 +150,29 @@ impl Backend for LiveBackend {
         let t = t as i64;
         let found = lock(&self.reader).busiest_at(machine, t).map_err(text)?;
         Ok(found.map_or(BusyReply::Nothing {}, |b| BusyReply::of(b.t, &b.programs)))
+    }
+
+    fn get_busiest(&self, machine: &str, range_s: f64) -> Result<Ranking, String> {
+        // reason: unix seconds fit an i64 (NaN becomes 0)
+        #[allow(clippy::cast_possible_truncation)]
+        let (to, span) = (now_s(), range_s.clamp(0.0, MAX_RANGE_S) as i64);
+        let found = lock(&self.reader)
+            .busiest_between(machine, to - span, to)
+            .map_err(text)?;
+        Ok(Ranking::of(&found))
+    }
+
+    fn end_task(&self, machine: &str, pid: u32, name: &str) -> Result<String, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .cloned()
+            .ok_or_else(|| "That machine is not in the list.".to_owned())?;
+        match (found.kind, found.host) {
+            (MachineKind::Local, _) => end_local(pid, name),
+            (_, Some(host)) => end_remote(&host, pid, name),
+            _ => Err("That machine has no host.".to_owned()),
+        }
     }
 
     fn get_events(&self, since: f64, n: usize) -> Result<Vec<Event>, String> {

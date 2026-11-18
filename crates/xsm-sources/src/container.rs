@@ -23,7 +23,7 @@ pub fn run_container_action(host: &str, action: Action, name: &str) -> Result<St
     run_command(ssh_command_with(host, &args), TIMEOUT, action, name)
 }
 
-fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
+pub(crate) fn drain_text(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
     thread::spawn(move || {
         let mut bytes = Vec::new();
         let _ = pipe.by_ref().take(MAX_OUTPUT).read_to_end(&mut bytes);
@@ -34,7 +34,7 @@ fn drain(mut pipe: impl Read + Send + 'static) -> JoinHandle<String> {
 }
 
 /// `Some(success)` when the child ended in time, `None` when it was killed for taking too long.
-fn wait(child: &mut Child, timeout: Duration) -> Option<bool> {
+pub(crate) fn wait_for(child: &mut Child, timeout: Duration) -> Option<bool> {
     let end = Instant::now() + timeout;
     loop {
         match child.try_wait() {
@@ -74,9 +74,9 @@ pub fn run_raw(mut cmd: Command, timeout: Duration) -> Result<Ran, String> {
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|_| "Could not start ssh on this PC.".to_owned())?;
-    let out = child.stdout.take().map(drain);
-    let err = child.stderr.take().map(drain);
-    let ended = wait(&mut child, timeout);
+    let out = child.stdout.take().map(drain_text);
+    let err = child.stderr.take().map(drain_text);
+    let ended = wait_for(&mut child, timeout);
     let (stdout, stderr) = (text_of(out), text_of(err));
     ended
         .map(|ok| Ran { ok, stdout, stderr })

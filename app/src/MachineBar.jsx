@@ -14,8 +14,8 @@ export default function MachineBar({ machine, d }) {
         <b>{u.count ? `${u.count} update${u.count === 1 ? "" : "s"} waiting` : "Up to date"}</b><span className="sub">checked with {u.manager}</span>
         {d.restart && <span className="restart" title={restartWhy(d)}>Restart needed</span>}
         <span className="grow" />
-        <HoldButton disabled={!!act.busy || !u.count} onHold={() => act.run("upgrade")}>{act.busy === "upgrade" ? "Installing…" : "Install updates"}</HoldButton>
-        <HoldButton className="danger" disabled={!!act.busy} onHold={() => act.run("reboot")}>Restart machine</HoldButton>
+        <HoldButton disabled={!!act.busy || !u.count} onDone={() => act.run("upgrade")} label={act.busy === "upgrade" ? "Installing…" : "Install updates"} title="Hold to confirm" />
+        <HoldButton disabled={!!act.busy} onDone={() => act.run("reboot")} label="Restart machine" title="Hold to confirm" />
       </div>
       <ActionNote note={act.note} onClose={act.clear} />
     </div>);

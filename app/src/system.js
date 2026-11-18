@@ -1,7 +1,6 @@
 // Reading what the machine says about its services and updates. Pure (no React): the Services tab and the tests use it.
 // The shell sends back plain text (docs/window-api.md, system_query): systemd's list on Linux, PowerShell's JSON on Windows.
 
-export const HOLD_MS = 800;                   // how long a button is held to confirm
 export const UPDATES_EVERY_MS = 30 * 60e3;    // pending updates are looked up again this often
 export const SERVICES_EVERY_MS = 60e3;        // the service list is refreshed this often
 export const PASSWORD_MARK = "needs-password:";

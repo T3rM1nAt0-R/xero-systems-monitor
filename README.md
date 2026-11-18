@@ -69,8 +69,18 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/processes.png" alt="The Processes tab"></td>
+<td valign="top">The Processes tab: the busiest processes, sortable and filterable. <b>End task</b> needs a press-and-hold, so it cannot happen by accident (Linux machines get a plain <code>kill</code> over ssh, never sudo). Below it, "What was busy" ranks the programs of the last hour, 6 hours or 24 hours by CPU or memory.</td>
 <td width="50%"><img src="docs/screenshots/network.png" alt="The Network tab with adapters, the internet check and the ping map"></td>
 <td width="50%" valign="top">The Network tab: adapters and Wi-Fi, an internet check every minute with a 24-hour up/down strip (you can change the address it checks), and a ping map of your other machines with a latency graph.</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/overview-graphs.png" alt="The graph list in a machine's menu, the outage strip and the Unusual for this time chip"></td>
+<td width="50%"></td>
+</tr>
+<tr>
+<td valign="top">Choose your graphs: the ⋯ menu on a card lists its graphs with show/hide, size S/M/L and pin. Graphs get small markers for restarts, jobs (failed ones in red), container restarts and going offline; hover one for the time. A graph that is far above its usual level for this hour of the day shows "Unusual for this time". A thin strip under the tabs shows the last 24 hours or 7 days online, offline or without data.</td>
+<td></td>
 </tr>
 </table>
 

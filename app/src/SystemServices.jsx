@@ -19,8 +19,8 @@ export default function SystemServices({ machine }) {
       <ActionNote note={act.note} onClose={act.clear} />
       {shown.map(s => <div className={"svcrow sysrow" + (s.state === "failed" ? " bad" : s.state === "active" ? " up" : "")} key={s.name}>
         <i /><b data-tip={s.name}>{s.desc && s.start ? s.desc : s.name}</b><span className="st">{s.state === "failed" ? "failed" : s.sub}</span><span className="sub" data-tip={s.desc}>{s.start ? `starts: ${s.start.toLowerCase()}` : s.desc}</span>
-        <span className="cacts">{s.state === "active" ? <><HoldButton className="ghost" disabled={!!act.busy} onHold={() => act.run("restart", s.name)}>Restart</HoldButton><HoldButton className="ghost" disabled={!!act.busy} onHold={() => act.run("stop", s.name)}>Stop</HoldButton></>
-          : <HoldButton className="ghost" disabled={!!act.busy} onHold={() => act.run("start", s.name)}>Start</HoldButton>}</span>
+        <span className="cacts">{s.state === "active" ? <><HoldButton disabled={!!act.busy} onDone={() => act.run("restart", s.name)} label="Restart" title="Hold to confirm" /><HoldButton disabled={!!act.busy} onDone={() => act.run("stop", s.name)} label="Stop" title="Hold to confirm" /></>
+          : <HoldButton disabled={!!act.busy} onDone={() => act.run("start", s.name)} label="Start" title="Hold to confirm" />}</span>
       </div>)}
       {!q.loading && !shown.length && <div className="quiet">No services to show here.</div>}
     </div>);

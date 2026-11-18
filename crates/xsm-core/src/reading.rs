@@ -59,8 +59,25 @@ pub struct Reading {
     pub updates: UpdateInfo,
     /// The battery, when the machine has one.
     pub battery: Option<BatteryReading>,
+    /// The busiest single processes (kept from the last frame that sampled them).
+    pub processes: Vec<ProcessRow>,
     /// Programs using the graphics card (kept from the last frame that asked); `None` when never asked.
     pub gpu_apps: Option<Vec<GpuApp>>,
+}
+
+/// One running process.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct ProcessRow {
+    /// Process id.
+    pub pid: u32,
+    /// Program name (spaces shown as `_`).
+    pub name: String,
+    /// CPU, percent of the whole machine.
+    pub cpu_pct: f64,
+    /// Memory, bytes.
+    pub ram_bytes: u64,
+    /// Who runs it; empty when not known.
+    pub user: String,
 }
 
 /// The battery of a laptop.
