@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useWindowFx from "./useWindowFx.js";
 import StatusDot from "./StatusDot.jsx";
 import useFlip from "./useFlip.js";
 import Toasts from "./Toasts.jsx";
@@ -104,6 +105,7 @@ export default function App() {
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms: vms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });
 
+  const cascade = useWindowFx(appRef, !!state, `${effCompact}|${mini}`);   // startup cascade, and the morph between Full, Compact and Mini
   const gridRef = useRef(null);
   useFlip(gridRef, vms.map(m => m.name).join("|"));   // cards glide when they are reordered, hidden or shown
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
@@ -124,10 +126,10 @@ export default function App() {
       {!state && !err && <div className="card skelcard" aria-busy="true" aria-label="Loading"><div className="skelrows"><i /><i /><i /><i /><i /></div></div>}
 
 
-      {state && !effCompact && <div className={"stripwrap" + (stripOn ? " open" : "")} aria-hidden={!stripOn}><div><Strip ms={stripOrder(vms, localName)} hist={hist} lastOk={lastOk} onHide={hideMachine} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} /></div></div>}
+      {state && !effCompact && <div className={"stripwrap" + (stripOn ? " open" : "") + (cascade ? " cascade" : "")} aria-hidden={!stripOn}><div><Strip ms={stripOrder(vms, localName)} hist={hist} lastOk={lastOk} onHide={hideMachine} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} /></div></div>}
       {state && !!ms.length && !vms.length && <div className="empty">All machines are hidden.<small><button onClick={() => setHidDlg(true)}>Hidden machines…</button></small></div>}
       {state && effCompact && <Compact limitsOf={limitsOf} ms={vms} now={now} lastOk={lastOk} hot={hot} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
-      {state && !effCompact && <main className="grid" ref={gridRef} onPointerDown={dragProps}>{vms.map(card)}</main>}
+      {state && !effCompact && <main className={"grid" + (cascade ? " cascade" : "")} ref={gridRef} onPointerDown={dragProps}>{vms.map(card)}</main>}
 
       <div className="dock" hidden={mini} onClick={e => e.stopPropagation()}>
       {showEv && <ActivityDrawer events={log} muted={muted} onMute={onMute} onClose={closeEv} />}

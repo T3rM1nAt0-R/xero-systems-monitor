@@ -1,0 +1,8 @@
+/* Window motion: the startup cascade (cards and tiles come in one after another, Full only). The morph between Full, Compact and Mini is played from script (useWindowFx.js);
+   fold all ripples top to bottom from fold.js. Off and reduced motion stop all of it (see motion.css). */
+html[data-motion="full"] .grid.cascade>.card,html[data-motion="full"] .stripwrap.cascade .tilewrap{animation:cascadein .6s var(--ease) both}
+.cascade>.card:nth-child(2),.cascade .tilewrap:nth-child(2){animation-delay:.09s!important}
+.cascade>.card:nth-child(3),.cascade .tilewrap:nth-child(3){animation-delay:.18s!important}
+.cascade>.card:nth-child(4),.cascade .tilewrap:nth-child(4){animation-delay:.27s!important}
+.cascade>.card:nth-child(n+5),.cascade .tilewrap:nth-child(n+5){animation-delay:.36s!important}
+@keyframes cascadein{from{opacity:0;transform:translateY(18px)}}
