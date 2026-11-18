@@ -1,6 +1,9 @@
 import { refUrl } from "./github.js";
 // One lane per runner: bars from the collector's finished-job rows plus the jobs running now.
 // A row is [machine, runner, start, end, result, label] (seconds).
+// The timeline's own ranges (chips), independent of the page graph range.
+export const TL_RANGES = { day: { secs: 86400, label: "24 h" }, week: { secs: 604800, label: "7 d" } };
+export const DEFAULT_TL_RANGE = "day";
 export const BAD = { Failed: "bad", Canceled: "stop", Cancelled: "stop", Abandoned: "stop" };
 export function buildLanes(rows, machine, runners, jobs, started, t0, t1) {
   const L = {}; const get = r => (L[r] ||= []);

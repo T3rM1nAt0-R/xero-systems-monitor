@@ -1,22 +1,22 @@
 import { useState } from "react";
 import * as api from "./api.js";
 import Sub from "./Sub.jsx";
-import { runnerRows, queueRows, bytesText, STATUS_TEXT } from "./runnerList.js";
+import { runnerRows, queueRows, bytesText } from "./runnerList.js";
 // The Runners tab's top: one row per runner (status, current job, time in the job, work folder size on demand) and the queue of waiting jobs.
-export default function RunnerList({ machine, d, started, gone, now }) {
+export default function RunnerList({ machine, d, started, gone, now, finished }) {
   const [sizes, setSizes] = useState({}), [state, setState] = useState("");   // state: "", "loading" or an error text
   const ask = () => { setState("loading"); api.getWorkSize(machine).then(list => { setSizes(Object.fromEntries(list.map(x => [x.runner, x.bytes]))); setState(""); }, e => setState(String(e?.message || e))); };
-  const rows = runnerRows(d, started, gone, now, sizes), queue = queueRows(d, now);
+  const rows = runnerRows(d, started, gone, now, sizes, finished, machine), queue = queueRows(d, now);
   return (
     <>
       <Sub id={machine + ".rlist"} title="Runners" hint={`${rows.length}`}>
         <div className="rlist" role="table" aria-label="Runners">
           {rows.map(r => <div className="rrow" role="row" key={r.name}>
-            <span className={"rname " + r.status} role="cell"><i />{r.name}</span><span className="rst" role="cell">{STATUS_TEXT[r.status]}</span>
-            <span className="rjob" role="cell">{r.job || "–"}</span><span className="rt" role="cell">{r.inJob}</span>
+            <span className={"rname " + r.status} role="cell"><i />{r.name}</span><span className="rst" role="cell">{r.note}</span>
+            <span className="rjob" role="cell">{r.job || (r.last ? <><span className={"rres " + r.last.kind}>{r.last.res}</span> {r.last.label}</> : "–")}</span><span className="rt" role="cell">{r.inJob}</span>
             <span className="rsz" role="cell">{r.size !== undefined ? bytesText(r.size) : ""}</span>
           </div>)}
-          <div className="rfoot"><button className="ghost" disabled={state === "loading"} onClick={ask} data-tip="Adds up each runner's work folder. Can take a few seconds.">{state === "loading" ? "Measuring…" : "Check work folder sizes"}</button>{state && state !== "loading" && <span className="quiet">{state}</span>}</div>
+          <div className="rfoot"><button className="small" disabled={state === "loading"} onClick={ask} data-tip="Adds up each runner's work folder. Can take a few seconds.">{state === "loading" ? "Measuring…" : "Check work folder sizes"}</button>{state && state !== "loading" && <span className="quiet">{state}</span>}</div>
         </div>
       </Sub>
       <Sub id={machine + ".rqueue"} title="Queue" hint={d.queued ? `${queue.length} waiting` : ""}>

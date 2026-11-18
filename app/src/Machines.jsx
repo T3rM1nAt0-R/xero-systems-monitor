@@ -1,7 +1,9 @@
 import Switch from "./Switch.jsx";
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
+import useEscape from "./useEscape.js";
 export default function Machines({ onClose }) {
+  useEscape(onClose);
   const [cfg, setCfg] = useState(null), [name, setName] = useState(""), [host, setHost] = useState(""), [runner, setRunner] = useState(false), [saving, setSaving] = useState(false), [bad, setBad] = useState("");
   useEffect(() => { api.getMachines().then(setCfg); }, []);
   if (!cfg) return null;

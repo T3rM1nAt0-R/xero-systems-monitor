@@ -4,7 +4,7 @@
    The numbered scales (--fs-N, --sp-N, --r-N, --sz-N) are the pixel value N times --scale. */
 :root {
   --bg:#07080b; --s1:#0d0f14; --s2:#13161d; --line:#1b1f28; --line2:#282e39;
-  --fg:#e7e9ee; --mid:#aab1bd; --dim:#7b8392; --dim2:#4d5462;
+  --fg:#e7e9ee; --mid:#aab1bd; --dim:#9099a8; --dim2:#4d5462;
   --acc:#4cc9f0; --warn:#f5b544; --crit:#f2637a;
   color-scheme: dark;
   /* metric colours (graphs, group markers) */
@@ -113,8 +113,8 @@
 }
 :root[data-theme="light"] {
   --bg:#f3f4f7; --s1:#ffffff; --s2:#eceff4; --line:#e0e4ea; --line2:#c9cfda;
-  --fg:#14171c; --mid:#454d5b; --dim:#6a7280; --dim2:#98a0ad;
-  --acc:#0a7ea4; --warn:#b26b00; --crit:#d23b55;
+  --fg:#14171c; --mid:#454d5b; --dim:#555d6b; --dim2:#98a0ad;
+  --acc:#066486; --warn:#8a5200; --crit:#b3243e; --ok:#0e7434; --busy:#8a5200; --bad:#b3243e; --bad-text:#b3243e;
   color-scheme: light;
   --on-acc:#fff;
   --shadow-menu: 0 8px 28px #0003; --shadow-drawer: 0 8px 28px #0003; --shadow-dlg: 0 8px 28px #0003;

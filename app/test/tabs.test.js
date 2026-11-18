@@ -23,6 +23,14 @@ test("a bare machine shows Overview, Network and Disks only; Terminal always sho
   assert.equal(TABS.length, TAB_IDS.length);
 });
 
+test("the Terminal tab hides while the machine is offline, unless it is the open one", () => {
+  const off = { ...bare, err: "unreachable" };
+  assert.ok(!availableTabs(off).some(t => t[0] === "terminal"));
+  assert.ok(availableTabs(off, undefined, "terminal").some(t => t[0] === "terminal"));
+  assert.equal(effectiveTab("terminal", off), "terminal");
+  assert.equal(effectiveTab("terminal", bare), "terminal");
+});
+
 test("Overview: graphs, compact runners, and only failing containers", () => {
   assert.deepEqual(overviewParts(rich).map(p => p.join(".")), ["cpu.graphs", "net.graphs", "disk.graphs", "run.compact", "svc.failing"]);
   assert.deepEqual(overviewParts(bare).map(p => p.join(".")), ["cpu.graphs", "net.graphs", "disk.graphs"]);

@@ -25,9 +25,9 @@ const GRAPH_K = { small: 0.75, medium: 1, large: 1.4 }, DENS_K = { compact: 0.85
 // Colour items: id, label, the CSS variables it sets, and the dark and light built-in value (a test keeps these equal to tokens.css).
 const C = (id, label, vars, dark, light = dark) => ({ id, label, vars, dark, light });
 export const COLOR_ITEMS = [
-  C("acc", "Accent", ["--acc"], "#4cc9f0", "#0a7ea4"), C("bg", "Background", ["--bg"], "#07080b", "#f3f4f7"), C("card", "Card", ["--s1"], "#0d0f14", "#ffffff"),
-  C("fg", "Text", ["--fg"], "#e7e9ee", "#14171c"), C("dim", "Dim text", ["--dim"], "#7b8392", "#6a7280"), C("line", "Border", ["--line"], "#1b1f28", "#e0e4ea"),
-  C("good", "Good", ["--ok"], "#4ade80"), C("warn", "Warning", ["--warn"], "#f5b544", "#b26b00"), C("bad", "Bad", ["--crit", "--bad"], "#f2637a", "#d23b55"),
+  C("acc", "Accent", ["--acc"], "#4cc9f0", "#066486"), C("bg", "Background", ["--bg"], "#07080b", "#f3f4f7"), C("card", "Card", ["--s1"], "#0d0f14", "#ffffff"),
+  C("fg", "Text", ["--fg"], "#e7e9ee", "#14171c"), C("dim", "Dim text", ["--dim"], "#9099a8", "#555d6b"), C("line", "Border", ["--line"], "#1b1f28", "#e0e4ea"),
+  C("good", "Good", ["--ok"], "#4ade80", "#0e7434"), C("warn", "Warning", ["--warn"], "#f5b544", "#8a5200"), C("bad", "Bad", ["--crit", "--bad"], "#f2637a", "#b3243e"),
 ];
 export const METRIC_ITEMS = [["cpu", "CPU", "#4ade80"], ["temp", "CPU temperature", "#fb923c"], ["ram", "Memory", "#60a5fa"], ["gpu", "GPU", "#a78bfa"], ["gtemp", "GPU temperature", "#fb5a72"],
   ["vram", "GPU memory", "#38bdf8"], ["down", "Download", "#60a5fa"], ["up", "Upload", "#f472b6"], ["ping", "Ping", "#4cc9f0"], ["disk", "Disk", "#fbbf24"]]

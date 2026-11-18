@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runnerRows, queueRows, bytesText } from "../src/runnerList.js";
+import { runnerRows, queueRows, bytesText, agoText } from "../src/runnerList.js";
 import { cleanSize, miniColumns } from "../src/useMiniSize.js";
 import { handle } from "../src/fakeBackend.js";
 
@@ -33,4 +33,13 @@ test("demo backend answers work sizes and a queue", async () => {
   const st = await handle("get_state");
   assert.ok(st.machines.find(m => m.name === "example-server").d.queued.length > 0);
   assert.equal(await handle("set_mini_size", { width: 400, height: 300 }), null);
+});
+
+test("an idle runner says when its last job finished; a long-gone one has no note", () => {
+  const d = { runners: { a: false, b: false } }, fin = [["m", "a", 100, 900, "Succeeded", "Build"], ["m", "a", 100, 500, "Failed", "Old"], ["other", "b", 1, 2, "Failed", "x"]];
+  const rows = runnerRows(d, {}, [], 2220, {}, fin, "m");
+  assert.equal(rows[0].note, "Idle · last job 22 min ago");
+  assert.deepEqual([rows[0].last.res, rows[0].last.kind, rows[0].last.label], ["Succeeded", "succeeded", "Build"]);
+  assert.equal(rows[1].note, "Idle");
+  assert.deepEqual([30, 3600, 90000, 400000].map(agoText), ["a moment", "60 min", "25 h", "5 d"]);
 });

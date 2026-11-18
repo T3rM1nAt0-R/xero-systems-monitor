@@ -7,7 +7,9 @@ let uid = 0;
 let hostModule = null;
 const loadHost = () => (hostModule ||= import("../termHost.js"));
 
-export default function Terminal({ m }) {
+// A shell needs a machine that answers; an offline one just says so.
+export default function Terminal({ m }) { return m.err ? <div className="quiet">Machine is offline.</div> : <Shell m={m} />; }
+function Shell({ m }) {
   const key = "term." + m.name;
   const [terms] = useSetting(key, emptyTerms);
   const [host, setHost] = useState(null), [, tick] = useState(0);
