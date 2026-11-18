@@ -10,8 +10,8 @@ function nearest(pts, t) {
   while (hi - lo > 1) { const m = (lo + hi) >> 1; if (pts[m][0] < t) lo = m; else hi = m; }
   return Math.abs(pts[lo][0] - t) <= Math.abs(pts[hi][0] - t) ? pts[lo] : pts[hi];
 }
-function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, marks = [], group, title, cmp, cmpLabel = "", zoomable = true, live = true }) {
-  const W = 600, H = 150, root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0);
+function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, marks = [], group, title, cmp, cmpLabel = "", zoomable = true, live = true, onPick }) {
+  const W = 600, H = 150, root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0), downAt = useRef(null);
   const top = useMemo(() => max || Math.max(1, ...series.flatMap(s => s.pts.map(p => p[1])), ...(cmp || []).map(p => p[1])) * 1.15, [series, max, cmp]);
   const X = t => Math.max(0, Math.min(W, ((t - t0) / (t1 - t0)) * W)).toFixed(1);
   const line = pts => pts.map(([t, v], i) => (i ? "L" : "M") + X(t) + " " + (H - Math.min(1, v / top) * H).toFixed(1)).join("");
@@ -39,6 +39,11 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
       hoverAt(g, t0 + q * (t1 - t0), cx.current, cy.current, range);
     });
   };
+  // A click (the pointer barely moved since it went down) picks that moment: onPick(t, x, y). Dragging is not a click.
+  const pick = e => {
+    const d = down.current, el = root.current; if (!onPick || !el || (d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) > 4)) return;
+    const r = el.getBoundingClientRect(); onPick(t0 + Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (t1 - t0), e.clientX, e.clientY);
+  };
   const leave = () => { cancelAnimationFrame(raf.current); raf.current = 0; hoverEnd(g); };
   const share = e => { const r = root.current.getBoundingClientRect(); return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); };
   const show = (a, b) => { const el = sel.current; if (!el) return; el.style.left = Math.min(a, b) * 100 + "%"; el.style.width = Math.abs(b - a) * 100 + "%"; el.style.opacity = a === b ? 0 : 1; };
@@ -50,7 +55,7 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
   };
   return (
     <div>
-      <div className="chart" ref={root} onMouseMove={move} onMouseLeave={leave} onMouseDown={down} onDoubleClick={() => zoomable && setZoom(g, null)} role="img" aria-label={series.map(s => s.name).join(" and ")}>
+      <div className={"chart" + (onPick ? " pick" : "")} ref={root} onMouseMove={move} onMouseLeave={leave} onMouseDown={e => { downAt.current = [e.clientX, e.clientY]; down(e); }} onClick={pick} onDoubleClick={() => zoomable && setZoom(g, null)} role="img" aria-label={series.map(s => s.name).join(" and ")}>
         {ticks.map(t => <i key={t} className="vg" style={{ left: pct(t) + "%" }} />)}
         {[.5, 1].map(q => <div key={q} className="gl" style={{ bottom: q * 100 + "%" }}><span>{f(top * q).replace(/\.\d/, "")}</span></div>)}
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">

@@ -87,6 +87,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_state,
             commands::get_history,
+            commands::get_busy_at,
             commands::get_events,
             commands::get_jobs,
             commands::get_forecast,

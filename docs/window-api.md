@@ -15,6 +15,7 @@ Rules for every command:
 | --- | --- | --- |
 | `get_state` | none | `{ machines: Machine[] }` |
 | `get_history` | `machine: string`, `range: number` (seconds, 1 to 400 days) | `History` |
+| `get_busy_at` | `machine: string`, `t: number` (unix seconds) | `BusyAt`, or `{}` when no programs were kept near `t` |
 | `get_events` | `since: number`, `n: number` | `Event[]`, newest first, at most `n` |
 | `get_jobs` | `since: number` | `Job[]`, oldest first, finished jobs that ended at or after `since` |
 | `get_forecast` | `machine: string` | `{ per_day: number or null, days: number or null }` |
@@ -82,6 +83,10 @@ update count from `apt-check` when that is installed (read about every 100th fra
 
 History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null }
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine
+
+BusyAt = { t: number, top: [name, cpu_percent, ram_mb, count][] }
+         // the busiest programs of the stored minute nearest to the asked time (within 2 minutes), busiest first, at most 10;
+         // kept once a minute for 3 days (as long as the 1-minute history); names have spaces shown as `_`
 
 Event = [t, machine, message]
 Job = [machine, runner, start, end, result, label]   // result "" when unknown; label "PR #7 · branch · Build (owner/name)" (the last part is the repository, which the window turns into a GitHub link)

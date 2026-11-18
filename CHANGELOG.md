@@ -4,6 +4,7 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: "What was busy then?" Click any point on a CPU or memory graph to see the busiest programs at that moment (name, CPU, memory). The top 10 programs are kept once a minute for 3 days. Hover works as before.
 - Added: a machines strip at the top of the main window, one small tile per machine (This PC first) with status, CPU, memory, GPU, temperature and a tiny CPU line. Offline tiles go grey with the time last seen. Click a tile to jump to that machine's card.
 - Added: Ctrl+K search. Jump to a machine or one of its groups, or change a setting or the time range, from the keyboard.
 - Added: drag a machine card by its header to reorder; a "Groups..." option on each card hides groups you never use and moves the rest up or down. Both are remembered.

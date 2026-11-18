@@ -2,6 +2,8 @@
 xsm_collector::Backend trait
 xsm_collector::State struct
 xsm_collector::State.machines field
+xsm_collector::busy::Busy use
+xsm_collector::busy::BusyReply use
 xsm_collector::config::alert_limits use
 xsm_collector::demo::DemoBackend use
 xsm_collector::history::History use
@@ -264,6 +266,8 @@ xsm_store::Result type
 xsm_store::Store struct
 xsm_store::Store::add_event fn
 xsm_store::Store::add_job fn
+xsm_store::Store::add_top fn
+xsm_store::Store::busiest_at fn
 xsm_store::Store::add_sample fn
 xsm_store::Store::backup_daily fn
 xsm_store::Store::disk_points fn
@@ -277,6 +281,8 @@ xsm_store::Store::rename_machine fn
 xsm_store::Store::schema_version fn
 xsm_store::history::History use
 xsm_store::history::Points use
+xsm_store::top::Busiest use
+xsm_store::top::TOP_KEPT use
 xsm_collector::xsm_core::container::Action use
 xsm_core::container mod
 xsm_core::container::Action enum

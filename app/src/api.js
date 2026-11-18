@@ -11,6 +11,7 @@ const call = (command, args) => (inTauri() ? invoke(command, args) : handle(comm
 // Readings
 export const getState = () => call("get_state");
 export const getHistory = (machine, range) => call("get_history", { machine, range });
+export const getBusyAt = (machine, t) => call("get_busy_at", { machine, t });
 export const getEvents = (since, n = 60) => call("get_events", { since, n });
 export const getJobs = since => call("get_jobs", { since });
 export const getForecast = machine => call("get_forecast", { machine });

@@ -15,7 +15,8 @@ const BACKUP_PAUSE: Duration = Duration::from_millis(5);
 
 /// One entry per schema version; entry `i` moves a database from version `i` to `i + 1`.
 /// Raw samples live a day, minute rows three days, five-minute rows for the retention.
-const MIGRATIONS: [&str; 1] = ["
+/// Step 2 adds `top`: the busiest programs once a minute, kept as long as minute rows.
+const MIGRATIONS: [&str; 2] = ["
     CREATE TABLE raw(machine TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, v REAL NOT NULL,
         PRIMARY KEY(machine, key, ts)) WITHOUT ROWID;
     CREATE TABLE minute(machine TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, v REAL NOT NULL,
@@ -31,6 +32,10 @@ const MIGRATIONS: [&str; 1] = ["
     CREATE TABLE jobs(machine TEXT NOT NULL, runner TEXT NOT NULL, t0 INTEGER NOT NULL,
         t1 INTEGER NOT NULL, res TEXT NOT NULL, label TEXT NOT NULL);
     CREATE INDEX jobs_t1 ON jobs(t1);
+", "
+    CREATE TABLE top(machine TEXT NOT NULL, ts INTEGER NOT NULL, name TEXT NOT NULL,
+        cpu REAL NOT NULL, ram INTEGER NOT NULL, n INTEGER NOT NULL,
+        PRIMARY KEY(machine, ts, name)) WITHOUT ROWID;
 "];
 
 /// Open (or create) the database file, in WAL mode, brought up to the current schema.

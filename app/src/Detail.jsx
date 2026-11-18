@@ -1,5 +1,6 @@
 import HwStrip from "./HwStrip.jsx";
-import { useState, useEffect, useContext, memo, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useContext, memo, useMemo, useRef } from "react";
+import BusyPopover from "./BusyPopover.jsx";
 import { GroupLayout, onReveal } from "./groupPrefs.js";
 import { SaveButtons, ZoomChip, FullGraph } from "./GraphTools.jsx";
 import { shiftSeries } from "./graphTools.js";
@@ -36,14 +37,16 @@ function Grp({ id, color, title, sub, summary, spark, def = true, cls = "", chil
     </section>);
 }
 // One graph card. Module-level and memoised so charts keep their state between polls.
-const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, old, live }) {
+const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, old, live, busy }) {
   const series = useMemo(() => [{ name: name || title, pts, color: C[k] }], [name, title, pts, k]);
   const card = useRef(null), [big, setBig] = useState(false), off = useCompare();
+  const [pop, setPop] = useState(null), shut = useCallback(() => setPop(null), []), pick = useCallback((t, x, y) => setPop({ t, x, y }), []);
   const cmp = useMemo(() => (off && old ? shiftSeries(old, off, t0, t1) : null), [off, old, t0, t1]);   // yesterday / last week, moved onto today's clock
   return (
     <div className="panel" style={{ "--c": C[k] }} ref={card}>
       <div className="ph"><h4><button className="ttl" onClick={() => setBig(true)} data-tip="Open this graph full window">{title}</button></h4><SaveButtons title={title} series={series} card={card} />{nv != null && <span className={"now" + (warn ? " warn" : "")}>{nv}</span>}{sm && <span className="sum">{sm}</span>}</div>
-      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} cmp={cmp} cmpLabel={off === 86400 ? "yesterday" : "last week"} live={live} />
+      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} cmp={cmp} cmpLabel={off === 86400 ? "yesterday" : "last week"} live={live} onPick={busy ? pick : undefined} />
+      {pop && <BusyPopover machine={group} {...pop} range={range} onClose={shut} />}
       {big && <FullGraph title={title} k={k} color={C[k]} machine={group} pts={pts} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} live={live} onClose={() => setBig(false)} />}
     </div>);
 });
@@ -67,9 +70,9 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
     <div className="detail inline">
       <ZoomChip machine={m.name} span={zoom} />
       <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" spark={P("cpu")} sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
-        <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
+        <Pn title="CPU" k="cpu" busy now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
         <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
-        <Pn title="Memory" k="ram" now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
+        <Pn title="Memory" k="ram" busy now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
       <HwStrip d={d} />
       {d.top?.length > 0 && <div className="procs"><Sub id={m.name + ".procs"} title="Busiest programs now">{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</Sub></div>}</Grp>
