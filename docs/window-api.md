@@ -37,6 +37,8 @@ Rules for every command:
 | `set_theme` | `theme: "light" or "dark"` (title-bar buttons follow it) | `null` |
 | `set_tray_status` | `status: "calm" or "look" or "bad"` (green, amber or red dot on the tray icon), `tooltip: string` (the tray hover text) | `null`; an error text for any other status |
 | `set_mini_height` | `height: number` (CSS pixels; in mini mode the window follows its content, growing upward) | `null` |
+| `set_mini_size` | `width: number, height: number` (CSS pixels; mini mode only: the size you dragged the mini window to, put back when it opens; its bottom-right corner stays put) | `null` |
+| `get_work_size` | `machine: string` | `{ runner: string, bytes: number or null }[]`, the size of each runner's `_work` folder (`null` when `du` or the walk was too slow). Slow, so only on demand: over ssh on Linux (`du` with a 15 s limit per folder), walked on This PC |
 | `check_for_updates` | none | `true` an update is waiting, `false` up to date, `null` could not check |
 | `apply_update` | none | `true` installed (restart to finish), `"dirty"` local edits block it, `false` failed |
 | `get_version` | none | `{ version: string, date: number, packaged?: boolean }` (`date` 0 when unknown) |
@@ -97,6 +99,7 @@ Reading = {                       // every field optional; absent means "not mea
   conns: [name, connections][],   // This PC on Windows only: open TCP connections plus UDP sockets per program, most first, at most 8, refreshed about every 10 s (counts, not data: bytes per program need administrator rights)
   runners: { [runner]: boolean }, // present only on machines with runners; true = busy
   jobs: { [runner]: [workflow, _, ref, repo] },
+  queued: [label, since][],       // jobs waiting for one of this machine's runners (label, when they were queued); absent when the machine cannot tell
   jobres: { [runner]: [cpu_percent, ram_mb, gpu_mb, gpu_percent] },
   docker: [name, state, text, image, ports, created][], docker_err: string,
   failed: string[]                // failed systemd units

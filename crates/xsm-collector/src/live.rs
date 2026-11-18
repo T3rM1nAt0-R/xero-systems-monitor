@@ -5,7 +5,9 @@ use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
 use crate::scan::{ScanReply, Scans};
-use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, Ranking, State};
+use crate::{
+    Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, Ranking, State, WorkSize,
+};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -19,6 +21,7 @@ use xsm_sources::process_list::{end_local, end_remote};
 use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::ssh_command;
 use xsm_sources::system::{run_action, run_query, Target};
+use xsm_sources::workdir::{local_sizes, remote_sizes};
 use xsm_store::Store;
 
 /// The history file in the data folder.
@@ -246,6 +249,22 @@ impl Backend for LiveBackend {
     fn set_internet_host(&self, url: &str) -> Result<(), String> {
         self.net.set_url(url);
         Ok(())
+    }
+
+    fn get_work_size(&self, machine: &str) -> Result<Vec<WorkSize>, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .map(|m| (m.kind, m.host.clone()))
+            .ok_or_else(|| "That machine is not in the list.".to_owned())?;
+        let sizes = match found {
+            (MachineKind::Local, _) => local_sizes(),
+            (MachineKind::Ssh, host) => remote_sizes(&host.unwrap_or_default())?,
+        };
+        Ok(sizes
+            .into_iter()
+            .map(|(runner, bytes)| WorkSize { runner, bytes })
+            .collect())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

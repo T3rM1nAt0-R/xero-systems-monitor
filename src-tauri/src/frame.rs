@@ -283,6 +283,44 @@ pub fn set_mini_height(app: &AppHandle, css_height: f64) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+/// In mini mode: put the window at a remembered size (CSS pixels), keeping its bottom-right corner and staying on the screen.
+///
+/// # Errors
+/// Text when the window cannot be changed.
+pub fn set_mini_size(app: &AppHandle, css_width: f64, css_height: f64) -> Result<(), String> {
+    if !app.state::<Frame>().is_mini() {
+        return Ok(());
+    }
+    let window = main_window(app)?;
+    let (pos, size) = (
+        window.outer_position().map_err(|e| e.to_string())?,
+        window.outer_size().map_err(|e| e.to_string())?,
+    );
+    let gap = scaled(&window, CORNER_GAP);
+    let (mut w, mut h) = (
+        scaled(&window, css_width.max(MINI_MIN_WIDTH)),
+        scaled(&window, css_height.max(MINI_MIN_HEIGHT)),
+    );
+    if let Some(monitor) = window.current_monitor().map_err(|e| e.to_string())? {
+        w = w.min(f64::from(monitor.work_area().size.width) - 2.0 * gap);
+        h = h.min(f64::from(monitor.work_area().size.height) - 2.0 * gap);
+    }
+    let (right, bottom) = (
+        pos.x + i32::try_from(size.width).unwrap_or(0),
+        pos.y + i32::try_from(size.height).unwrap_or(0),
+    );
+    let (new_w, new_h) = (px(w), px(h));
+    window
+        .set_size(PhysicalSize::new(new_w, new_h))
+        .map_err(|e| e.to_string())?;
+    window
+        .set_position(PhysicalPosition::new(
+            right - i32::try_from(new_w).unwrap_or(0),
+            bottom - i32::try_from(new_h).unwrap_or(0),
+        ))
+        .map_err(|e| e.to_string())
+}
+
 /// Restart the app (the close handler must not hide the window meanwhile).
 pub fn relaunch(app: &AppHandle) {
     app.state::<Frame>().with(|i| i.quitting = true);
