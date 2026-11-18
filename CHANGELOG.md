@@ -4,6 +4,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: Motion setting (Customize > Size, next to Glass): Full, Subtle or Off. Everything that moves obeys it, and the system's "reduce motion" always wins.
+- Added: graph motion: numbers roll like an odometer, new points slide in from the right (the picture glides left as time passes instead of redrawing), a glowing dot with a soft ring pulse marks the newest point, a floating label marks the highest visible point, graphs draw in from the left when they first have data, the range change stretches the old picture while the new data loads, yesterday's compare line fades in, a single line warms from its own colour toward amber and turns red above its limit, and the card edge glows briefly when a line crosses its limit. Only transform and opacity move on each update.
+
 - Fixed: polish after the redesign. The Runners timeline has its own range (24 h or 7 d, default 24 h) so it is no longer empty at the 5 min graph range; the Succeeded percent is green from 90, amber from 75, red below; runner rows show the last job result and when ("Idle · last job 22 min ago") with a coloured status dot; "Check work folder sizes" is a real button; job history shows 15 jobs and "Show more" adds 25; every dialog closes on Esc; the Terminal tab is hidden for offline machines; the Overview online strip is thinner and calmer when all is well; dim text, accent, warning and bad colours were darkened or lightened to reach contrast 4.5 on the glass in dark and light.
 
 - Changed: the Runners tab and the Overview runners block use the flat look: three big numbers (jobs today, succeeded, median time), one row per runner, a swimlane timeline with a now line (failed jobs red), a slim week heatmap and a plain striped job history table. The heatmap and history are open by default.

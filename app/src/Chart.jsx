@@ -6,6 +6,9 @@ import { clipSeries, zoomRange, isClick } from "./graphTools.js";
 import { setZoom } from "./graphView.js";
 import { seriesPaths } from "./theme/graphStyle.js";
 import useGraphLook from "./theme/useGraphLook.js";
+import useChartFx from "./useChartFx.js";
+import ChartMarks from "./ChartMarks.jsx";
+import { heatStops, newest } from "./chartFx.js";
 // Full-size graph with hover readout. The hover is moved straight in the DOM (no React render per mouse move).
 function nearest(pts, t) {
   let lo = 0, hi = pts.length - 1;
@@ -13,7 +16,7 @@ function nearest(pts, t) {
   return Math.abs(pts[lo][0] - t) <= Math.abs(pts[hi][0] - t) ? pts[lo] : pts[hi];
 }
 function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, marks = [], group, title, cmp, cmpLabel = "", zoomable = true, live = true, onPick }) {
-  const W = 600, H = 150, look = useGraphLook(), root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0), downAt = useRef(null);
+  const W = 600, H = 150, look = useGraphLook(), root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0), downAt = useRef(null), svg = useRef(null), layer = useRef(null);
   const top = useMemo(() => max || Math.max(1, ...series.flatMap(s => s.pts.map(p => p[1])), ...(cmp || []).map(p => p[1])) * 1.15, [series, max, cmp]);
   const X = t => Math.max(0, Math.min(W, ((t - t0) / (t1 - t0)) * W)).toFixed(1);
   const line = pts => pts.map(([t, v], i) => (i ? "L" : "M") + X(t) + " " + (H - Math.min(1, v / top) * H).toFixed(1)).join("");
@@ -23,7 +26,9 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
   const f = fmt || (v => v.toFixed(0) + unit);
   const ticks = axisTicks(t0, t1, 3), pct = t => ((t - t0) / (t1 - t0)) * 100;
   const latest = useRef(); latest.current = { series, f, t0, t1, cmp, cmpLabel };
-  const id = useId(), g = group || id, color0 = series[0]?.color;
+  const id = useId(), g = group || id, color0 = series[0]?.color, gid = "heat" + id.replace(/\W/g, "");
+  const heat = series.length === 1 && look.style !== "bars" && thr != null ? heatStops(thr, top) : null, tip = series[0]?.pts.length ? newest(series[0].pts, t0, t1) : null;   // a single line turns amber toward its limit and red above it
+  useChartFx([svg, layer], { t0, t1, pts: series[0]?.pts, last: tip?.v, thr, ready: !!paths[0], root, layer });
   useEffect(() => join(g, id, {   // this graph's side of the shared hover
     title: title || series[0]?.name, color: color0, el: () => root.current,
     value: t => { const { series: ss, f: ff } = latest.current; const hit = ss.filter(s => s.pts.length).map(s => (ss.length > 1 ? s.name + " " : "") + ff(nearest(s.pts, t)[1])); const c = latest.current.cmp; if (c?.length && hit.length && t >= c[0][0] && t <= c[c.length - 1][0]) hit.push(latest.current.cmpLabel + " " + ff(nearest(c, t)[1])); return hit.length ? hit.join(" · ") : null; },
@@ -56,11 +61,13 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
       <div className={"chart" + (onPick ? " pick" : "")} ref={root} onMouseMove={move} onMouseLeave={leave} onMouseDown={e => { downAt.current = [e.clientX, e.clientY]; down(e); }} onClick={pick} onDoubleClick={() => zoomable && setZoom(g, null)} role="img" aria-label={series.map(s => s.name).join(" and ")}>
         {ticks.map(t => <i key={t} className="vg" style={{ left: pct(t) + "%" }} />)}
         {[.5, 1].map(q => <div key={q} className="gl" style={{ bottom: q * 100 + "%" }}><span>{f(top * q).replace(/\.\d/, "")}</span></div>)}
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+        <svg ref={svg} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+          {heat && <defs><linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" y1={H} x2="0" y2="0">{heat.map(([o, c], i) => <stop key={i} offset={o} style={{ stopColor: c === "own" ? color0 : c === "warn" ? "var(--warn)" : "var(--bad)" }} />)}</linearGradient></defs>}
           {paths[0] && paths[0].a && (series.length === 1 || look.style === "area") && [...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.a} style={{ fill: s.color, stroke: "none", opacity: "var(--area-op)" }} />; })}
           {cmpPath && <path className="cmp" d={cmpPath} style={{ stroke: series[0].color }} />}
-          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color } : { stroke: s.color }} />; })}
+          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color } : { stroke: heat ? `url(#${gid})` : s.color }} />; })}
         </svg>
+        <ChartMarks layer={layer} series={series} t0={t0} t1={t1} top={top} f={f} />
         {thr != null && thr <= top && <div className="thr" style={{ bottom: (thr / top) * 100 + "%" }}><span>{thrLabel}</span></div>}
         {marks.map((m, i) => m.t >= t0 && m.t <= t1 && <div key={i} className={"ev " + (m.kind || "")} style={{ left: ((m.t - t0) / (t1 - t0)) * 100 + "%" }}><b data-tip={m.text} /></div>)}
         <div className="x" ref={x} /><div className="sel" ref={sel} />

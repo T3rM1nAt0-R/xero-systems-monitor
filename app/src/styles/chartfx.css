@@ -1,0 +1,21 @@
+/* Graph motion: the layer with the newest-point glow (a ring pulses once per new point, never in a loop) and the peak label, the slide/stretch origin, the card-edge glow and the fade-in of the compare line.
+   Only transform and opacity move per poll. Subtle keeps the functional slide and drops the glow and pulse; Off and reduced motion stop everything (see the end of motion.css). */
+.chart svg,.chart .fxl{transform-origin:100% 50%;will-change:transform}
+.chart .fxl{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.chart .head{position:absolute;width:var(--sz-6);height:var(--sz-6);margin:calc(var(--sz-6) / -2) 0 0 calc(var(--sz-6) / -2);border-radius:50%;background:var(--c,var(--acc));box-shadow:0 0 var(--sz-8) var(--c,var(--acc))}
+.chart .head u{position:absolute;inset:0;border-radius:50%;border:1px solid var(--c,var(--acc));opacity:0}
+.chart .peak{position:absolute;transform:translate(-50%,calc(-100% - var(--sz-6)));font-size:var(--fs-10-5);font-weight:600;white-space:nowrap;opacity:.9}
+.chart .peak.l{transform:translate(0,calc(-100% - var(--sz-6)))}
+.chart .peak.r{transform:translate(-100%,calc(-100% - var(--sz-6)))}
+.chart .peak.low{transform:translate(-50%,var(--sz-6))}
+.chart .peak.low.l{transform:translate(0,var(--sz-6))}
+.chart .peak.low.r{transform:translate(-100%,var(--sz-6))}
+.diskcard .peak{display:none}
+.chart path.cmp{animation:fadein .7s var(--ease) both}
+.card{position:relative}
+.card.edge-glow::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 1px var(--bad),0 0 var(--sz-18) var(--bad-glow);animation:edgeglow 1.8s ease-out both}
+html[data-motion="subtle"] .chart .head{box-shadow:none}
+html[data-motion="subtle"] .chart .head u{display:none}
+@keyframes edgeglow{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+.roll{display:inline-grid;font-variant-numeric:tabular-nums;overflow:hidden;vertical-align:bottom}
+.roll>span{grid-area:1/1}

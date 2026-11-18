@@ -5,7 +5,8 @@ import { FONT_IDS, fontStack } from "./fonts.js";
 //     colors: { acc, bg, card, fg, dim, line, warn, bad, good, cpu, temp, ... },
 //     graph:  { style, width, grid, smooth, limits },
 //     size:   { card, density, scale },
-//     glass:  "off" | "subtle" | "full" }
+//     glass:  "off" | "subtle" | "full",
+//     motion: "off" | "subtle" | "full" }
 export const TEXT_LEVELS = [
   { id: "machine", label: "Machine name", size: 15 }, { id: "section", label: "Section header", size: 10 }, { id: "group", label: "Group header", size: 10 },
   { id: "number", label: "Big numbers", size: 16 }, { id: "label", label: "Labels", size: 13 }, { id: "small", label: "Small text", size: 11 },
@@ -18,6 +19,9 @@ export const CARD_SIZES = [["small", "Small"], ["medium", "Medium"], ["large", "
 export const DENSITIES = [["compact", "Compact"], ["comfortable", "Comfortable"], ["spacious", "Spacious"]];
 export const GLASS_LEVELS = [["off", "Off (flat)"], ["subtle", "Subtle"], ["full", "Full"]];
 export const DEFAULT_GLASS = "subtle";
+// Motion: Full is every effect, Subtle keeps only the quick functional ones (folds, slides), Off is none. The window also stops all motion when Windows asks for less.
+export const MOTION_LEVELS = [["full", "Full"], ["subtle", "Subtle"], ["off", "Off"]];
+export const DEFAULT_MOTION = "full";
 export const DEFAULT_GRAPH = Object.freeze({ style: "line", width: 2, grid: true, smooth: false, limits: true });
 export const DEFAULT_SIZE = Object.freeze({ card: "medium", density: "comfortable", scale: 1 });
 const GRAPH_K = { small: 0.75, medium: 1, large: 1.4 }, DENS_K = { compact: 0.85, comfortable: 1, spacious: 1.2 }, AREA_OP = { line: 0.08, area: 0.3, bars: 0 };
@@ -62,13 +66,14 @@ export function normLook(raw) {
   const s = r.size || {}, size = keep({ card: oneOf(s.card, CARD_SIZES.map(x => x[0])), density: oneOf(s.density, DENSITIES.map(x => x[0])), scale: num(s.scale, SCALE_MIN, SCALE_MAX) });
   for (const [k, v] of [["text", text], ["colors", colors], ["graph", graph], ["size", size]]) if (nonEmpty(v)) out[k] = v;
   const glass = oneOf(r.glass, GLASS_LEVELS.map(x => x[0])); if (glass) out.glass = glass;
+  const motion = oneOf(r.motion, MOTION_LEVELS.map(x => x[0])); if (motion) out.motion = motion;
   return out;
 }
 // `over` on top of `base`, section by section (a text level is merged field by field).
 export function mergeLook(base, over) {
   const a = normLook(base), b = normLook(over), text = { ...a.text };
   for (const id of Object.keys(b.text || {})) text[id] = { ...text[id], ...b.text[id] };
-  return normLook({ text, colors: { ...a.colors, ...b.colors }, graph: { ...a.graph, ...b.graph }, size: { ...a.size, ...b.size }, glass: b.glass ?? a.glass });
+  return normLook({ text, colors: { ...a.colors, ...b.colors }, graph: { ...a.graph, ...b.graph }, size: { ...a.size, ...b.size }, glass: b.glass ?? a.glass, motion: b.motion ?? a.motion });
 }
 // A copy of `look` with the value at `path` set; undefined removes it and tidies empty parents away.
 export function setPath(look, path, value) {
@@ -80,6 +85,7 @@ export function setPath(look, path, value) {
 export const getPath = (look, path) => path.reduce((o, k) => (o == null ? undefined : o[k]), look);
 export const graphOf = look => ({ ...DEFAULT_GRAPH, ...look?.graph });
 export const glassOf = look => look?.glass || DEFAULT_GLASS;
+export const motionOf = look => look?.motion || DEFAULT_MOTION;
 export const sizeOf = look => ({ ...DEFAULT_SIZE, ...look?.size });
 
 // ---- CSS ----
@@ -97,7 +103,7 @@ export function lookToCss(look, { large = false } = {}) {
   const g = graphOf(look), s = sizeOf(look), scale = Math.round((large ? LARGE_SCALE : 1) * s.scale * 1000) / 1000;
   Object.assign(vars, { "--line-w": String(g.width), "--area-op": String(AREA_OP[g.style]), "--graph-k": String(GRAPH_K[s.card]), "--dens": String(DENS_K[s.density]) });
   if (scale !== (large ? LARGE_SCALE : 1)) vars["--scale"] = String(scale);
-  return { vars, attrs: { "data-grid": g.grid ? "on" : "off", "data-limits": g.limits ? "on" : "off", "data-glass": glassOf(look) } };
+  return { vars, attrs: { "data-grid": g.grid ? "on" : "off", "data-limits": g.limits ? "on" : "off", "data-glass": glassOf(look), "data-motion": motionOf(look) } };
 }
 
 // ---- contrast ----

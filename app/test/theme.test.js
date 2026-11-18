@@ -62,10 +62,10 @@ test("lookToCss gives variables, derived colours, text levels, graph and size va
   assert.equal(vars["--crit"], "#ff0000"); assert.equal(vars["--bad"], "#ff0000");
   assert.equal(vars["--font-machine"], '"Lato", system-ui, sans-serif'); assert.equal(vars["--size-machine"], "calc(18px * var(--scale))"); assert.equal(vars["--weight-machine"], "700");
   assert.equal(vars["--line-w"], "3"); assert.equal(vars["--area-op"], "0.3"); assert.equal(vars["--graph-k"], "1.4"); assert.equal(vars["--dens"], "0.85"); assert.equal(vars["--scale"], "1.1");
-  assert.deepEqual(attrs, { "data-grid": "off", "data-limits": "off", "data-glass": "subtle" });
+  assert.deepEqual(attrs, { "data-grid": "off", "data-limits": "off", "data-glass": "subtle", "data-motion": "full" });
   const plain = lookToCss({}), large = lookToCss({}, { large: true }), both = lookToCss({ size: { scale: 1.5 } }, { large: true });
   assert.equal(plain.vars["--scale"], undefined); assert.equal(large.vars["--scale"], undefined); assert.equal(both.vars["--scale"], "1.74");
-  assert.equal(plain.vars["--area-op"], "0.08"); assert.deepEqual(plain.attrs, { "data-grid": "on", "data-limits": "on", "data-glass": "subtle" });
+  assert.equal(plain.vars["--area-op"], "0.08"); assert.deepEqual(plain.attrs, { "data-grid": "on", "data-limits": "on", "data-glass": "subtle", "data-motion": "full" });
   assert.equal(lookToCss({ colors: { acc: "#0a0a0a" } }).vars["--on-acc"], "#ffffff");
   assert.equal(lookToCss({ colors: { fg: "#ffffff", dim: "#999999", line: "#222222" } }).vars["--line2"].startsWith("color-mix"), true);
 });
@@ -116,4 +116,12 @@ test("seriesPaths: line, smooth, area and bars", () => {
   assert.ok(!/ -\d/.test(wild), "curves never leave the plot");
   const bars = seriesPaths(pts, { ...o, style: "bars" });
   assert.equal(bars.a, ""); assert.equal(bars.l.split("Z").length - 1, 3); assert.match(bars.l, /^M-3\.5 100\.0V90\.0h7\.0V100\.0Z/);
+});
+
+test("motion defaults to full, is written as data-motion, and is cleaned and merged", () => {
+  assert.equal(lookToCss({}).attrs["data-motion"], "full");
+  assert.equal(lookToCss({ motion: "off" }).attrs["data-motion"], "off");
+  assert.equal(normLook({ motion: "wild" }).motion, undefined);
+  assert.equal(mergeLook({ motion: "subtle" }, {}).motion, "subtle");
+  assert.equal(mergeLook({ motion: "subtle" }, { motion: "off" }).motion, "off");
 });
