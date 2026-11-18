@@ -3,6 +3,7 @@
 
 mod connections;
 pub mod container;
+mod gpu_apps;
 pub mod local;
 pub mod runners;
 pub mod sensors;

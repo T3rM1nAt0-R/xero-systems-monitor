@@ -67,6 +67,8 @@ const snap = (m, now) => {
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
   if (gpu) Object.assign(d, { mhz: 3900, cpu_w: +(40 + v("cpu") / 2).toFixed(0), gpu_w: 35, fans: [1180, 920], cores: Array.from({ length: 8 }, (_, i) => +((v("cpu") + i * 7) % 100).toFixed(0)), gpu: v("gpu"), gtemp: v("gtemp"), vram_gb: [+((v("vram") / 100) * 12).toFixed(1), 12] });
+  if (gpu) Object.assign(d, { ctemps: d.cores.map((c, i) => +(42 + c / 4 + i).toFixed(0)), bat: [Math.round(20 + v("cpu") / 2), false, 130], gpuapps: [["game", 5000, 1], ["browser", 800, 3], ["video_call", 0, 1]] });
+  if (!gpu) Object.assign(d, { cores: Array.from({ length: 4 }, (_, i) => +((v("cpu") + i * 9) % 100).toFixed(0)), ctemps: [51, 53, 50, 52], fans: [2100] });
   if (gpu) d.conns = [["browser", 42], ["video_call", 9], ["editor", 6], ["sync_tool", 4], ["build_tool", 2]];   // connections per program: This PC only (Windows)
   return d;
 };

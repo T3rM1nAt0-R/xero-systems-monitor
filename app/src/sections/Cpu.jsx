@@ -1,5 +1,6 @@
 import HwStrip from "../HwStrip.jsx";
 import Sub from "../Sub.jsx";
+import CoreList from "../CoreList.jsx";
 import { gb, avg, peak, isWarn } from "../format.js";
 import { hwFacts } from "../hwStrip.js";
 import { hasView } from "./tabs.js";
@@ -17,6 +18,7 @@ export default function Cpu({ m, d, P, Pn, limits, marks, view }) {
       {hasView(view, "hardware") && <>
         {names.length > 0 && <dl className="hwnames">{names.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <HwStrip d={d} />
+        <CoreList d={d} id={m.name + ".cores"} />
       </>}
       {hasView(view, "processes") && d.top?.length > 0 && <div className="procs"><Sub id={m.name + ".procs"} title="Busiest programs now">{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</Sub></div>}
     </>);

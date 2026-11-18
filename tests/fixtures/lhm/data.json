@@ -16,6 +16,11 @@
   {"id":16,"Text":"Load","Children":[
    {"id":17,"Text":"CPU Total","Value":"30,0 %"},
    {"id":18,"Text":"CPU Core #1","Value":"10,0 %"},
-   {"id":19,"Text":"CPU Core #2","Value":"55,5 %"}]}]},
+   {"id":19,"Text":"CPU Core #2","Value":"55,5 %"}]},
+  {"id":30,"Text":"Temperatures","Children":[
+   {"id":31,"Text":"CPU Package","Value":"60,0 °C"},
+   {"id":32,"Text":"Core #1","Value":"51,0 °C"},
+   {"id":33,"Text":"Core #1 Distance to TjMax","Value":"49,0 °C"},
+   {"id":34,"Text":"Core #2","Value":"53,5 °C"}]}]},
  {"id":20,"Text":"Example GPU","ImageURL":"images_icon/nvidia.png","Children":[
   {"id":21,"Text":"Powers","Children":[{"id":22,"Text":"GPU Package","Value":"120,0 W"}]}]}]}]}

@@ -5,6 +5,7 @@
 mod busy;
 mod config;
 mod demo;
+mod demo_extras;
 mod demo_jobs;
 mod history;
 mod live;
