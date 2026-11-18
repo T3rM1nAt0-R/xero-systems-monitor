@@ -33,8 +33,19 @@ pub struct Reading {
     pub failed_services: Vec<FailedService>,
     /// Busiest programs (kept from the last frame that sampled them).
     pub top: Vec<TopProgram>,
+    /// Open network connections per program (This PC on Windows only; empty elsewhere).
+    pub connections: Vec<ConnCount>,
     /// Hardware names (kept from the last frame that read them).
     pub hardware: HardwareInfo,
+}
+
+/// Open network connections of one program name, all its processes added together.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct ConnCount {
+    /// Program name (spaces shown as `_`).
+    pub name: String,
+    /// TCP connections plus UDP sockets it has open.
+    pub count: u32,
 }
 
 /// CPU load from `/proc/stat`.

@@ -2,8 +2,8 @@
 
 use serde_json::json;
 use xsm_core::reading::{
-    ContainerState, CpuReading, DiskReading, FailedService, GpuReading, HardwareInfo, JobLine,
-    MemoryReading, NetReading, Reading, RunnerState, TopProgram,
+    ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuReading, HardwareInfo,
+    JobLine, MemoryReading, NetReading, Reading, RunnerState, TopProgram,
 };
 use xsm_core::tracker::{Rules, Tracker};
 
@@ -117,6 +117,10 @@ fn snapshot_has_the_window_shape() {
             ram_bytes: 5 << 20,
             processes: 2,
         }],
+        connections: vec![ConnCount {
+            name: "prog".into(),
+            count: 4,
+        }],
         hardware: HardwareInfo {
             os: Some("Linux".into()),
             ..HardwareInfo::default()
@@ -131,7 +135,7 @@ fn snapshot_has_the_window_shape() {
             "cpu": 12.5, "temp": 55.0, "ram": 25.0, "disk": 40.0, "gpu": 3.0, "gtemp": 40.0, "vram": 25.0,
             "down": 10.0, "up": 5.0, "ping": 11.0, "speed": 1000, "uptime": 99.0, "ip": "192.0.2.5",
             "ram_gb": [2.0, 8.0], "vram_gb": [1.0, 4.0], "storage": [["/", 40.0, 100.0]],
-            "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]],
+            "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]],
             "runners": {"r1": true},
             "jobs": {"r1": ["Build", "", "refs/pull/7/merge", "o/example-repo"]},
             "jobres": {"r1": [40.0, 3000.0, 10.0, null]},

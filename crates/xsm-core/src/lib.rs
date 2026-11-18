@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 
 pub mod alerts;
+pub mod connections;
 pub mod forecast;
 pub mod parse;
 pub mod reading;

@@ -95,6 +95,8 @@ fn lists(r: &Reading, m: &mut Map<String, Value>) {
         .map(|t| (&t.name, t.cpu_pct, mib(t.ram_bytes), t.processes))
         .collect();
     put_some(m, "top", top);
+    let conns: Vec<_> = r.connections.iter().map(|c| (&c.name, c.count)).collect();
+    put_some(m, "conns", conns);
     let runners: BTreeMap<_, _> = r.runners.iter().map(|x| (&x.name, x.busy)).collect();
     put_some(m, "runners", runners);
     let running = || r.jobs.iter().filter(|j| j.is_running());

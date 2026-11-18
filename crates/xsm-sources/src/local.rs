@@ -1,5 +1,6 @@
 //! Readings for the PC this runs on: `sysinfo`, NVML, `LibreHardwareMonitor`, the system `ping` and CI runners.
 
+use crate::connections::open_pids;
 use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, ping_once};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
@@ -7,11 +8,12 @@ use nvml_wrapper::Nvml;
 use std::collections::HashMap;
 use std::time::{Instant, SystemTime};
 use sysinfo::{
-    Disks, Motherboard, Networks, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
+    Disks, Motherboard, Networks, Pid, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
 };
+use xsm_core::connections::by_program;
 use xsm_core::reading::{
-    CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
-    TopProgram,
+    ConnCount, CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading,
+    Reading, TopProgram,
 };
 
 /// Percent scale.
@@ -22,6 +24,10 @@ const PING_EVERY_POLLS: u32 = 5;
 const TOP_EVERY_POLLS: u32 = 5;
 /// Programs kept in the list.
 const TOP_COUNT: usize = 6;
+/// The connection list is rebuilt on the 1st poll and every this many polls (about every 10 seconds at the usual 3-second poll).
+const CONN_EVERY_POLLS: u32 = 3;
+/// Programs kept in the connection list.
+const CONN_COUNT: usize = 8;
 /// File systems that are not real storage.
 const VIRTUAL_FS: [&str; 6] = [
     "tmpfs", "devtmpfs", "squashfs", "overlay", "efivarfs", "ramfs",
@@ -40,6 +46,7 @@ pub struct LocalSource {
     last_net: Option<(Instant, f64, f64)>,
     ping_ms: Option<f64>,
     top: Vec<TopProgram>,
+    connections: Vec<ConnCount>,
     hardware: HardwareInfo,
     runners: RunnerWatch,
 }
@@ -65,6 +72,7 @@ impl LocalSource {
             last_net: None,
             ping_ms: None,
             top: Vec::new(),
+            connections: Vec::new(),
             hardware,
             runners: RunnerWatch::default(),
         })
@@ -88,6 +96,16 @@ impl LocalSource {
         if self.polls.is_multiple_of(TOP_EVERY_POLLS) {
             self.top = top_programs(&self.sys);
         }
+        if self.polls.is_multiple_of(CONN_EVERY_POLLS) {
+            self.connections = by_program(
+                &open_pids(),
+                |pid| {
+                    let p = self.sys.process(Pid::from_u32(pid))?;
+                    Some(p.name().to_string_lossy().replace(' ', "_"))
+                },
+                CONN_COUNT,
+            );
+        }
         let ci =
             xsm_core::parse::parse_frame(&self.runners.lines(&self.sys, SystemTime::now()), None);
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
@@ -109,6 +127,7 @@ impl LocalSource {
             gpu: self.nvml.as_ref().and_then(gpu_reading),
             ping_ms: self.ping_ms,
             top: self.top.clone(),
+            connections: self.connections.clone(),
             hardware: self.hardware.clone(),
             runners: ci.runners,
             jobs: ci.jobs,
