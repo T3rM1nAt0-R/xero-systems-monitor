@@ -9,7 +9,8 @@ import Trends from "./Trends.jsx";
 import JobHistory from "./JobHistory.jsx";
 import { jobStats, containerBad } from "./alerts.js";
 import { load, save } from "./store.js";
-import { gb, rateStr, since, avg, peak, isWarn, LIM } from "./format.js";
+import { gb, rateStr, since, avg, peak, isWarn } from "./format.js";
+import { DEFAULT_LIMITS } from "./limits.js";
 const C = { cpu: "#4ade80", temp: "#fb923c", ram: "#60a5fa", gpu: "#a78bfa", gtemp: "#fb5a72", vram: "#38bdf8", down: "#60a5fa", up: "#f472b6", ping: "#4cc9f0", disk: "#fbbf24" };
 const stat = (a, f) => a.length ? `usual ${f(avg(a))} · peak ${f(peak(a))}` : "";
 const lk = k => { const v = load("col." + k, null); return v == null ? null : v === 1; };   // 1 = open, 0 = shut
@@ -35,7 +36,7 @@ const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max,
     </div>);
 });
 // One machine's stack of groups: CPU, GPU, Network, Disk, Runners. Each group is a row of graphs.
-export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
+export default function MachineBody({ m, h, rows, fc, range, now, gone, limits = DEFAULT_LIMITS }) {
   const d = m.d || {}, t1 = now, t0 = t1 - range, P = k => h?.[k] || [];
   const hasGpu = d.gpu != null || P("gpu").some(p => p[1] > 0);
   const hw = d.hw || {}, drives = d.storage || [], sum = drives.reduce((a, x) => [a[0] + x[1], a[1] + x[2]], [0, 0]);
@@ -52,14 +53,14 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
   return (
     <div className="detail inline">
       <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
-        <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={LIM.cpu} thrLabel="High above 90%" mk={marks} />
-        <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp)} max={100} unit="°C" thr={LIM.temp} thrLabel="Warm above 80°C" />
+        <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu, limits)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={limits.cpu} thrLabel={`High above ${limits.cpu}%`} mk={marks} />
+        <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp, limits)} max={100} unit="°C" thr={limits.temp} thrLabel={`Warm above ${limits.temp}°C`} />
         <Pn title="Memory" k="ram" now={d.ram_gb ? big(gb(d.ram_gb[0]), `/ ${d.ram_gb[1].toFixed(0)} GB`) : big(d.ram?.toFixed(0), "%")} warn={isWarn("ram", d.ram)} max={100} unit="%" />
       </div>
       {d.top?.length > 0 && <div className="procs"><h4>Busiest programs now</h4>{d.top.slice(0, 5).map(([n, c, r, k]) => <div className="prow" key={n}><b data-tip={n.replace(/_/g, " ")}>{n.replace(/_/g, " ")}{k > 1 ? ` ×${k}` : ""}</b><span className="meter"><i style={{ width: Math.min(100, c * 2) + "%" }} /></span><span>{c.toFixed(c < 10 ? 1 : 0)}%</span><span>{r >= 1024 ? (r / 1024).toFixed(1) + " GB" : Math.round(r) + " MB"}</span></div>)}</div>}</Grp>
       {hasGpu && <Grp id={m.name + ".gpu"} color="#a78bfa" title="GPU" sub={hw.gpu && `${hw.gpu}${d.vram_gb ? ` · ${d.vram_gb[1].toFixed(0)} GB` : ""}`} summary={`${d.gpu != null ? d.gpu.toFixed(0) + "%" : "–"} · ${d.gtemp != null ? d.gtemp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
         <Pn title="GPU" k="gpu" now={big(d.gpu?.toFixed(0), "%")} sm={stat(P("gpu"), v => v.toFixed(0) + "%")} max={100} unit="%" />
-        <Pn title="GPU temp" k="gtemp" now={big(d.gtemp?.toFixed(0), "°C")} warn={isWarn("gtemp", d.gtemp)} max={100} unit="°C" thr={LIM.gtemp} thrLabel="Warm above 80°C" />
+        <Pn title="GPU temp" k="gtemp" now={big(d.gtemp?.toFixed(0), "°C")} warn={isWarn("gtemp", d.gtemp, limits)} max={100} unit="°C" thr={limits.gtemp} thrLabel={`Warm above ${limits.gtemp}°C`} />
         <Pn title="GPU memory" k="vram" now={d.vram_gb ? big(gb(d.vram_gb[0]), `/ ${d.vram_gb[1].toFixed(0)} GB`) : big(d.vram?.toFixed(0), "%")} max={100} unit="%" />
       </div></Grp>}
       <Grp id={m.name + ".net"} cls="full" color="#60a5fa" def={false} title="Network" sub={d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`} summary={`↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`}><div className="dgrid">
@@ -68,10 +69,10 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
         <Pn title="Ping" k="ping" now={big(d.ping != null ? Number(d.ping).toFixed(0) : null, "ms")} sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
       </div></Grp>
       <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }}>
-          <div className="ph"><h4>Disk use</h4>{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days < 30 ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
+          <div className="ph"><h4>Disk use</h4>{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days <= limits.days ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
           <Chart series={[{ name: "Disk use", pts: P("disk"), color: C.disk }]} t0={t0} t1={t1} max={100} unit="%" range={range} group={m.name} title="Disk use" />
           <div className="drives">
-            {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (u / t > .9 ? " crit" : u / t > .75 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
+            {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (100 * u / t > limits.disk ? " crit" : 100 * u / t > limits.disk - 15 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
           </div>
         </div>
       </Grp>

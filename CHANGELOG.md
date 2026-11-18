@@ -8,6 +8,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 - Click a job to open it on GitHub: running jobs, timeline bars, slowest jobs and failed jobs in Activity open the pull request, or the repository's Actions page when it is not a pull request. Jobs recorded before this update have no owner in their name and are not clickable.
 - Job history in the Runners group: the last 100 jobs of the machine, newest first, with search and result and workflow filters.
 - A finished job's label now names the repository as owner/name.
+- Added: More > Limits… sets your own CPU %, CPU temp, GPU temp, disk % and "disk full in N days" limits for each machine (or the same for all). Colours, the red lines on the graphs and the alerts use them. The standard limits are unchanged.
+- Added: Quiet hours (More > Notify me when…, default 11 PM to 8 AM). Pop-ups wait during quiet hours except "A machine goes offline"; they still appear in Activity marked "(quiet hours)".
+- Added: a Mute button on each alert in the Activity drawer stops that kind of alert for that machine; a "Muted alerts" list in the menu unmutes it.
 
 ## [0.1.2] - 2026-11-17
 
