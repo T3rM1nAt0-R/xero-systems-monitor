@@ -49,7 +49,7 @@ export const SECTION_META = [
       return `${busy} busy · ${keys(m.d?.runners) - busy} idle${day && day.done ? ` · ${day.done} jobs in 24 h${day.failed ? `, ${day.failed} failed` : ""}${day.stopped ? `, ${day.stopped} stopped` : ""}` : ""}`;
     },
     summary: m => `${keys(m.d?.jobs)} busy` },
-  { id: "svc", title: "Containers & services", spark: null, def: true, cls: "", available: m => !!(m.d?.docker || m.d?.failed?.length),
+  { id: "svc", title: "Containers & services", spark: null, def: true, cls: "full", available: m => !!(m.d?.docker || m.d?.failed?.length || m.d?.docker_err || m.d?.uptime != null),
     accent: m => (svcFacts(m).bad || m.d?.docker_err ? "--bad" : "--c-svc"),
     sub: m => { const { cs, cgone, bad, up } = svcFacts(m); return m.d?.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`; },
     summary: m => { const { bad, up } = svcFacts(m); return bad ? `${bad} failing` : `${up} running`; } },

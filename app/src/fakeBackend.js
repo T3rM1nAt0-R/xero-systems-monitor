@@ -1,4 +1,5 @@
 // The stand-in for the Tauri shell when the window runs in a plain browser. `handle(command, args)` answers every command in docs/window-api.md with demo data of the documented shape.
+import { systemQuery, systemAction } from "./fakeSystem.js";
 import { createShell } from "./fakeShell.js";
 import { validSessionId } from "./terminal.js";
 import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt, busiest } from "./fakeData.js";
@@ -69,6 +70,8 @@ const commands = {
     if (action !== "logs") return `${{ restart: "Restarted", stop: "Stopped", start: "Started" }[action]} ${name}. (demo)`;
     return Array.from({ length: 50 }, (_, i) => `2026-11-18T09:${String(i).padStart(2, "0")}:00Z ${name} demo log line ${i + 1}`).join("\n") + "\n";
   },
+  system_query: ({ machine, query }) => systemQuery(named(machine), query),
+  system_action: ({ act, name }) => systemAction(act, name),
   find_big_folders: ({ machine, path }) => {
     if (!named(machine)) throw new Error("That machine is not in the list.");
     if (!String(path || "").trim() || String(path).startsWith("-")) throw new Error("Type a folder path, like / or D:\\.");

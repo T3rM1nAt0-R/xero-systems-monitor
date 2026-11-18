@@ -8,7 +8,7 @@ use crate::demo_waves::{
 };
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 use crate::scan::{ScanReply, Scans};
-use crate::{Action, Backend, BusyReply, HistoryReply, Ranking, State};
+use crate::{Act, Action, Backend, BusyReply, HistoryReply, Query, Ranking, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::drives::{biggest, DiskIo, Folder};
@@ -267,6 +267,14 @@ impl Backend for DemoBackend {
         Ok(format!(
             "Demo: {action:?} {name} did nothing, there is no real docker here."
         ))
+    }
+
+    fn system_query(&self, _machine: &str, _query: Query) -> Result<String, String> {
+        Err("Demo: there is no real machine to ask.".to_owned())
+    }
+
+    fn system_action(&self, _machine: &str, act: Act, name: &str) -> Result<String, String> {
+        Ok(format!("Demo: {act:?} {name} did nothing."))
     }
 
     fn find_big_folders(&self, _machine: &str, _path: &str) -> Result<u64, String> {

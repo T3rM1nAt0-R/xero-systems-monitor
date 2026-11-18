@@ -11,6 +11,7 @@ pub mod runners;
 pub mod sensors;
 pub mod slow;
 pub mod ssh;
+pub mod system;
 
 use std::process::Command;
 

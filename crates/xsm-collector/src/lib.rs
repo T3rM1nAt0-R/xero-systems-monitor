@@ -24,6 +24,7 @@ pub use scan::ScanReply;
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
 pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
+pub use xsm_core::system::{Act, Query};
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
 use serde::Serialize;
@@ -129,6 +130,19 @@ pub trait Backend: Send + Sync {
     /// Plain text for the window: not an ssh machine, a bad name, docker or ssh failing, or a timeout.
     fn container_action(&self, machine: &str, action: Action, name: &str)
         -> Result<String, String>;
+
+    /// Read the services of a machine, or its waiting updates (Linux); returns text for the window to read.
+    ///
+    /// # Errors
+    /// Plain text for the window: no such machine, ssh or PowerShell failing, or a timeout.
+    fn system_query(&self, machine: &str, query: Query) -> Result<String, String>;
+
+    /// Restart, stop or start a service, install updates or restart a Linux machine. Linux uses `sudo -n` only: when it needs
+    /// a password the error starts with `needs-password:` and then the command for the person to run themselves.
+    ///
+    /// # Errors
+    /// Plain text for the window, or the password reply above.
+    fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String>;
 
     /// Restart polling.
     ///

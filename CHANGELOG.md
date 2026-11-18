@@ -4,6 +4,7 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: the Services tab now also lists the machine's own services (systemd on Linux, Windows services on This PC) with a Failed / Running / Stopped filter and Restart, Stop and Start buttons you hold for a moment to confirm. Linux machines show how many updates are waiting (looked up every 30 minutes), "Restart needed", Install updates and Restart machine. Linux actions use `sudo -n` only; if sudo needs a password the app shows the command to run yourself, with a Copy button, and never stores a password.
 - Added: choose your graphs. The ⋯ menu on a machine card lists its graphs with show/hide on Overview, a size (S, M, L) and a pin (a pinned graph always shows and comes first). Remembered per machine.
 - Added: small markers on graphs for restarts, runner jobs starting and ending (failed ones red), container restarts and going offline or back online; hover one for what happened at a 12-hour time.
 - Added: "Unusual for this time" chip on a CPU, memory or GPU graph that is far above what that machine usually does at this hour over the last 7 days ("normally ~X%"); the threshold is in `app/src/unusual.json`.

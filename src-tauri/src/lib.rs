@@ -99,6 +99,8 @@ pub fn run() {
             commands::get_machines,
             commands::save_machines,
             commands::container_action,
+            commands::system_query,
+            commands::system_action,
             commands::find_big_folders,
             commands::get_big_folders,
             commands::cancel_big_folders,

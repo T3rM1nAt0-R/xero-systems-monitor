@@ -24,6 +24,7 @@ test("order.js reads the registry: same titles, same availability, same default 
   assert.deepEqual(groupsFor(m.d), availableIds(m));
   assert.deepEqual(normGroups(null).order, SECTION_IDS);
   assert.deepEqual(groupsFor({ cpu: 1 }), ["cpu", "net", "disk", "term"]);
+  assert.ok(groupsFor({ cpu: 1, uptime: 5 }).includes("svc"), "every machine with readings has a Services section");
   assert.deepEqual(groupsFor({ cpu: 1 }, { gpu: [[1, 0], [2, 5]] }), ["cpu", "gpu", "net", "disk", "term"], "history with GPU use shows the GPU section too");
 });
 

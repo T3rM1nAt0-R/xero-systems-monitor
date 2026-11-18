@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 34. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 36. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -11,8 +11,8 @@ use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
-    Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
-    MachineList, Ranking, SaveOutcome, ScanReply, State as Readings,
+    Act, Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
+    MachineList, Query, Ranking, SaveOutcome, ScanReply, State as Readings,
 };
 use xsm_terminal::Size;
 
@@ -119,6 +119,25 @@ pub async fn container_action(
         b.container_action(&machine, action, &name)
     })
     .await
+}
+
+#[tauri::command]
+pub async fn system_query(
+    backend: State<'_, BackendState>,
+    machine: String,
+    query: Query,
+) -> Reply<String> {
+    blocking(&backend, move |b| b.system_query(&machine, query)).await
+}
+
+#[tauri::command]
+pub async fn system_action(
+    backend: State<'_, BackendState>,
+    machine: String,
+    act: Act,
+    name: String,
+) -> Reply<String> {
+    blocking(&backend, move |b| b.system_action(&machine, act, &name)).await
 }
 
 #[tauri::command]
