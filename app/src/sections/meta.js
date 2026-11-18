@@ -35,6 +35,8 @@ export const SECTION_META = [
     summary: m => `${pct(m.d?.gpu)} · ${deg(m.d?.gtemp)}` },
   { id: "bat", title: "Battery", spark: null, def: true, cls: "", accent: m => (batteryFacts(m.d?.bat)?.level ? "--warn" : "--c-cpu"), available: m => !!m.d?.bat,
     sub: m => batteryFacts(m.d?.bat)?.state, summary: m => { const b = batteryFacts(m.d?.bat); return b ? `${b.text} · ${b.state}` : ""; } },
+  { id: "proc", title: "Processes", spark: null, def: true, cls: "full", accent: () => "--c-cpu", available: m => (m.d?.procs?.length || 0) > 0,
+    sub: m => `${m.d.procs.length} busiest shown`, summary: m => m.d?.procs?.[0] ? `${m.d.procs[0][1].replace(/_/g, " ")} ${m.d.procs[0][2].toFixed(0)}%` : "" },
   { id: "net", title: "Network", spark: "down", def: false, cls: "full", accent: () => "--c-net", available: () => true,
     sub: m => { const d = m.d || {}; return d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`; },
     summary: m => { const d = m.d || {}; return `↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`; } },

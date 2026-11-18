@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 32. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 34. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -12,7 +12,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
     Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
-    MachineList, SaveOutcome, ScanReply, State as Readings,
+    MachineList, Ranking, SaveOutcome, ScanReply, State as Readings,
 };
 use xsm_terminal::Size;
 
@@ -55,6 +55,25 @@ pub async fn get_busy_at(
     t: f64,
 ) -> Reply<BusyReply> {
     blocking(&backend, move |b| b.get_busy_at(&machine, t)).await
+}
+
+#[tauri::command]
+pub async fn get_busiest(
+    backend: State<'_, BackendState>,
+    machine: String,
+    range: f64,
+) -> Reply<Ranking> {
+    blocking(&backend, move |b| b.get_busiest(&machine, range)).await
+}
+
+#[tauri::command]
+pub async fn end_task(
+    backend: State<'_, BackendState>,
+    machine: String,
+    pid: u32,
+    name: String,
+) -> Reply<String> {
+    blocking(&backend, move |b| b.end_task(&machine, pid, &name)).await
 }
 
 #[tauri::command]
