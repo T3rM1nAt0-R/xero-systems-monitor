@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hotMin, isWarn, WATCH, rate, prOf } from "../src/format.js";
+import { hotMin, isWarn, WATCH, rate, prOf, upLine, restartWhy } from "../src/format.js";
 import { buildLanes } from "../src/lanes.js";
 
 test("hotMin: milliseconds in, whole minutes out, at least 1", () => {
@@ -102,4 +102,17 @@ test("trends: workflow names, averages, change against the week before, slowest 
   assert.equal(f.runs, 2); assert.equal(f.avg, 15); assert.equal(f.prev, 5); assert.equal(f.change, 2); assert.equal(f.failed, 1);
   assert.equal(t.slow[0].mins, 40); assert.equal(t.workflows[0].name, "Unity compile");   // most total time first
   assert.equal(jobTrends(rows, "other", now).workflows.length, 0);
+});
+
+test("upLine: how long on and when it restarted, 12-hour", () => {
+  const now = new Date(2026, 10, 18, 12, 0).getTime() / 1000;   // a Wednesday, local time
+  const flat = x => x.replace(/\s/g, " ");   // newer ICU puts a narrow no-break space before AM
+  assert.match(flat(upLine(3 * 86400 + 4 * 3600, now)), /^on for 3 d 4 h · last restart Sun,? 8:00 AM$/);
+  assert.equal(flat(upLine(10 * 86400, now)), "on for 10 d 0 h · last restart Nov 8, 12:00 PM");
+  assert.equal(upLine(null, now), "");
+});
+test("restartWhy: package and update counts, only when above zero", () => {
+  assert.equal(restartWhy({ restart_pkgs: 3, updates: 1 }), "3 packages asked for it · 1 update waiting");
+  assert.equal(restartWhy({ restart_pkgs: 1, updates: 0 }), "1 package asked for it");
+  assert.equal(restartWhy({}), "");
 });

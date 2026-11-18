@@ -5,6 +5,18 @@ export function rate(b) {
 export const rateStr = b => rate(b).join(" ");
 export const gb = x => (x >= 100 ? x.toFixed(0) : x.toFixed(1));
 export function uptime(s) { return s >= 86400 ? `${Math.floor(s / 86400)} d ${Math.floor((s % 86400) / 3600)} h` : `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} m`; }
+// "Mon 9:12 AM" for a restart in the last 6 days, "Nov 3, 9:12 AM" for an older one. Boot time = now - uptime (both seconds).
+export function lastRestart(uptimeS, nowS) {
+  const t = nowS - uptimeS, o = { hour: "numeric", minute: "2-digit", hour12: true };
+  return new Date(t * 1000).toLocaleString("en-US", uptimeS < 6 * 86400 ? { weekday: "short", ...o } : { month: "short", day: "numeric", ...o });
+}
+// Header line of a card: how long it has been on and when it restarted, e.g. "on for 3 d 4 h · last restart Mon 9:12 AM".
+export const upLine = (uptimeS, nowS) => (uptimeS == null ? "" : `on for ${uptime(uptimeS)} · last restart ${lastRestart(uptimeS, nowS)}`);
+// Why the restart is wanted, for a tooltip: "3 packages asked for it · 12 updates waiting".
+export function restartWhy(d) {
+  const n = (k, one, many) => (d[k] > 0 ? `${d[k]} ${d[k] === 1 ? one : many}` : "");
+  return [n("restart_pkgs", "package asked for it", "packages asked for it"), n("updates", "update waiting", "updates waiting")].filter(Boolean).join(" · ");
+}
 export function dur(s) { s = Math.max(0, Math.floor(s)); return s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m` : s >= 60 ? `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s` : `${s}s`; }
 export const prOf = ref => { const m = /refs\/pull\/(\d+)/.exec(ref || ""); return m ? "#" + m[1] : ""; };
 // Times are always 12-hour with AM / PM ("3:05 PM"), whatever the PC's region is set to.
@@ -26,7 +38,8 @@ export const peak = a => a.reduce((m, p) => Math.max(m, p[1]), 0);
 // Limits that turn something amber: the only time colour means "look at this".
 export const LIM = { cpu: 90, temp: 80, gtemp: 80, ram: 90, vram: 95 };
 export const TAG = { cpu: "HIGH", temp: "WARM", gtemp: "WARM", ram: "HIGH", vram: "HIGH" };
-export const isWarn = (k, v) => v != null && LIM[k] != null && v >= LIM[k];
+// `limits` is one machine's own limits (see limits.js); without it the standard ones apply.
+export const isWarn = (k, v, limits) => v != null && (limits?.[k] ?? LIM[k]) != null && v >= (limits?.[k] ?? LIM[k]);
 
 // Minutes the CPU has been "working hard". hotSince and nowMs are both milliseconds.
 export const hotMin = (hotSince, nowMs) => Math.max(1, Math.round((nowMs - hotSince) / 60000));

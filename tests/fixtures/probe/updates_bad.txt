@@ -1,0 +1,4 @@
+cpu 100 0 100 700 100 0 0 0
+REBOOT maybe
+UPDATES many
+REBOOT

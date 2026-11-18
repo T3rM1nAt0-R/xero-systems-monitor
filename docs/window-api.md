@@ -56,6 +56,9 @@ Reading = {                       // every field optional; absent means "not mea
   ping: number,                   // ms
   speed: number,                  // link, Mbps
   uptime: number,                 // seconds
+  restart: boolean,               // a restart is waiting for updates; absent when not known (see below)
+  restart_pkgs: number,           // how many packages asked for it, when known
+  updates: number,                // updates waiting, when known
   ip: string,
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
@@ -67,6 +70,10 @@ Reading = {                       // every field optional; absent means "not mea
   docker: [name, state, text, image, ports, created][], docker_err: string,
   failed: string[]                // failed systemd units
 }
+
+Restart status: Debian and Ubuntu machines report it from `/var/run/reboot-required` (and its `.pkgs` list), and the
+update count from `apt-check` when that is installed (read about every 100th frame). This PC on Windows reads the two
+"restart pending" registry keys with `reg query`. Any other system leaves `restart` out: unknown, not "no".
 
 History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null }
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine
