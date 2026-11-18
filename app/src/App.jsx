@@ -108,7 +108,7 @@ export default function App() {
   useFlip(gridRef, vms.map(m => m.name).join("|"));   // cards glide when they are reordered, hidden or shown
   const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={m.err ? lastOk[m.name] : undefined} hot={hot[m.name] || NO_HOT} limits={limitsOf(m.name)} auto={calmFold} flat={effCompact} gone={m.gone || NONE} onOpen={open} onTry={retry} onHide={hideMachine} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
-    <div className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
+    <div data-look="colors.bg" className={"app" + (err && state ? " stale" : "") + (mini ? " mini" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <LoadBar active={!state || loading} />
       <div className="bar top">
         {!effCompact && <span className="brand"><b>XERO</b> SYSTEMS MONITOR</span>}

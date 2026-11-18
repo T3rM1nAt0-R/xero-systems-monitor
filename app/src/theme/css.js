@@ -5,7 +5,7 @@ import { fontStack } from "./fonts.js";
 const CB_STATUS = { dark: { good: "#56b4e9", warn: "#e69f00", bad: "#d55e00" }, light: { good: "#0072b2", warn: "#8a5a00", bad: "#a33b00" } };
 const GRAPH_K = { small: 0.75, medium: 1, large: 1.4 }, DENS_K = { compact: 0.85, comfortable: 1, spacious: 1.2 }, AREA_OP = { line: 0.08, area: 0.3, bars: 0, step: 0.08 };
 const BORDER_W = { none: 0, hair: 1, bold: 2 };
-const RADIUS_TODAY = 35, RADIUS_PILL_K = 8, PERCENT = 100, SHADOW_TODAY = 40, BLOB_ALPHA = "2e", LARGE_SCALE = 1.16;
+const RADIUS_TODAY = 35, RADIUS_PILL_K = 8, PERCENT = 100, SHADOW_TODAY = 40, BLOB_ALPHA = "2e", LARGE_SCALE = 1.16, GRADIENT_OP = 0.3;
 // How much to multiply every corner radius by for the radius slider (0 to 100): 0 is square, 35 is today's look, 100 is as round as it goes.
 export const radiusK = pct => (pct <= RADIUS_TODAY ? pct / RADIUS_TODAY : 1 + ((pct - RADIUS_TODAY) / (PERCENT - RADIUS_TODAY)) * (RADIUS_PILL_K - 1));
 // The same for the shadow depth slider: 0 is flat, 40 is today's look.
@@ -43,7 +43,7 @@ export function lookToCss(look, { large = false, base: theme = "dark" } = {}) {
     if (t.weight) vars["--weight-" + id] = String(t.weight);
   }
   const g = graphOf(look), l = layoutOf(look), s = surfaceOf(look), sh = shapeOf(look), floor = large ? LARGE_SCALE : 1, scale = Math.round(floor * valueOf(look, "scale") * 1000) / 1000;
-  Object.assign(vars, { "--line-w": String(g.width), "--area-op": String(AREA_OP[g.style]), "--graph-k": String(GRAPH_K[l.card]), "--dens": String(DENS_K[l.density]),
+  Object.assign(vars, { "--line-w": String(g.width), "--area-op": String(g.gradient && AREA_OP[g.style] ? GRADIENT_OP : AREA_OP[g.style]), "--graph-k": String(GRAPH_K[l.card]), "--dens": String(DENS_K[l.density]),
     "--rk": String(radiusK(sh.radius)), "--shadow-k": String(shadowK(sh.shadow)), "--bw": BORDER_W[sh.border] + "px", "--grain": String(s.grain / PERCENT) });
   if (s.tint) vars["--glass-tint"] = s.tint;
   if (scale !== floor) vars["--scale"] = String(scale);

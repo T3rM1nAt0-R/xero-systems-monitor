@@ -98,7 +98,7 @@ test("lookToCss gives variables, derived colours, text levels, graph, layout and
   assert.equal(attrs["data-grid"], "off"); assert.equal(attrs["data-limits"], "off"); assert.equal(attrs["data-cols"], "2"); assert.equal(attrs["data-family"], "sharp"); assert.equal(attrs["data-border"], "bold");
   const plain = lookToCss({}), large = lookToCss({}, { large: true }), both = lookToCss({ scale: 1.5 }, { large: true });
   assert.equal(plain.vars["--scale"], undefined); assert.equal(large.vars["--scale"], undefined); assert.equal(both.vars["--scale"], "1.74");
-  assert.equal(plain.vars["--area-op"], "0.08"); assert.equal(plain.attrs["data-glass"], "subtle"); assert.equal(plain.attrs["data-motion"], "full"); assert.equal(plain.attrs["data-tabs"], "underline"); assert.equal(plain.attrs["data-heading"], "caps");
+  assert.equal(plain.vars["--area-op"], "0.08"); assert.equal(lookToCss({ graph: { gradient: true } }).vars["--area-op"], "0.3"); assert.equal(lookToCss({ graph: { gradient: true, style: "bars" } }).vars["--area-op"], "0"); assert.equal(plain.attrs["data-glass"], "subtle"); assert.equal(plain.attrs["data-motion"], "full"); assert.equal(plain.attrs["data-tabs"], "underline"); assert.equal(plain.attrs["data-heading"], "caps");
   assert.equal(lookToCss({ colors: { acc: "#0a0a0a" } }).vars["--on-acc"], "#ffffff");
   assert.equal(lookToCss({ motion: "off" }).attrs["data-motion"], "off"); assert.equal(lookToCss({ surface: { glass: "off" } }).attrs["data-glass"], "off");
   assert.equal(radiusK(0), 0); assert.equal(radiusK(35), 1); assert.equal(radiusK(100), 8); assert.ok(radiusK(70) > 1 && radiusK(70) < 8); assert.equal(shadowK(40), 1); assert.equal(shadowK(0), 0);
@@ -183,4 +183,15 @@ test("seriesPaths: line, smooth, area, step and bars", () => {
   assert.equal(seriesPaths(pts, { ...o, style: "step" }).l, "M0.0 90.0H10.0V50.0H20.0V70.0");
   const bars = seriesPaths(pts, { ...o, style: "bars" });
   assert.equal(bars.a, ""); assert.equal(bars.l.split("Z").length - 1, 3); assert.match(bars.l, /^M-3\.5 100\.0V90\.0h7\.0V100\.0Z/);
+});
+
+test("pick mode names the element and its setting; unknown elements and the panel itself are ignored", async () => {
+  const { lookLabel, lookTarget, LOOKS } = await import("../src/customize/pick.js");
+  assert.equal(lookLabel("text.section"), "Section heading — Text › Section"); assert.equal(lookLabel("nope"), "");
+  const el = { dataset: { look: "graph.style" }, closest: sel => (sel === ".cpanel" ? null : el) };
+  assert.deepEqual(lookTarget({ closest: () => el }), { el, id: "graph.style" });
+  assert.equal(lookTarget({ closest: () => ({ dataset: { look: "x.y" }, closest: () => null }) }), null);
+  assert.equal(lookTarget({ closest: () => ({ dataset: { look: "graph.style" }, closest: () => ({}) }) }), null);
+  assert.equal(lookTarget(null), null); assert.equal(lookTarget({ closest: () => null }), null);
+  assert.ok(Object.keys(LOOKS).every(id => id.includes(".")));
 });

@@ -4,6 +4,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: Customize pick mode (the crosshair button): hover anything in the window to see what it is and where its setting lives ("Section heading - Text > Section"), click it and the panel scrolls to that setting and flashes it.
+- Added: Customize Graphs: gradient fill, glow, dots on points (small dots along the line, not one per reading), axes on or off, grid density, a Step style. Layout: machines in 1, 2 or 3 columns, tab style (underline, pill, segmented) and heading style (CAPS or normal).
+
 - Changed: Customize is now a side panel docked on the right (the window shrinks beside it and stays live) with one scroll of sections (Theme, Colours, Text, Surfaces, Graphs, Layout, Motion), a sticky header with search, jump chips that follow the scroll, Undo and Redo (Ctrl+Z / Ctrl+Y), hold-to-compare and Esc to close. It replaces the old Customize dialog.
 - Added: a theme now holds everything (colours, text, graphs, layout, glass, motion). The gallery has live thumbnails for Dark, Light, Midnight, Contrast, Neon, Terminal and the popular palettes Dracula, Nord, Catppuccin Mocha and Latte, Gruvbox, Tokyo Night and Solarized Dark and Light. Editing anything shows "Custom (based on ...)" with Save, Save as new and Revert; saved themes can be renamed and deleted; Copy code, Export and Import share a theme.
 - Added: three base colours (background, text, accent) now give the cards, borders, dimmed text and fills; per-metric and status colours are under Fine-tune. A Colour-blind safe switch changes the status colours and marks status by shape (circle ok, triangle warning, square bad).
