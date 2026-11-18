@@ -21,6 +21,7 @@ export const getForecast = machine => call("get_forecast", { machine });
 export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : Promise.resolve(null));
 export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 export const systemQuery = (machine, query) => call("system_query", { machine, query });   // query: "services" | "updates"; resolves to the machine'"'"'s text (parsed by system.js)
+export const systemLogs = (machine, priority, unit) => call("system_logs", { machine, priority, unit });   // priority: "errors" | "warnings" | "all"; unit: a Linux service name or undefined; resolves to journalctl lines or JSON events (parsed by logs.js)
 export const systemAction = (machine, act, name = "") => call("system_action", { machine, act, name });   // act: "restart" | "stop" | "start" | "upgrade" | "reboot"; rejects with "needs-password:<command>" when sudo wants a password
 // The biggest-folders search of the Disks tab: start it, ask how far it is, stop it. It only reads.
 export const findBigFolders = (machine, path) => call("find_big_folders", { machine, path });   // resolves to a job number

@@ -22,6 +22,21 @@ pub enum Query {
     Updates,
 }
 
+/// How serious the log lines asked for must be.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Priority {
+    /// Errors and worse.
+    Errors,
+    /// Warnings, errors and worse.
+    Warnings,
+    /// Everything (Windows: also information).
+    All,
+}
+
+/// Lines of log the Logs tab asks for.
+pub const LOG_LINES: u32 = 200;
+
 /// What the window may do. Anything else is refused when the request is read.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -105,6 +120,40 @@ pub fn linux_query(q: Query) -> String {
 #[must_use]
 pub fn windows_query(q: Query) -> Option<String> {
     (q == Query::Services).then(|| WINDOWS_SERVICES.to_owned())
+}
+
+/// The `journalctl` line for the recent log: the last 200 lines, at this priority, of one unit if given.
+///
+/// # Errors
+/// Plain text when the unit is not a service name.
+pub fn linux_logs(priority: Priority, unit: Option<&str>) -> Result<String, String> {
+    let mut cmd = format!("journalctl -n {LOG_LINES} --no-pager -o short-iso");
+    match priority {
+        Priority::Errors => cmd.push_str(" -p err"),
+        Priority::Warnings => cmd.push_str(" -p warning"),
+        Priority::All => {}
+    }
+    if let Some(u) = unit.filter(|u| !u.is_empty()) {
+        if !valid_unit(u) {
+            return Err("That is not a service name.".to_owned());
+        }
+        cmd.push_str(" -u ");
+        cmd.push_str(u);
+    }
+    Ok(cmd)
+}
+
+/// The PowerShell script for the recent System and Application events (JSON, one object per event).
+#[must_use]
+pub fn windows_logs(priority: Priority) -> String {
+    let levels = match priority {
+        Priority::Errors => "1,2",
+        Priority::Warnings => "1,2,3",
+        Priority::All => "1,2,3,4",
+    };
+    format!(
+        "Get-WinEvent -FilterHashtable @{{LogName='System','Application';Level={levels}}} -MaxEvents {LOG_LINES} -ErrorAction SilentlyContinue | Select-Object @{{n='Time';e={{$_.TimeCreated.ToString('o')}}}},LogName,ProviderName,@{{n='Level';e={{\"$($_.LevelDisplayName)\"}}}},@{{n='Message';e={{($_.Message -split \"`n\")[0]}}}} | ConvertTo-Json -Compress"
+    )
 }
 
 /// The line for an action on Linux. `sudo` is `"sudo -n"` to run it, or `"sudo"` for the line a person may copy.
@@ -213,6 +262,22 @@ mod tests {
             .unwrap()
             .contains("Get-Service"));
         assert!(windows_query(Query::Updates).is_none());
+    }
+
+    #[test]
+    fn logs() {
+        let l = |p, u| linux_logs(p, u).unwrap();
+        assert_eq!(
+            l(Priority::All, None),
+            "journalctl -n 200 --no-pager -o short-iso"
+        );
+        assert!(l(Priority::Errors, Some("")).ends_with("-p err"));
+        assert!(l(Priority::Warnings, Some("ssh.service")).ends_with("-p warning -u ssh.service"));
+        assert!(linux_logs(Priority::All, Some("a;b")).is_err());
+        assert!(windows_logs(Priority::Errors).contains("Level=1,2}"));
+        assert!(windows_logs(Priority::Warnings).contains("Level=1,2,3}"));
+        assert!(windows_logs(Priority::All).contains("Level=1,2,3,4}"));
+        assert!(windows_logs(Priority::All).contains("-MaxEvents 200"));
     }
 
     #[test]

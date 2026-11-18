@@ -8,8 +8,9 @@ import Disk from "./Disk.jsx";
 import Runners from "./Runners.jsx";
 import Services from "./Services.jsx";
 import Terminal from "./Terminal.jsx";
+import Logs from "./Logs.jsx";
 // The registry the window draws from: each section's facts (meta.js, pure) joined to the component that draws its body.
 // Detail.jsx renders from this list; a tab shows `SECTIONS.filter(s => s.tab === tab)`.
-const BODY = { cpu: Cpu, gpu: Gpu, bat: Battery, proc: Processes, net: Net, disk: Disk, run: Runners, svc: Services, term: Terminal };
+const BODY = { cpu: Cpu, gpu: Gpu, bat: Battery, proc: Processes, net: Net, disk: Disk, run: Runners, svc: Services, term: Terminal, logs: Logs };
 export const SECTIONS = SECTION_META.map(s => ({ ...s, Component: BODY[s.id] }));
 export { TABS, TAB_IDS, SECTION_IDS, sectionTitle } from "./meta.js";

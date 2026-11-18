@@ -4,6 +4,7 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: the Logs tab: the last 200 system log lines (journalctl on Linux, System and Application events on This PC) with an Errors / Warnings / All filter, a service filter on Linux, a search box and an auto-refresh switch. Container logs open from the chips under the list.
 - Added: the Runners tab is the full runners view: one row per runner (name, status, current job, time in the job), the queue of jobs waiting for this machine's runners, and a "Check work folder sizes" button (over ssh with `du` and a time limit on Linux, walked on This PC); the timeline, last 7 days, busy heatmap and job history sit below. Overview keeps the compact runners block with the timeline. New command `get_work_size`.
 - Added: the mini window can be resized by dragging its edges; its content flows into 1, 2 or 3 columns by width, and the size is remembered (the Fit button forgets it). New command `set_mini_size`.
 - Added: the Services tab now also lists the machine's own services (systemd on Linux, Windows services on This PC) with a Failed / Running / Stopped filter and Restart, Stop and Start buttons you hold for a moment to confirm. Linux machines show how many updates are waiting (looked up every 30 minutes), "Restart needed", Install updates and Restart machine. Linux actions use `sudo -n` only; if sudo needs a password the app shows the command to run yourself, with a Copy button, and never stores a password.
