@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import Sub from "./Sub.jsx";
 import { jobTrends } from "./trends.js";
 import { since } from "./format.js";
+import { labelUrl } from "./github.js";
+import { linkProps, linkClass } from "./jobLink.js";
 const mm = m => m < 1 ? "<1 min" : m < 90 ? Math.round(m) + " min" : (m / 60).toFixed(1) + " h";
 // "Last 7 days": which workflows take the time, whether they got slower than the week before, and the slowest jobs.
 export default function Trends({ rows, machine, now }) {
@@ -14,6 +16,6 @@ export default function Trends({ rows, machine, now }) {
       {tr.workflows.map(w => <div className="trow" key={w.name}><span data-tip={w.name}>{w.name}{w.failed > 0 && <em className="bad"> · {w.failed} failed</em>}</span><span>{w.runs}</span><span>{mm(w.avg)}</span>
         <span className={w.change == null ? "dim" : w.change > 0.15 ? "slower" : w.change < -0.15 ? "faster" : "dim"}>{w.change == null ? "–" : `${w.change > 0 ? "▲" : "▼"} ${Math.abs(Math.round(w.change * 100))}%`}</span></div>)}</Sub>
       <Sub id={machine + ".slow"} title="Slowest jobs">
-      {tr.slow.map((j, i) => <div className="trow slow" key={i}><span data-tip={j.label}>{j.label}</span><span>{mm(j.mins)}</span><span className="dim">{j.runner} · {since(j.t)} ago</span></div>)}</Sub>
+      {tr.slow.map((j, i) => { const url = labelUrl(j.label); return <div className={"trow slow" + linkClass(url)} key={i} {...linkProps(url)}><span data-tip={j.label}>{j.label}</span><span>{mm(j.mins)}</span><span className="dim">{j.runner} · {since(j.t)} ago</span></div>; })}</Sub>
     </div>);
 }

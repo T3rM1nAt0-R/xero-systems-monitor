@@ -34,6 +34,7 @@ Rules for every command:
 | `relaunch` | none | `null` (the app restarts) |
 | `stop_everything` | none | `null` (collector and window close) |
 | `quit` | none | `null` (the window closes, the app exits) |
+| `open_link` | `url: string` (must start with `https://github.com/` and hold only letters, digits and `. _ - /`; anything else is refused) | `null` (the address opens in the browser) |
 
 `set_window_mode`: `mini` is the small always-on-top corner window; `full` and `compact` are the normal window (compact is the one-row-per-machine layout, which the window draws itself; the shell may remember the size per mode). Leaving `mini` restores the earlier size and place.
 
@@ -83,7 +84,7 @@ History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][]
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine
 
 Event = [t, machine, message]
-Job = [machine, runner, start, end, result, label]   // result "" when unknown
+Job = [machine, runner, start, end, result, label]   // result "" when unknown; label "PR #7 · branch · Build (owner/name)" (the last part is the repository, which the window turns into a GitHub link)
 
 MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: boolean, was?: string }
           // `was` is the old name after a rename, so the collector moves the history over

@@ -10,6 +10,7 @@ import Jobs from "./Jobs.jsx";
 import Smooth from "./Smooth.jsx";
 import Busy from "./Busy.jsx";
 import Trends from "./Trends.jsx";
+import JobHistory from "./JobHistory.jsx";
 import ContainerActions from "./ContainerActions.jsx";
 import { jobStats, containerBad } from "./alerts.js";
 import { useFold, foldProps } from "./fold.js";
@@ -93,6 +94,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
           <Sub id={m.name + ".tl"} title="Timeline"><Timeline machine={m.name} rows={rows} runners={d.runners} jobs={d.jobs} started={m.started} t0={t0} t1={t1} range={range} /></Sub>
           <Trends rows={rows} machine={m.name} now={t1} />
           <Busy rows={rows} machine={m.name} count={Object.keys(d.runners).length} running={Object.values(m.started || {})} now={t1} />
+          <JobHistory rows={rows} machine={m.name} />
         </Smooth></Grp>}
       {(d.docker || d.failed?.length > 0) && (() => {   // Docker containers (running first, failing on top), ones that disappeared, and failed systemd units
         const cs = [...(d.docker || [])].sort((x, y) => (containerBad(y) - containerBad(x)) || ((y[1] === "running") - (x[1] === "running")) || x[0].localeCompare(y[0]));

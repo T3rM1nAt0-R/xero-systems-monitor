@@ -47,7 +47,7 @@ pub struct FinishedJob {
     pub end: i64,
     /// `Succeeded`, `Failed`, ... or empty when unknown.
     pub result: String,
-    /// What the job was, e.g. `PR #7 · branch · Build (repo)`.
+    /// What the job was, e.g. `PR #7 · branch · Build (owner/repo)`.
     pub label: String,
 }
 

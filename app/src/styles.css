@@ -312,12 +312,6 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .menu .mlabel{padding:4px 12px 2px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim2)}
 .menu{max-height:calc(100vh - 70px);overflow-y:auto}
 
-/* busy per day */
-.bpd{display:flex;align-items:flex-end;gap:6px;margin-top:8px;height:42px}
-.bpd .lbl{color:var(--dim);font-size:11px;align-self:center;margin-right:6px;text-transform:uppercase;letter-spacing:.05em}
-.bcol{position:relative;width:26px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden}
-.bcol i{display:block;background:color-mix(in srgb,var(--acc) 70%,var(--s2))}
-.bcol b{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:9px;font-weight:500;color:var(--fg);opacity:.7;pointer-events:none}
 .sum.fc{margin-left:10px}.sum.fc.warn{color:var(--warn)}
 
 /* More menu: groups, switches, refresh buttons */
@@ -403,6 +397,29 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
 
+/* Runner insights: busy heatmap, clickable jobs, job history */
+.heat{margin-top:10px}.heat h4{margin:0 0 6px}
+.hrow{display:grid;grid-template-columns:44px 1fr;gap:6px;align-items:center;margin-bottom:2px}
+.hd{color:var(--dim);font-size:11px}
+.hcells{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px}
+.hcells i{display:block;height:13px;border-radius:2px;background:color-mix(in srgb,var(--acc) calc(var(--p) * 1%),var(--bg));border:1px solid var(--line)}
+.hcells i.future{background:none;border-style:dashed;opacity:.4}
+.hcells i.fail{box-shadow:inset 0 -2px #fb5a72}
+.hcells b{font-size:9px;font-weight:400;color:var(--dim);white-space:nowrap;overflow:visible}
+.hdays{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 14px;margin-top:6px;font-size:11.5px}
+.hdays b{display:inline-block;width:46px;font-weight:600}.hdays .bad{color:#fb5a72}.hdays .dim{color:var(--dim)}
+.link{cursor:pointer}.job.link:hover,.trow.link:hover,.dev.link:hover{background:var(--s2)}
+.jb.link{cursor:pointer}
+.hist{margin-top:10px}
+.hfilters{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.hfilters input,.hfilters select{background:var(--bg);color:var(--fg);border:1px solid var(--line2);border-radius:7px;padding:4px 8px;font:inherit;font-size:12px;min-width:0}
+.hfilters input{flex:1 1 140px}
+.hlist{max-height:280px;overflow-y:auto}
+.hitem{display:grid;grid-template-columns:minmax(0,1fr) 90px 78px 62px 108px;gap:8px;padding:3px 6px;font-size:11.5px;color:var(--mid);align-items:baseline;border-radius:5px}
+.hitem.link:hover{background:var(--s2)}
+.hitem span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hitem .succeeded{color:#4ade80}.hitem .failed{color:#fb5a72}.hitem .stopped{color:#fbbf24}.hitem .unknown{color:var(--dim)}
+@media (max-width:560px){.hitem{grid-template-columns:minmax(0,1fr) 70px 90px}.hitem .rn,.hitem .tk{display:none}}
 /* container actions (Restart / Stop / Start / Logs on a container row) */
 .cacts{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;margin-left:auto}.cacts button{padding:1px 8px;font-size:11px}
 .cask{color:var(--mid);font-size:11.5px}.cnote{color:var(--dim);font-size:11.5px}.cnote.bad{color:var(--crit)}

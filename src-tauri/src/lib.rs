@@ -3,6 +3,7 @@
 
 mod commands;
 mod frame;
+mod links;
 mod prefs;
 mod tray;
 mod updates;
@@ -105,6 +106,7 @@ pub fn run() {
             commands::relaunch,
             commands::stop_everything,
             commands::quit,
+            commands::open_link,
         ])
         .build(tauri::generate_context!());
     match built {

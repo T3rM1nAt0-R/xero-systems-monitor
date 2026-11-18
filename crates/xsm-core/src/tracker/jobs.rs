@@ -19,7 +19,7 @@ const BUSY: &str = "busy";
 const PULL_PREFIX: &str = "refs/pull/";
 const BRANCH_PREFIX: &str = "refs/heads/";
 
-/// 'PR #744 · branch-name · Fast check (repo)'.
+/// 'PR #744 · branch-name · Fast check (owner/repo)'.
 fn label(j: &JobLine) -> String {
     let mut what = Vec::new();
     let pr = j
@@ -43,7 +43,7 @@ fn label(j: &JobLine) -> String {
     if !j.name.is_empty() {
         what.push(j.name.clone());
     }
-    let repo = j.repo.rsplit('/').next().filter(|r| !r.is_empty());
+    let repo = Some(j.repo.as_str()).filter(|r| !r.is_empty());
     if what.is_empty() && repo.is_none() {
         return BUSY.to_owned();
     }
