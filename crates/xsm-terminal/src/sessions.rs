@@ -160,6 +160,7 @@ impl Drop for Sessions {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(unix)]
     use super::*;
     #[cfg(unix)]
     use std::sync::mpsc;
