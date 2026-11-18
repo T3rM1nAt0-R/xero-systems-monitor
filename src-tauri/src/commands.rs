@@ -19,6 +19,19 @@ pub struct BackendState(pub Arc<dyn Backend>);
 
 type Reply<T> = Result<T, String>;
 
+/// Run a backend call on a blocking thread, so a slow database read or an ssh wait never
+/// holds a worker of the async runtime that every other command shares.
+async fn blocking<T, F>(backend: &BackendState, call: F) -> Reply<T>
+where
+    T: Send + 'static,
+    F: FnOnce(&dyn Backend) -> Reply<T> + Send + 'static,
+{
+    let backend = Arc::clone(&backend.0);
+    tauri::async_runtime::spawn_blocking(move || call(&*backend))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 pub async fn get_state(backend: State<'_, BackendState>) -> Reply<Readings> {
     backend.0.get_state()
@@ -30,7 +43,7 @@ pub async fn get_history(
     machine: String,
     range: f64,
 ) -> Reply<HistoryReply> {
-    backend.0.get_history(&machine, range)
+    blocking(&backend, move |b| b.get_history(&machine, range)).await
 }
 
 #[tauri::command]
@@ -39,7 +52,7 @@ pub async fn get_busy_at(
     machine: String,
     t: f64,
 ) -> Reply<BusyReply> {
-    backend.0.get_busy_at(&machine, t)
+    blocking(&backend, move |b| b.get_busy_at(&machine, t)).await
 }
 
 #[tauri::command]
@@ -48,17 +61,17 @@ pub async fn get_events(
     since: f64,
     n: usize,
 ) -> Reply<Vec<Event>> {
-    backend.0.get_events(since, n)
+    blocking(&backend, move |b| b.get_events(since, n)).await
 }
 
 #[tauri::command]
 pub async fn get_jobs(backend: State<'_, BackendState>, since: f64) -> Reply<Vec<FinishedJob>> {
-    backend.0.get_jobs(since)
+    blocking(&backend, move |b| b.get_jobs(since)).await
 }
 
 #[tauri::command]
 pub async fn get_forecast(backend: State<'_, BackendState>, machine: String) -> Reply<Forecast> {
-    backend.0.get_forecast(&machine)
+    blocking(&backend, move |b| b.get_forecast(&machine)).await
 }
 
 #[tauri::command]
@@ -71,7 +84,7 @@ pub async fn save_machines(
     backend: State<'_, BackendState>,
     machines: Vec<MachineConfig>,
 ) -> Reply<SaveOutcome> {
-    backend.0.save_machines(machines)
+    blocking(&backend, move |b| b.save_machines(machines)).await
 }
 
 #[tauri::command]
@@ -81,7 +94,10 @@ pub async fn container_action(
     action: Action,
     name: String,
 ) -> Reply<String> {
-    backend.0.container_action(&machine, action, &name)
+    blocking(&backend, move |b| {
+        b.container_action(&machine, action, &name)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -136,7 +152,7 @@ pub fn get_version() -> Build {
 
 #[tauri::command]
 pub async fn restart_collector(backend: State<'_, BackendState>) -> Reply<()> {
-    backend.0.restart_collector()
+    blocking(&backend, |b| b.restart_collector()).await
 }
 
 #[tauri::command]
@@ -147,7 +163,7 @@ pub fn relaunch(app: AppHandle) -> Reply<()> {
 
 #[tauri::command]
 pub async fn stop_everything(app: AppHandle, backend: State<'_, BackendState>) -> Reply<()> {
-    backend.0.stop_everything()?;
+    blocking(&backend, |b| b.stop_everything()).await?;
     frame::quit(&app);
     Ok(())
 }

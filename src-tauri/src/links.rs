@@ -8,6 +8,7 @@ const SITE: &str = "https://github.com/";
 fn allowed(url: &str) -> bool {
     url.strip_prefix(SITE).is_some_and(|rest| {
         !rest.is_empty()
+            && !rest.split('/').any(|part| part == "..")
             && rest
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b'/'))
@@ -37,6 +38,8 @@ mod tests {
             "https://github.com.evil.example/a/b",
             "https://github.com/a/b?x=1",
             "https://github.com/a b",
+            "https://github.com/a/../b",
+            "https://github.com/..",
             "https://github.com/a/b#x",
             "file:///etc/passwd",
             "https://example.com/https://github.com/a",

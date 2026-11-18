@@ -29,6 +29,8 @@ pub struct LiveBackend {
     settings: Settings,
     make_ssh: MakeSsh,
     store: Arc<Mutex<Store>>,
+    /// A second connection (WAL) for the window's reads, so a long history read never holds up the poller's writes.
+    reader: Mutex<Store>,
     snapshots: Arc<Mutex<Vec<Snapshot>>>,
     machines: Mutex<Vec<MachineConfig>>,
     engine: Mutex<Option<Engine>>,
@@ -63,12 +65,14 @@ impl LiveBackend {
         let machines = config::load_machines(&machines_path)?;
         let db_path = data_dir.join(DB_FILE);
         let store = Store::open(&db_path).map_err(text)?;
+        let reader = Store::open(&db_path).map_err(text)?;
         let live = Self {
             machines_path,
             db_path,
             settings,
             make_ssh: Arc::new(make_ssh),
             store: Arc::new(Mutex::new(store)),
+            reader: Mutex::new(reader),
             snapshots: Arc::new(Mutex::new(Vec::new())),
             machines: Mutex::new(machines),
             engine: Mutex::new(None),
@@ -106,7 +110,7 @@ impl Backend for LiveBackend {
         // reason: the range is clamped to whole seconds well inside i64 (NaN becomes 0)
         #[allow(clippy::cast_possible_truncation)]
         let range = range_s.clamp(0.0, MAX_RANGE_S) as i64;
-        let h = lock(&self.store)
+        let h = lock(&self.reader)
             .history(machine, range, now_s())
             .map_err(text)?;
         Ok(HistoryReply::Known(Box::new(History::from(h))))
@@ -116,7 +120,7 @@ impl Backend for LiveBackend {
         // reason: unix seconds fit an i64 (NaN becomes 0)
         #[allow(clippy::cast_possible_truncation)]
         let t = t as i64;
-        let found = lock(&self.store).busiest_at(machine, t).map_err(text)?;
+        let found = lock(&self.reader).busiest_at(machine, t).map_err(text)?;
         Ok(found.map_or(BusyReply::Nothing {}, |b| BusyReply::of(b.t, &b.programs)))
     }
 
@@ -124,18 +128,18 @@ impl Backend for LiveBackend {
         // reason: unix seconds fit an i64
         #[allow(clippy::cast_possible_truncation)]
         let since = since as i64;
-        lock(&self.store).events(since, n).map_err(text)
+        lock(&self.reader).events(since, n).map_err(text)
     }
 
     fn get_jobs(&self, since: f64) -> Result<Vec<FinishedJob>, String> {
         // reason: unix seconds fit an i64
         #[allow(clippy::cast_possible_truncation)]
         let since = since as i64;
-        lock(&self.store).jobs(since).map_err(text)
+        lock(&self.reader).jobs(since).map_err(text)
     }
 
     fn get_forecast(&self, machine: &str) -> Result<Forecast, String> {
-        let points = lock(&self.store)
+        let points = lock(&self.reader)
             .disk_points(machine, FORECAST_DAYS, now_s())
             .map_err(text)?;
         Ok(forecast(&points))
