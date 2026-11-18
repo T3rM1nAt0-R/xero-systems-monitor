@@ -338,3 +338,20 @@ fn gpu_series_keep_the_peak_and_others_the_average() {
     let h = s.history("a", 30 * DAY, NOW + 2 * DAY).unwrap();
     assert!((h.gpu[0].1 - 95.0).abs() < 1e-9);
 }
+
+#[test]
+fn per_drive_speeds_come_back_in_extra() {
+    use xsm_core::drives::DiskIo;
+    let store = Store::open_in_memory().unwrap();
+    let mut r = reading(10.0, 50.0);
+    r.disk_io = vec![DiskIo {
+        name: "sda".into(),
+        read_bytes_per_s: 7.0,
+        write_bytes_per_s: 3.0,
+    }];
+    store.add_sample("example-server", NOW - 5, &r).unwrap();
+    let h = store.history("example-server", 60, NOW).unwrap();
+    assert!((h.extra["dr:sda"][0].1 - 7.0).abs() < 1e-9);
+    assert!((h.extra["dw:sda"][0].1 - 3.0).abs() < 1e-9);
+    assert!(!h.extra.contains_key("cpu"));
+}

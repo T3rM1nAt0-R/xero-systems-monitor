@@ -17,6 +17,7 @@ fn full_tree() {
     assert_eq!(s.cpu_power_w, Some(45.5));
     assert_eq!(s.gpu_power_w, Some(120.0));
     assert_eq!(s.core_load_pct, [10.0, 55.5]); // the total is not a core
+    assert_eq!(s.core_temp_c, [51.0, 53.5]); // the distance to the limit is not a temperature
 }
 
 #[test]

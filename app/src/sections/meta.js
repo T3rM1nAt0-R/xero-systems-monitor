@@ -1,6 +1,7 @@
 import { rateStr } from "../format.js";
 import { containerBad } from "../alerts.js";
-// The one list of sections a machine card can show (CPU, GPU, Network, Disk, Runners, Containers & services), and of the tabs they belong to.
+import { batteryFacts } from "../hwStrip.js";
+// The one list of sections a machine card can show (CPU, GPU, Network, Disk, Runners, Containers & services, Terminal), and of the tabs they belong to.
 // This file is pure (no React): the group order and "hide a section" choices (order.js), the Groups menu, the Ctrl+K palette and the tests all read it.
 // The drawing of each section is in the file next to it (Cpu.jsx, Gpu.jsx, ...); sections/index.js joins the two.
 //
@@ -32,6 +33,8 @@ export const SECTION_META = [
   { id: "gpu", title: "GPU", spark: "gpu", def: true, cls: "", accent: () => "--c-gpu", available: (m, h) => m.d?.gpu != null || (h?.gpu || []).some(p => p[1] > 0),
     sub: m => m.d?.hw?.gpu && `${m.d.hw.gpu}${m.d.vram_gb ? ` · ${m.d.vram_gb[1].toFixed(0)} GB` : ""}`,
     summary: m => `${pct(m.d?.gpu)} · ${deg(m.d?.gtemp)}` },
+  { id: "bat", title: "Battery", spark: null, def: true, cls: "", accent: m => (batteryFacts(m.d?.bat)?.level ? "--warn" : "--c-cpu"), available: m => !!m.d?.bat,
+    sub: m => batteryFacts(m.d?.bat)?.state, summary: m => { const b = batteryFacts(m.d?.bat); return b ? `${b.text} · ${b.state}` : ""; } },
   { id: "net", title: "Network", spark: "down", def: false, cls: "full", accent: () => "--c-net", available: () => true,
     sub: m => { const d = m.d || {}; return d.speed > 0 && `${d.speed >= 1000 ? `${d.speed / 1000} Gbps` : `${d.speed} Mbps`} link${d.ip ? ` · ${d.ip}` : ""}`; },
     summary: m => { const d = m.d || {}; return `↓ ${d.down != null ? rateStr(d.down) : "–"}  ↑ ${d.up != null ? rateStr(d.up) : "–"}  ping ${d.ping != null ? Number(d.ping).toFixed(0) + " ms" : "–"}`; } },
@@ -48,6 +51,8 @@ export const SECTION_META = [
     accent: m => (svcFacts(m).bad || m.d?.docker_err ? "--bad" : "--c-svc"),
     sub: m => { const { cs, cgone, bad, up } = svcFacts(m); return m.d?.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`; },
     summary: m => { const { bad, up } = svcFacts(m); return bad ? `${bad} failing` : `${up} running`; } },
+  { id: "term", title: "Terminal", spark: null, def: true, cls: "full", accent: () => "--acc", available: () => true,
+    sub: () => "a shell on this machine", summary: () => "Shell" },
 ];
 export const SECTION_IDS = SECTION_META.map(s => s.id);
 export const sectionTitle = id => SECTION_META.find(s => s.id === id)?.title || id;

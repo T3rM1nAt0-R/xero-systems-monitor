@@ -1,5 +1,5 @@
 import { SECTION_META, TABS, svcFacts } from "./meta.js";
-import { hwNumbers, coreBars, hwFacts } from "../hwStrip.js";
+import { hwNumbers, coreRows, hwFacts } from "../hwStrip.js";
 // Which slice of each section a tab shows. Pure (no React): the tab row, the Overview and the tests all read it.
 // A "part" is [section id, view]. The view tells the section's component what to draw: "full" is everything it has,
 // anything else is one slice of it (see Cpu.jsx, Net.jsx, Disk.jsx, Runners.jsx, Services.jsx).
@@ -7,18 +7,19 @@ import { hwNumbers, coreBars, hwFacts } from "../hwStrip.js";
 export const FULL = "full";
 export const TAB_PARTS = {
   overview: [["cpu", "graphs"], ["gpu", "graphs"], ["net", "graphs"], ["disk", "graphs"], ["run", "compact"], ["svc", "failing"]],
-  hardware: [["cpu", "hardware"]],
+  hardware: [["cpu", "hardware"], ["gpu", "programs"], ["bat", FULL]],
   processes: [["cpu", "processes"]],
   disks: [["disk", FULL]],
   network: [["net", FULL]],
   services: [["svc", FULL]],
   runners: [["run", FULL]],
   logs: [],
-  terminal: [],
+  terminal: [["term", FULL]],
 };
 // Does this view of a section have anything to show for this machine? (Parts not listed here always do, once the section itself is there.)
 const HAS = {
-  "cpu.hardware": m => hwFacts(m.d).length > 0 || hwNumbers(m.d || {}).length > 0 || coreBars(m.d?.cores).length > 0,
+  "cpu.hardware": m => hwFacts(m.d).length > 0 || hwNumbers(m.d || {}).length > 0 || coreRows(m.d).length > 0,
+  "gpu.programs": m => m.d?.gpuapps != null,
   "cpu.processes": m => (m.d?.top?.length || 0) > 0,
   "svc.failing": m => { const f = svcFacts(m); return f.bad > 0 || !!m.d?.docker_err; },
 };

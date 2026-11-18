@@ -25,8 +25,13 @@ export function metric(kind, seed, key, t, now) {
 const HAPPENINGS = { pc: [[3 * DAY, 2400, "offline"], [5 * DAY, 7200, "nodata"]], server: [[20 * 3600, 1800, "offline"], [4 * 3600, 0, "container"]] };
 const happenings = (m, now) => HAPPENINGS[kindOf(m)].map(([ago, len, what]) => ({ t: now - ago, len, what }));
 const inGap = (hs, t) => hs.some(h => (h.what === "offline" || h.what === "nodata") && t >= h.t && t <= h.t + h.len);
+export const driveNames = m => (kindOf(m) === "pc" ? ["C:", "D:"] : ["/"]);
 export function history(m, rng, now) {
-  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1) }, gaps = happenings(m, now);
+  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1), extra: {} }, gaps = happenings(m, now);
+  for (const [i, n] of driveNames(m).entries()) for (const [p, key, f] of [["dr:", "down", 0.4 / (i + 1)], ["dw:", "up", 0.6 / (i + 1)]]) {
+    out.extra[p + n] = [];
+    for (let t = now - rng; t <= now; t += step) out.extra[p + n].push([Math.round(t), +(metric(kind, seed, key, t, now) * f).toFixed(0)]);
+  }
   for (const key of KEYS) {
     out[key] = [];
     for (let t = now - rng; t <= now; t += step) { if (inGap(gaps, t)) continue; const v = metric(kind, seed, key, t, now); if (v != null) out[key].push([Math.round(t), +v.toFixed(2)]); }
@@ -76,7 +81,11 @@ const snap = (m, now) => {
   const d = { cpu: v("cpu"), temp: v("temp"), ram: v("ram"), disk: v("disk"), down: v("down"), up: v("up"), ping: v("ping"), uptime: 3 * DAY + 5400, restart: gpu, restart_pkgs: gpu ? 2 : undefined, updates: gpu ? 5 : 0, ip: gpu ? "192.0.2.20" : "192.0.2.10", speed: 1000, hw: HW[kind],
     ram_gb: [+((v("ram") / 100) * (gpu ? 32 : 64)).toFixed(1), gpu ? 32 : 64], storage: gpu ? [["C:", 410, 930], ["D:", 1200, 1860]] : [["/", 220, 500]],
     top: [["browser", v("cpu") / 2, 1800, 6], ["editor", v("cpu") / 5, 900, 1], ["build_tool", v("cpu") / 8, 600, 2]] };
+  d.io = driveNames(m).map((n, i) => [n, Math.round(v("down") * 0.4 / (i + 1)), Math.round(v("up") * 0.6 / (i + 1))]);   // drive speeds, bytes per second
+  if (gpu) d.smart = [["Example_SSD_1TB", "SSD", true, 38, 9400, 12], ["Example_HDD_2TB", "HDD", false, 41, 31000, null]]; else d.smart_note = "missing";   // drive health: the server shows the "install smartmontools" hint
   if (gpu) Object.assign(d, { mhz: 3900, cpu_w: +(40 + v("cpu") / 2).toFixed(0), gpu_w: 35, fans: [1180, 920], cores: Array.from({ length: 8 }, (_, i) => +((v("cpu") + i * 7) % 100).toFixed(0)), gpu: v("gpu"), gtemp: v("gtemp"), vram_gb: [+((v("vram") / 100) * 12).toFixed(1), 12] });
+  if (gpu) Object.assign(d, { ctemps: d.cores.map((c, i) => +(42 + c / 4 + i).toFixed(0)), bat: [Math.round(20 + v("cpu") / 2), false, 130], gpuapps: [["game", 5000, 1], ["browser", 800, 3], ["video_call", 0, 1]] });
+  if (!gpu) Object.assign(d, { cores: Array.from({ length: 4 }, (_, i) => +((v("cpu") + i * 9) % 100).toFixed(0)), ctemps: [51, 53, 50, 52], fans: [2100] });
   if (gpu) d.conns = [["browser", 42], ["video_call", 9], ["editor", 6], ["sync_tool", 4], ["build_tool", 2]];   // connections per program: This PC only (Windows)
   return d;
 };

@@ -1,8 +1,11 @@
 //! Probe text in, typed `Reading` out. A line that cannot be read is skipped; the rest of the frame still counts.
 
+mod battery;
 mod cpu;
 mod disk;
 mod docker;
+mod drives;
+mod extras;
 mod gpu;
 mod hardware;
 mod memory;
@@ -13,6 +16,7 @@ mod top;
 mod updates;
 
 use crate::reading::{HardwareInfo, Reading};
+pub use battery::parse_windows_battery;
 
 /// Percent scale.
 const PERCENT: f64 = 100.0;
@@ -50,6 +54,7 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
         let (tag, rest) = split_tag(line);
         match tag {
             "cpu" => cpu::line(&mut r, rest),
+            t if t.starts_with("cpu") && t.len() > "cpu".len() => cpu::core(&mut r, rest),
             "TEMPS" => cpu::temp(&mut temps, rest),
             "MEM" => memory::line(&mut r, rest),
             "DISK" | "DF" => disk::line(tag, &mut r, rest),
@@ -58,8 +63,14 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
             "GPU" => gpu::line(&mut r, rest),
             "RUNNER" | "JOB" | "JOBRES" | "JRES" => runners::line(tag, &mut r, rest),
             "DOCK" | "DOCKON" | "DOCKERR" => docker::line(tag, &mut r, rest),
+            "DISKIO" | "SMART" | "SMARTNOTE" => drives::line(tag, &mut r, rest),
             "SVCF" => services::line(&mut r, rest),
             "TOP" => top::line(&mut r, rest),
+            "BAT" => battery::line(&mut r, rest),
+            "FAN" => extras::fan(&mut r, rest),
+            "CTEMP" => extras::core_temp(&mut r, rest),
+            "MHZ" => extras::clock(&mut r, rest),
+            "GPUAPP" => extras::gpu_app(&mut r, rest),
             "HW" => hardware::line(&mut r, rest),
             "REBOOT" | "UPDATES" => updates::line(tag, &mut r, rest),
             _ => None,
@@ -73,8 +84,15 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
         if let (Some(now), Some(before)) = (r.net.as_mut(), p.net.as_ref()) {
             net::rate(now, before);
         }
+        if r.drive_health.is_empty() && r.health_note.is_none() {
+            r.drive_health.clone_from(&p.drive_health);
+            r.health_note.clone_from(&p.health_note);
+        }
         if r.top.is_empty() {
             r.top.clone_from(&p.top);
+        }
+        if r.gpu_apps.is_none() {
+            r.gpu_apps.clone_from(&p.gpu_apps);
         }
         if r.hardware == HardwareInfo::default() {
             r.hardware = p.hardware.clone();

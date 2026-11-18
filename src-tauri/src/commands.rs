@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 24. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 31. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -6,13 +6,15 @@
 use crate::frame::{self, Mode};
 use crate::links;
 use crate::prefs::{self, Prefs, PrefsPatch};
+use crate::terminal::{self, Terminals};
 use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
     Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
-    MachineList, SaveOutcome, State as Readings,
+    MachineList, SaveOutcome, ScanReply, State as Readings,
 };
+use xsm_terminal::Size;
 
 /// The collector the commands talk to.
 pub struct BackendState(pub Arc<dyn Backend>);
@@ -101,6 +103,25 @@ pub async fn container_action(
 }
 
 #[tauri::command]
+pub async fn find_big_folders(
+    backend: State<'_, BackendState>,
+    machine: String,
+    path: String,
+) -> Reply<u64> {
+    blocking(&backend, move |b| b.find_big_folders(&machine, &path)).await
+}
+
+#[tauri::command]
+pub async fn get_big_folders(backend: State<'_, BackendState>, job: u64) -> Reply<ScanReply> {
+    backend.0.get_big_folders(job)
+}
+
+#[tauri::command]
+pub async fn cancel_big_folders(backend: State<'_, BackendState>, job: u64) -> Reply<()> {
+    backend.0.cancel_big_folders(job)
+}
+
+#[tauri::command]
 pub fn get_prefs(app: AppHandle) -> Reply<Prefs> {
     prefs::get(&app)
 }
@@ -177,4 +198,34 @@ pub fn quit(app: AppHandle) -> Reply<()> {
 #[tauri::command]
 pub fn open_link(url: String) -> Reply<()> {
     links::open(&url)
+}
+
+#[tauri::command]
+pub fn terminal_open(
+    app: AppHandle,
+    backend: State<'_, BackendState>,
+    terms: State<'_, Terminals>,
+    id: String,
+    machine: String,
+    cols: u16,
+    rows: u16,
+) -> Reply<()> {
+    let size = Size::new(cols, rows);
+    terminal::open(&app, &*backend.0, &terms, &id, &machine, size)
+}
+
+#[tauri::command]
+pub fn terminal_write(terms: State<'_, Terminals>, id: String, data: String) -> Reply<()> {
+    terms.0.write(&id, &data)
+}
+
+#[tauri::command]
+pub fn terminal_resize(terms: State<'_, Terminals>, id: String, cols: u16, rows: u16) -> Reply<()> {
+    terms.0.resize(&id, Size::new(cols, rows))
+}
+
+#[tauri::command]
+pub fn terminal_close(terms: State<'_, Terminals>, id: String) -> Reply<()> {
+    terms.0.close(&id);
+    Ok(())
 }

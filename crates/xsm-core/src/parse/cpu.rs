@@ -35,7 +35,26 @@ pub(super) fn line(r: &mut Reading, rest: &str) -> Option<()> {
         usage_pct: None,
         idle_ticks: idle + iowait,
         total_ticks: ticks.iter().sum(),
+        ..CpuReading::default()
     });
+    Some(())
+}
+
+/// `cpu0 ...`, `cpu1 ...`: the same counters for one core. Cores come after the `cpu` line, in order.
+pub(super) fn core(r: &mut Reading, rest: &str) -> Option<()> {
+    let ticks: Vec<f64> = rest
+        .split_whitespace()
+        .take(TICK_FIELDS)
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .ok()?;
+    let [_, _, _, idle, iowait, ..] = ticks[..] else {
+        return None;
+    };
+    r.cpu
+        .as_mut()?
+        .core_ticks
+        .push((idle + iowait, ticks.iter().sum()));
     Some(())
 }
 
@@ -45,6 +64,21 @@ pub(super) fn rate(now: &mut CpuReading, before: &CpuReading) {
     if total > 0.0 {
         let idle = (now.idle_ticks - before.idle_ticks) / total;
         now.usage_pct = Some((PERCENT * (1.0 - idle)).clamp(0.0, PERCENT));
+    }
+    if now.core_ticks.len() == before.core_ticks.len() {
+        now.core_usage_pct = now
+            .core_ticks
+            .iter()
+            .zip(&before.core_ticks)
+            .map(|(n, b)| {
+                let total = n.1 - b.1;
+                if total > 0.0 {
+                    (PERCENT * (1.0 - (n.0 - b.0) / total)).clamp(0.0, PERCENT)
+                } else {
+                    0.0
+                }
+            })
+            .collect();
     }
 }
 

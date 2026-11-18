@@ -1,12 +1,17 @@
 //! Made-up readings for two machines, so the shell runs end to end before the real collector exists.
 //! The numbers follow the same smooth waves as `app/src/fakeData.js`; nothing here is measured.
 
+use crate::demo_extras;
 use crate::demo_jobs::jobs;
-use crate::history::{History, Series};
+use crate::demo_waves::{
+    history, phase_of, wave, CPU, DOWN, GPU, GTEMP, PING, RAM, TEMP, UP, VRAM,
+};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
+use crate::scan::{ScanReply, Scans};
 use crate::{Action, Backend, BusyReply, HistoryReply, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
+use xsm_core::drives::{biggest, DiskIo, Folder};
 use xsm_core::forecast::Forecast;
 use xsm_core::reading::{
     CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading, Reading,
@@ -14,10 +19,7 @@ use xsm_core::reading::{
 };
 use xsm_core::tracker::{Event, FinishedJob, Rules, Tracker};
 
-const TAU: f64 = std::f64::consts::TAU;
 const DAY_S: f64 = 86_400.0;
-const SERIES_POINTS: f64 = 400.0;
-const MIN_STEP_S: f64 = 3.0;
 const OFFLINE_AFTER: u32 = 3;
 const GIB: f64 = 1_073_741_824.0;
 const MIB: u64 = 1_048_576;
@@ -25,30 +27,8 @@ pub(crate) const RUNNERS: [&str; 2] = ["runner-1", "runner-2"];
 const FORECAST_PER_DAY: f64 = 0.4;
 const FORECAST_DAYS: f64 = 95.0;
 
-/// `(base, swing, period in seconds)` of a wave.
-type Wave = (f64, f64, f64);
-const CPU: Wave = (18.0, 40.0, 900.0);
-const RAM: Wave = (48.0, 12.0, 5400.0);
-const TEMP: Wave = (46.0, 18.0, 900.0);
-const GPU: Wave = (8.0, 45.0, 1300.0);
-const GTEMP: Wave = (40.0, 22.0, 1300.0);
-const VRAM: Wave = (25.0, 20.0, 3000.0);
-const DOWN: Wave = (2e5, 3e6, 700.0);
-const UP: Wave = (5e4, 6e5, 500.0);
-const PING: Wave = (12.0, 8.0, 300.0);
-
-fn wave((base, swing, period): Wave, phase: f64, t: f64) -> f64 {
-    base + swing * (0.5 + 0.5 * (t / period * TAU + phase).sin())
-}
-
 fn is_pc(m: &MachineConfig) -> bool {
     m.kind == MachineKind::Local
-}
-
-/// A different phase for every machine name.
-fn phase_of(name: &str) -> f64 {
-    name.bytes()
-        .fold(7.0, |a, b| (a * 31.0 + f64::from(b)) % 1000.0)
 }
 
 fn bytes(gib: f64) -> u64 {
@@ -89,6 +69,11 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             up_bytes_per_s: Some(wave(UP, phase, t)),
             ..NetReading::default()
         }),
+        disk_io: vec![DiskIo {
+            name: if is_pc(m) { "C:" } else { "/" }.to_owned(),
+            read_bytes_per_s: wave(DOWN, phase, t),
+            write_bytes_per_s: wave(UP, phase, t),
+        }],
         ping_ms: Some(wave(PING, phase, t)),
         top: vec![TopProgram {
             name: "browser".to_owned(),
@@ -118,7 +103,11 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
             core_load_pct: (0..8)
                 .map(|i| (cpu_pct + f64::from(i) * 7.0) % 100.0)
                 .collect(),
+            core_temp_c: (0..8)
+                .map(|i| 45.0 + cpu_pct / 4.0 + f64::from(i))
+                .collect(),
         });
+        demo_extras::pc_extras(&mut r, cpu_pct, wave(CPU, phase, t));
         r.gpu = Some(GpuReading {
             util_pct: wave(GPU, phase, t),
             temp_c: wave(GTEMP, phase, t),
@@ -139,41 +128,10 @@ fn reading(m: &MachineConfig, t: f64) -> Reading {
     r
 }
 
-/// The series of one machine, `None` for a metric it lacks.
-fn series(m: &MachineConfig, wave_of: Wave, now: f64, range: f64) -> Series {
-    let step = MIN_STEP_S.max((range / SERIES_POINTS).floor());
-    let phase = phase_of(&m.name);
-    let mut out = Vec::new();
-    let mut t = now - range;
-    while t <= now {
-        out.push((t.round(), wave(wave_of, phase, t)));
-        t += step;
-    }
-    out
-}
-
-fn history(m: &MachineConfig, now: f64, range: f64) -> History {
-    let s = |w| series(m, w, now, range);
-    let gpu = |w| if is_pc(m) { s(w) } else { Vec::new() };
-    let flat = |v: f64| s((v, 0.0, 1.0));
-    History {
-        cpu: s(CPU),
-        ram: s(RAM),
-        disk: flat(62.0),
-        temp: s(TEMP),
-        gpu: gpu(GPU),
-        vram: gpu(VRAM),
-        gtemp: gpu(GTEMP),
-        down: s(DOWN),
-        up: s(UP),
-        ping: s(PING),
-        loss: Some(0.0),
-    }
-}
-
 /// A backend that answers every command with demo data and keeps the machine list in memory.
 pub struct DemoBackend {
     machines: Mutex<Vec<MachineConfig>>,
+    scans: Scans,
 }
 
 impl Default for DemoBackend {
@@ -204,6 +162,7 @@ impl DemoBackend {
         };
         Self {
             machines: Mutex::new(vec![pc, server]),
+            scans: Scans::default(),
         }
     }
 
@@ -298,6 +257,30 @@ impl Backend for DemoBackend {
         Ok(format!(
             "Demo: {action:?} {name} did nothing, there is no real docker here."
         ))
+    }
+
+    fn find_big_folders(&self, _machine: &str, _path: &str) -> Result<u64, String> {
+        Ok(self.scans.start(|_| {
+            Ok(biggest(vec![
+                Folder {
+                    path: "/example/media".to_owned(),
+                    bytes: 90 << 30,
+                },
+                Folder {
+                    path: "/example/cache".to_owned(),
+                    bytes: 12 << 30,
+                },
+            ]))
+        }))
+    }
+
+    fn get_big_folders(&self, job: u64) -> Result<ScanReply, String> {
+        self.scans.status(job)
+    }
+
+    fn cancel_big_folders(&self, job: u64) -> Result<(), String> {
+        self.scans.cancel(job);
+        Ok(())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

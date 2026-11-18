@@ -3,8 +3,9 @@
 
 use serde_json::json;
 use xsm_core::reading::{
-    ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuReading, HardwareInfo,
-    JobLine, MemoryReading, NetReading, Reading, RunnerState, SensorDetail, TopProgram, UpdateInfo,
+    BatteryReading, ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuApp,
+    GpuReading, HardwareInfo, JobLine, MemoryReading, NetReading, Reading, RunnerState,
+    SensorDetail, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Rules, Tracker};
 
@@ -58,6 +59,8 @@ fn result_line(runner: &str, result: &str, log: &str) -> JobLine {
 }
 
 #[test]
+// reason: one reading with every field set, checked against the whole window shape
+#[allow(clippy::too_many_lines)]
 fn snapshot_has_the_window_shape() {
     let mut t = tracker(true);
     let r = Reading {
@@ -65,6 +68,7 @@ fn snapshot_has_the_window_shape() {
             usage_pct: Some(12.5),
             idle_ticks: 1.0,
             total_ticks: 2.0,
+            ..CpuReading::default()
         }),
         cpu_temp_c: Some(55.0),
         memory: Some(MemoryReading {
@@ -126,19 +130,22 @@ fn snapshot_has_the_window_shape() {
             os: Some("Linux".into()),
             ..HardwareInfo::default()
         },
-        docker_error: None,
         sensors: Some(SensorDetail {
             fans_rpm: vec![900.0],
             cpu_clock_mhz: Some(3500.0),
             cpu_power_w: Some(30.0),
             gpu_power_w: None,
             core_load_pct: vec![5.0, 15.0],
+            core_temp_c: Vec::new(),
         }),
+        battery: None,
+        gpu_apps: None,
         updates: UpdateInfo {
             restart_needed: Some(true),
             restart_packages: Some(2),
             pending: Some(7),
         },
+        ..Reading::default()
     };
     t.observe(r, 1000);
     let v = serde_json::to_value(t.snapshot()).unwrap();
@@ -186,5 +193,47 @@ fn empty_machine_snapshot_and_docker_error() {
     assert_eq!(
         serde_json::to_value(t.snapshot()).unwrap()["d"],
         json!({"docker": []})
+    );
+}
+
+#[test]
+fn battery_core_temperatures_and_gpu_programs_have_the_window_shape() {
+    let mut t = tracker(false);
+    let r = Reading {
+        sensors: Some(SensorDetail {
+            core_temp_c: vec![50.0, 52.0],
+            ..SensorDetail::default()
+        }),
+        battery: Some(BatteryReading {
+            charge_pct: 80.0,
+            plugged_in: false,
+            minutes_left: Some(95),
+        }),
+        gpu_apps: Some(vec![GpuApp {
+            name: "game".into(),
+            vram_bytes: 2 * 1024 * 1024,
+            processes: 1,
+        }]),
+        ..Reading::default()
+    };
+    t.observe(r, 1);
+    let d = serde_json::to_value(t.snapshot()).unwrap()["d"].clone();
+    assert_eq!(
+        d,
+        json!({"ctemps": [50.0, 52.0], "bat": [80.0, false, 95], "gpuapps": [["game", 2.0, 1]]})
+    );
+    let mut t = tracker(false);
+    t.observe(
+        Reading {
+            gpu_apps: Some(vec![]),
+            ..Reading::default()
+        },
+        1,
+    );
+    let d = serde_json::to_value(t.snapshot()).unwrap()["d"].clone();
+    assert_eq!(
+        d,
+        json!({"gpuapps": []}),
+        "asked and none is not the same as not asked"
     );
 }

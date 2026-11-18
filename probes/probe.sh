@@ -13,12 +13,21 @@
 #
 # Line format: TAG followed by space separated values (the last value may hold spaces).
 #   cpu a b c d e f g h        first line of /proc/stat: user nice system idle iowait irq softirq steal
+#   cpuN a b c ...             the same counters for core N (one line per core)
 #   MEM total_kb available_kb  from /proc/meminfo
 #   DISK 42%                   use of the root file system
 #   DF dev size used avail pct mount    one per real file system, sizes in MiB with an M
 #   TEMPS sensor millidegrees  one per sensor (hwmon name, or tz-<type> for thermal zones)
+#   CTEMP n millidegrees       temperature of CPU core n (Intel coretemp labels "Core n")
+#   FAN rpm                    one per fan the hardware monitor chips report
+#   MHZ n                      average CPU clock from /proc/cpuinfo
+#   BAT pct state minutes      the battery: charge, state word (Charging, Discharging, Full), minutes left or "-"
+#   GPUAPP mib pid name        a program using the NVIDIA card (only when P=1); "GPUAPP -" when none
 #   GPU util_pct, temp_c, mem_used_mib, mem_total_mib    or "GPU none"; util and mem_used are the
 #                              peaks of the samples nvidia-smi took while the frame ran
+#   DISKIO dev read_bps write_bps       speed of each whole drive since the last frame (needs the scratch folder T; none on the first frame)
+#   SMART dev|model|health|temp|hours|wear    drive health from smartctl (ok or warning; empty = unknown), read every 10 minutes and repeated from a cache
+#   SMARTNOTE missing | denied   no smartctl installed, or it needs more rights than this user has
 #   NET iface ip speed_mbps rx_bytes tx_bytes uptime_s  default route; "-" when no ip, -1 when no speed
 #   PING ms                    round trip to a public resolver
 #   RUNNER <ps args>           a GitHub Actions Runner.Listener or Runner.Worker process
@@ -49,7 +58,7 @@ if command -v nvidia-smi >/dev/null && [ -n "$T" ]; then
   gpusamp=$!
 fi
 
-head -1 /proc/stat
+grep '^cpu' /proc/stat
 awk '/MemTotal/{t=$2}/MemAvailable/{a=$2}END{print "MEM",t,a}' /proc/meminfo
 df -P / | awk 'NR==2{print "DISK",$5}'
 
@@ -78,14 +87,71 @@ fi
 for h in /sys/class/hwmon/hwmon*; do
   n=$(cat "$h/name" 2>/dev/null)
   for f in "$h"/temp*_input; do
-    [ -r "$f" ] && echo "TEMPS $n $(cat "$f" 2>/dev/null)"
+    [ -r "$f" ] || continue
+    echo "TEMPS $n $(cat "$f" 2>/dev/null)"
+    if [ "$n" = coretemp ]; then
+      l=$(cat "${f%_input}_label" 2>/dev/null)
+      case "$l" in "Core "*) echo "CTEMP ${l#Core } $(cat "$f" 2>/dev/null)" ;; esac
+    fi
   done
+  for f in "$h"/fan*_input; do
+    [ -r "$f" ] && echo "FAN $(cat "$f" 2>/dev/null)"
+  done
+done
+awk '/^cpu MHz/{s+=$4;n++}END{if(n)printf "MHZ %.0f\n",s/n}' /proc/cpuinfo 2>/dev/null
+for b in /sys/class/power_supply/BAT*; do
+  [ -r "$b/capacity" ] || continue
+  awk -v b="$b" 'function rd(f,  v){v="";getline v < (b "/" f);close(b "/" f);return v+0}
+    BEGIN{getline c < (b "/capacity");getline st < (b "/status");
+      now=rd("energy_now");full=rd("energy_full");rate=rd("power_now");
+      if(!rate){now=rd("charge_now");full=rd("charge_full");rate=rd("current_now")}
+      m="-";if(rate>0){if(st=="Discharging")m=int(now/rate*60);else if(st=="Charging")m=int((full-now)/rate*60)}
+      gsub(/ /,"_",st);print "BAT",c,st,m}'
+  break
 done
 for z in /sys/class/thermal/thermal_zone*; do
   [ -r "$z/temp" ] && echo "TEMPS tz-$(tr ' ' _ <"$z/type" 2>/dev/null) $(cat "$z/temp" 2>/dev/null)"
 done
 
 df -P -BM -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs 2>/dev/null | tail -n +2 | sed 's/^/DF /'
+
+# Drive speed: /proc/diskstats counters against the last frame's (kept in $T), timed by uptime.
+if [ -n "$T" ]; then
+  awk -v up="$(cut -d' ' -f1 /proc/uptime)" -v old="$T/dio" '
+    BEGIN { while ((getline l < old) > 0) { split(l, a, " "); if (a[1] == "t") pt = a[2]; else { pr[a[1]] = a[2]; pw[a[1]] = a[3] } } }
+    $3 ~ /^(sd[a-z]+|vd[a-z]+|xvd[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+)$/ {
+      r = $6 * 512; w = $10 * 512; print $3, r, w > (old ".new")
+      if (pt != "" && up > pt && ($3 in pr) && r >= pr[$3] && w >= pw[$3]) printf "DISKIO %s %d %d\n", $3, (r - pr[$3]) / (up - pt), (w - pw[$3]) / (up - pt)
+    }
+    END { print "t", up > (old ".new") }' /proc/diskstats 2>/dev/null
+  mv "$T/dio.new" "$T/dio" 2>/dev/null
+fi
+
+# Drive health: smartctl needs no sudo on some systems. It is slow, so it runs in the background every 10 minutes and the answer is cached in $T.
+if [ -n "$T" ]; then
+  if ! find "$T/smart" -mmin -10 2>/dev/null | grep -q .; then
+    touch "$T/smart"
+    (if command -v smartctl >/dev/null; then
+      for dev in $(lsblk -dno NAME,TYPE 2>/dev/null | awk '$2=="disk"{print $1}'); do
+        timeout 5 smartctl -H -A -i "/dev/$dev" 2>/dev/null | awk -v n="$dev" '
+          /Device Model|Model Number|Product:/ { sub(/^[^:]*: */, ""); gsub(/ /, "_"); m = $0 }
+          /overall-health|Health Status/ { h = ($NF == "PASSED" || $NF == "OK") ? "ok" : "warning" }
+          $1 == 194 || $1 == 190 { t = $10 }
+          /^Temperature:/ { t = $2 }
+          $1 == 9 { o = $10 }
+          /^Power On Hours:/ { gsub(/,/, "", $4); o = $4 }
+          $2 ~ /Wear_Leveling|Media_Wearout|Lifetime_Remain|SSD_Life_Left/ { w = 100 - $4 }
+          /^Percentage Used:/ { w = $3 + 0 }
+          END { if (h) printf "SMART %s|%s|%s|%s|%s|%s\n", n, m, h, t, o, w }'
+      done >"$T/smart.new"
+      [ -s "$T/smart.new" ] || echo "SMARTNOTE denied" >"$T/smart.new"
+    else
+      echo "SMARTNOTE missing" >"$T/smart.new"
+    fi
+    mv "$T/smart.new" "$T/smart" 2>/dev/null) >/dev/null 2>&1 &
+  fi
+  cat "$T/smart" 2>/dev/null
+fi
 
 # The sampler has been running since the top of the frame; stop it and take the peaks.
 n=
@@ -233,6 +299,12 @@ if command -v docker >/dev/null; then
   o=$(timeout 3 docker ps -a --format 'DOCK {{.Names}}|{{.State}}|{{.Status}}|{{.Image}}|{{.Ports}}|{{.RunningFor}}' 2>&1)
   echo "$o" | grep '^DOCK '
   echo "$o" | grep -v '^DOCK ' | head -1 | sed 's/^/DOCKERR /'
+fi
+
+# GPUAPP: programs using the NVIDIA card (pmon lists graphics and compute ones, in MiB), only on P frames.
+if [ -n "$P" ] && command -v nvidia-smi >/dev/null; then
+  nvidia-smi pmon -c 1 -s m 2>/dev/null | awk '/^ *[0-9]/ && $2 ~ /^[0-9]+$/ && $4 ~ /^[0-9]+$/ {print "GPUAPP", $4, $2, $NF}'
+  echo "GPUAPP -"
 fi
 
 # TOP: the six busiest programs over 0.5 s, grouped by process name.
