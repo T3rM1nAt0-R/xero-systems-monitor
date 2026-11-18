@@ -8,7 +8,7 @@ mod gpu_apps;
 pub mod local;
 pub mod runners;
 pub mod sensors;
-mod slow;
+pub mod slow;
 pub mod ssh;
 pub mod system;
 

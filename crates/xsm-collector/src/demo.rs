@@ -291,6 +291,10 @@ impl Backend for DemoBackend {
         Ok(())
     }
 
+    fn set_internet_host(&self, _url: &str) -> Result<(), String> {
+        Ok(())
+    }
+
     fn get_machines(&self) -> Result<MachineList, String> {
         Ok(MachineList {
             machines: self.list()?,

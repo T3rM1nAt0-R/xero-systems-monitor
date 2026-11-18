@@ -93,6 +93,12 @@ pub trait Backend: Send + Sync {
     /// Text for the window when it cannot be stopped.
     fn cancel_big_folders(&self, job: u64) -> Result<(), String>;
 
+    /// Set the address the internet check uses (a plain `https://` address; anything else means the default).
+    ///
+    /// # Errors
+    /// Text for the window when it cannot be set.
+    fn set_internet_host(&self, url: &str) -> Result<(), String>;
+
     /// The machine list.
     ///
     /// # Errors

@@ -15,6 +15,7 @@ use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
 use xsm_sources::folders::{scan_local, scan_ssh};
+use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::ssh_command;
 use xsm_sources::system::{run_action, run_query, Target};
 use xsm_store::Store;
@@ -39,6 +40,7 @@ pub struct LiveBackend {
     machines: Mutex<Vec<MachineConfig>>,
     engine: Mutex<Option<Engine>>,
     scans: Scans,
+    net: Arc<NetConfig>,
 }
 
 fn text(e: impl std::fmt::Display) -> String {
@@ -99,6 +101,7 @@ impl LiveBackend {
             machines: Mutex::new(machines),
             engine: Mutex::new(None),
             scans: Scans::default(),
+            net: Arc::default(),
         };
         live.begin();
         Ok(live)
@@ -115,6 +118,7 @@ impl LiveBackend {
             store: Arc::clone(&self.store),
             snapshots: Arc::clone(&self.snapshots),
             db_path: self.db_path.clone(),
+            net: Arc::clone(&self.net),
         }));
     }
 }
@@ -212,6 +216,11 @@ impl Backend for LiveBackend {
 
     fn cancel_big_folders(&self, job: u64) -> Result<(), String> {
         self.scans.cancel(job);
+        Ok(())
+    }
+
+    fn set_internet_host(&self, url: &str) -> Result<(), String> {
+        self.net.set_url(url);
         Ok(())
     }
 

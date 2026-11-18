@@ -12,6 +12,7 @@ use xsm_core::reading::Reading;
 use xsm_core::tracker::{Rules, Snapshot, Tracker};
 use xsm_settings::CollectorSettings;
 use xsm_sources::local::LocalSource;
+use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::SshSource;
 use xsm_store::Store;
 
@@ -43,6 +44,7 @@ pub(crate) struct Plan {
     pub store: Arc<Mutex<Store>>,
     pub snapshots: Arc<Mutex<Vec<Snapshot>>>,
     pub db_path: PathBuf,
+    pub net: Arc<NetConfig>,
 }
 
 /// A running polling thread. Dropping it stops the thread and every source.
@@ -101,7 +103,7 @@ impl Slot {
 
     fn open(&mut self, m: &MachineConfig, plan: &Plan) {
         self.source = match m.kind {
-            MachineKind::Local => match LocalSource::new() {
+            MachineKind::Local => match LocalSource::new(Arc::clone(&plan.net)) {
                 Ok(l) => Some(Source::Local(Box::new(l))),
                 Err(e) => {
                     eprintln!("cannot read {}: {e}", m.name);
@@ -168,6 +170,13 @@ fn maintain(plan: &Plan, now: i64) {
 }
 
 fn run(plan: &Plan, stop: &mpsc::Receiver<()>) {
+    let hosts: Vec<(String, String)> = plan
+        .machines
+        .iter()
+        .filter(|m| m.kind == MachineKind::Ssh)
+        .filter_map(|m| Some((m.name.clone(), m.host.clone()?)))
+        .collect();
+    plan.net.set_targets(&hosts);
     let misses = plan.settings.offline_after_misses;
     let mut slots: Vec<Slot> = plan.machines.iter().map(|m| Slot::new(m, misses)).collect();
     publish(plan, &slots);

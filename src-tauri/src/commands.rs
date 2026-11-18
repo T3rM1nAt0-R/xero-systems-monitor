@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 33. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 34. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -138,6 +138,11 @@ pub async fn get_big_folders(backend: State<'_, BackendState>, job: u64) -> Repl
 #[tauri::command]
 pub async fn cancel_big_folders(backend: State<'_, BackendState>, job: u64) -> Reply<()> {
     backend.0.cancel_big_folders(job)
+}
+
+#[tauri::command]
+pub async fn set_internet_host(backend: State<'_, BackendState>, url: String) -> Reply<()> {
+    backend.0.set_internet_host(&url)
 }
 
 #[tauri::command]

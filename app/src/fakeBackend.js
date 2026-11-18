@@ -73,6 +73,7 @@ const commands = {
   },
   get_big_folders: ({ job }) => { const s = scans.get(job); if (!s) throw new Error("That search is no longer there."); return scanState(s, Date.now()); },
   cancel_big_folders: ({ job }) => { const s = scans.get(job); if (s && Date.now() - s.at < SCAN_MS) s.stopped = true; return null; },
+  set_internet_host: ({ url }) => { store.internetHost = /^https:\/\/[^\s"]+$/.test(String(url || "").trim()) ? String(url).trim() : ""; return null; },
   get_prefs: () => ({ ...store.prefs }),
   set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },
   set_window_mode: ({ mode }) => (store.mode = mode),
