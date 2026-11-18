@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-18
+
 - Fixed: polish after review: the machines strip is one compact row of tiles; the "What was busy then?" box no longer stays open under the hover readout, stays inside the window and no longer closes by itself on each refresh; sub headers share one small style (for example "DRIVES  2 drives"); folded group summaries are smaller; the Picture and CSV buttons show only on hover, away from the limit label; the stray line under a folded machine bar is gone; clicking a machine tile no longer also unfolds machines whose names start the same.
 
 - Added: "Network connections by program" in This PC's Network group (Windows): how many TCP connections and UDP sockets each program has open, top 8, refreshed about every 10 seconds. It counts connections, not data sent, because Windows only reports bytes per program to an administrator.
