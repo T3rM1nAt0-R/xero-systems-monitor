@@ -32,3 +32,25 @@ probe.sh / local APIs  ->  xsm-sources (raw text or struct)
 `walls/one-home.txt` names each job and the one file allowed to do it (for example: formatting bytes for display = `app/src/format.js`; parsing probe lines = `crates/xsm-core/src/parse/`; opening the database = `crates/xsm-store/src/db.rs`). The `one_home` wall fails when another file does that job.
 
 Commands that wait on the database or on `ssh` (history, busy-at, events, jobs, forecast, save machines, container actions, restart, stop) run through `spawn_blocking` in `src-tauri/src/commands.rs`, so a slow one cannot starve the shared async runtime. The window's reads use their own read-only-in-practice SQLite connection (WAL), so a long history read never holds up the poller's writes.
+
+## Window styles: tokens first
+
+The window's CSS lives in `app/src/styles/`, imported in this order from `main.jsx`:
+
+| File | Holds |
+| --- | --- |
+| `tokens.css` | Every colour, font, size, radius and space as a custom property on `:root`, for dark and light. Nothing else. |
+| `base.css` | Reset, buttons, top and bottom bars, status dots. |
+| `card.css` | Machine cards, section groups, graph rows, meters. |
+| `graphs.css` | Graph panels, charts, axis, tooltips, "What was busy then?". |
+| `sections.css` | Runners, containers and services, programs, connections, sub headers. |
+| `compact.css` | Compact view and the machines strip. |
+| `menus.css` | Menus, dialogs, palette, Activity drawer. |
+
+Rules for the styles:
+
+- **No literal colour, font family or font size outside `tokens.css`.** The metric colours are `--c-cpu`, `--c-temp`, `--c-ram`, `--c-gpu`, `--c-gtemp`, `--c-vram`, `--c-down`, `--c-up`, `--c-ping`, `--c-disk`; the state colours are `--ok`, `--warn`, `--crit`, `--busy`, `--bad`. JSX passes a metric key (`metricVar("cpu")` gives `var(--c-cpu)`), never a hex value.
+- **Named text levels.** Machine name (`--font-machine`, `--size-machine`), group header (`--font-group`, `--size-group`, the small sub headers such as Drives), section header (`--font-section`, `--size-section`, CPU, Network, Disk...), big numbers, labels (graph titles) and small text each have their own family and size. Sizes that belong to no level use the numbered scales `--fs-N`, `--sp-N` (padding, margin, gap), `--r-N` (radius) and `--sz-N` (fixed sizes); each is N pixels times `--scale`.
+- **Text size is `--scale`**, set from `html[data-size]` (Large is 1.16). The old `zoom` is gone, so graph hover positions stay correct. One-pixel hairlines (borders) do not scale.
+- **Code that needs a real colour value** (shades for compared machines, canvas export) reads it through `app/src/colors.js`, which calls `getComputedStyle` once and again only when the theme, size or inline style of `<html>` changes. A card that sets its own `--c-*` values on its element is picked up with `readColors(element)`.
+- Each selector has one rule. Later "override" blocks, `!important` (kept only for `[hidden]` and the drag cursor) and the old `.inline` qualifier are gone; to change a look, edit the rule, do not add another.

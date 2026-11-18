@@ -12,8 +12,9 @@ export function savePng(title, chart) {
   const svg = chart.querySelector("svg"), w = chart.clientWidth, h = chart.clientHeight, pad = 40, top = 30, S = 2;
   const clone = svg.cloneNode(true);
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg"); clone.setAttribute("width", w); clone.setAttribute("height", h);
-  clone.querySelectorAll("path").forEach(p => {   // the page's stylesheet does not reach a stand-alone SVG, so the look is written in
-    const st = p.style; p.setAttribute("fill", st.fill || "none"); p.setAttribute("stroke", st.stroke || "none");
+  const live = svg.querySelectorAll("path");
+  clone.querySelectorAll("path").forEach((p, i) => {   // the page's stylesheet does not reach a stand-alone SVG, so the look is written in (colours resolved, since var(--c-cpu) means nothing there)
+    const st = p.style, cs = getComputedStyle(live[i]); p.setAttribute("fill", st.fill ? cs.fill : "none"); p.setAttribute("stroke", st.stroke ? cs.stroke : "none");
     p.setAttribute("stroke-width", "2"); p.setAttribute("stroke-linejoin", "round");
     if (p.classList.contains("cmp")) { p.setAttribute("stroke-dasharray", "5 4"); p.setAttribute("opacity", ".5"); }
     else if (st.opacity) p.setAttribute("opacity", st.opacity);

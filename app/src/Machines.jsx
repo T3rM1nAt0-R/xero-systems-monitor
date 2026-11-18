@@ -18,7 +18,7 @@ export default function Machines({ onClose }) {
           <span className="mmove"><button className="ghost" disabled={i === 0} onClick={() => move(i, -1)} aria-label={`Move ${m.name} up`}>▲</button><button className="ghost" disabled={i === cfg.machines.length - 1} onClick={() => move(i, 1)} aria-label={`Move ${m.name} down`}>▼</button></span>
           <input className="mname" value={m.name} onChange={e => rename(i, e.target.value)} aria-label="Machine name" data-tip="Rename (its history comes along)" />
           <span>{m.kind === "local" ? "this PC" : m.host + (m.runner ? " · runners" : "")}</span><button className="danger" onClick={() => rm(m)}>Remove</button></div>)}
-        {bad && <div className="quiet" role="alert" style={{ color: "var(--bad, #fb5a72)" }}>{bad}</div>}
+        {bad && <div className="quiet" role="alert" style={{ color: "var(--bad)" }}>{bad}</div>}
         <div className="madd">
           <input placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
           <input placeholder="SSH alias or user@ip" value={host} onChange={e => setHost(e.target.value)} />
