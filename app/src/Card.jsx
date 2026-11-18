@@ -3,10 +3,10 @@ import MachineBody from "./Detail.jsx";
 import { gb, uptime, isWarn, hm, hotMin, WATCH } from "./format.js";
 const GENERIC = /^(system product name|to be filled|default string|not specified|unknown|none|o\.?e\.?m)/i;
 const hwLine = d => d.hw && [GENERIC.test(d.hw.board || "") ? "" : d.hw.board, d.hw.os].filter(Boolean).join(" · ");
-function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, onOpen: open, onTry }) {
+function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, limits, gone, onOpen: open, onTry }) {
   const d = m.d || {};
   const off = !!m.err;
-  const warnings = WATCH.filter(k => !off && isWarn(k, d[k]));
+  const warnings = WATCH.filter(k => !off && isWarn(k, d[k], limits));
   const state = off ? `Offline` : hot.cpu ? `Working hard for ${hotMin(hot.cpu, now * 1000)} min` : warnings.length ? "Needs a look" : d.uptime != null ? `All calm · on for ${uptime(d.uptime)}` : "All calm";
   const bad = !off && (hot.cpu || warnings.length);
   if (off) return (
@@ -20,7 +20,7 @@ function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, onOpen: open,
     <article className={"card full" + (bad ? " warn" : "")} id={"m-" + m.name}>
       <div className="chead"><i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
         <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span></div>
-      <MachineBody m={m} h={h} h2={h2} rows={rows} fc={fc} range={range} now={now} gone={gone} />
+      <MachineBody limits={limits} m={m} h={h} h2={h2} rows={rows} fc={fc} range={range} now={now} gone={gone} />
     </article>
   );
 }
