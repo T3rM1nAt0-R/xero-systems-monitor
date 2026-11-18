@@ -4,6 +4,10 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: choose your graphs. The ⋯ menu on a machine card lists its graphs with show/hide on Overview, a size (S, M, L) and a pin (a pinned graph always shows and comes first). Remembered per machine.
+- Added: small markers on graphs for restarts, runner jobs starting and ending (failed ones red), container restarts and going offline or back online; hover one for what happened at a 12-hour time.
+- Added: "Unusual for this time" chip on a CPU, memory or GPU graph that is far above what that machine usually does at this hour over the last 7 days ("normally ~X%"); the threshold is in `app/src/unusual.json`.
+- Added: an outage strip under the tabs, 24 h or 7 d, showing online, offline and no-data stretches with hover times.
 - Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs and Terminal are ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
 - Added: a pin on every section header pins that section (whole) to Overview; click again to unpin.
 - Changed: the machine card header is one status line (name, status, uptime, restart needed); board, system and address moved to a hover tooltip on an (i) icon.

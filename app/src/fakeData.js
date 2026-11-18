@@ -5,6 +5,7 @@ const SLOT = 7200, MAX_BACK = 60 * DAY;   // one chance of a job per runner ever
 const HW = { pc: { board: "Example Board", os: "Windows 11", cpu: "Example CPU 8-core", gpu: "Example GPU 12 GB" }, server: { board: "", os: "Linux", cpu: "Example CPU 16-core" } };
 // [base, swing, period in seconds] for each series; the numbers only have to look alive.
 const SHAPE = { cpu: [18, 40, 900], ram: [48, 12, 5400], temp: [46, 18, 900], gpu: [8, 45, 1300], gtemp: [40, 22, 1300], vram: [25, 20, 3000], down: [2e5, 3e6, 700], up: [5e4, 6e5, 500], ping: [12, 8, 300] };
+const BURST_SECS = 1800, BURST_CPU = 82;
 const PERCENT = ["cpu", "ram", "gpu", "vram", "disk"], RUNNERS = ["runner-1", "runner-2"], WORKFLOWS = ["Fast check", "Unit tests", "Build"];
 
 export const hash = n => { let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b); x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35); x ^= x >>> 16; return (x >>> 0) / 4294967296; };
@@ -17,13 +18,18 @@ export function metric(kind, seed, key, t, now) {
   if (key === "disk") return +(62 - ((now - t) / DAY) * 0.4).toFixed(2);
   const [base, swing, period] = SHAPE[key], k = KEYS.indexOf(key);
   const v = base + swing * (0.5 + 0.5 * Math.sin((t / period) * TAU + seed + k)) + (hash(Math.floor(t / 3) + seed + k) - 0.5) * swing * 0.2;
+  if (key === "cpu" && kind === "pc" && now - t < BURST_SECS) return BURST_CPU;   // This PC has been working hard for the last half hour, so "Unusual for this time" shows in the demo
   return Math.max(0, PERCENT.includes(key) ? Math.min(100, v) : v);
 }
+// Made-up happenings per machine, as [seconds before now, length, what]: an outage with events, a stretch with no readings, a container that keeps restarting.
+const HAPPENINGS = { pc: [[3 * DAY, 2400, "offline"], [5 * DAY, 7200, "nodata"]], server: [[20 * 3600, 1800, "offline"], [4 * 3600, 0, "container"]] };
+const happenings = (m, now) => HAPPENINGS[kindOf(m)].map(([ago, len, what]) => ({ t: now - ago, len, what }));
+const inGap = (hs, t) => hs.some(h => (h.what === "offline" || h.what === "nodata") && t >= h.t && t <= h.t + h.len);
 export function history(m, rng, now) {
-  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1) };
+  const kind = kindOf(m), seed = seedOf(m.name), step = Math.max(3, Math.floor(rng / 400)), out = { loss: +(hash(seed) * 0.8).toFixed(1) }, gaps = happenings(m, now);
   for (const key of KEYS) {
     out[key] = [];
-    for (let t = now - rng; t <= now; t += step) { const v = metric(kind, seed, key, t, now); if (v != null) out[key].push([Math.round(t), +v.toFixed(2)]); }
+    for (let t = now - rng; t <= now; t += step) { if (inGap(gaps, t)) continue; const v = metric(kind, seed, key, t, now); if (v != null) out[key].push([Math.round(t), +v.toFixed(2)]); }
   }
   return out;
 }
@@ -48,6 +54,10 @@ export const demoEvents = (machines, since, now, n) => {
   for (const m of machines.filter(x => x.runner)) for (const j of allJobs(m.name, since, now)) {
     rows.push([j.t0, m.name, `${j.runner} started: PR #${j.n} · ${j.flow}`]);
     if (j.t1 <= now) rows.push([j.t1, m.name, `${j.runner} finished (${Math.round((j.t1 - j.t0) / 60)} min, ${j.res}): PR #${j.n}`]);
+  }
+  for (const m of machines) for (const h of happenings(m, now)) {
+    if (h.what === "offline") rows.push([h.t, m.name, "went offline"], [h.t + h.len, m.name, "back online"]);
+    if (h.what === "container") rows.push([h.t, m.name, "container web keeps restarting"]);
   }
   return rows.filter(r => r[0] >= since).sort((a, b) => b[0] - a[0]).slice(0, n);
 };

@@ -56,6 +56,14 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Tabs on every machine card: Overview, Hardware, Processes, Disks, Network, Services and Runners (only the ones that machine has). Overview keeps the main graphs, a short runners block and any failing containers. Use the arrow keys to move between tabs; each machine remembers its tab. Hover the <b>i</b> in the header for the board, system and address.</td>
 <td valign="top">The Runners tab: runner chips, running jobs, timeline, last 7 days, slowest jobs, the busy heatmap and job history. Click the pin on any section header to pin that section to Overview.</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/overview-graphs.png" alt="The graph list in a machine's menu, the outage strip and the Unusual for this time chip"></td>
+<td width="50%"></td>
+</tr>
+<tr>
+<td valign="top">Choose your graphs: the ⋯ menu on a card lists its graphs with show/hide, size S/M/L and pin. Graphs get small markers for restarts, jobs (failed ones in red), container restarts and going offline; hover one for the time. A graph that is far above its usual level for this hour of the day shows "Unusual for this time". A thin strip under the tabs shows the last 24 hours or 7 days online, offline or without data.</td>
+<td></td>
+</tr>
 </table>
 
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together

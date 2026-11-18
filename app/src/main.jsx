@@ -11,6 +11,7 @@ import "./styles/menus.css";
 import "./styles/motion.css";
 import "./styles/customize.css";
 import "./styles/view.css";
+import "./styles/overview.css";
 import { installTips } from "./tooltip.js";
 installTips();
 createRoot(document.getElementById("root")).render(<App />);
