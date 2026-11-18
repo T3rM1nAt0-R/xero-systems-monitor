@@ -6,17 +6,19 @@ import { lookToCss, colorMap, fullColors } from "../src/theme/css.js";
 import { baseOf } from "../src/theme/model.js";
 import { deriveColors, contrast, MIN_FAINT } from "../src/theme/colors.js";
 import { pruneEdits } from "../src/theme/edits.js";
+import { lookFor } from "../src/theme/modes.js";
 import { PRESETS, resolveTheme, migratePrefs, LARGE_SCALE } from "../src/theme/presets.js";
 import { familyEdits } from "../src/customize/family.js";
 import { buildCommands } from "../src/commands.js";
 
 const text = f => readFileSync(new URL(f, import.meta.url), "utf8");
 const preset = id => PRESETS.find(p => p.id === id);
+const lk = (id, side = "dark") => lookFor(preset(id), {}, side);
 const applyPairs = (look, pairs) => pairs.reduce((l, [p, v]) => setPath(l, p.split("."), v), look);
 const colourVars = vars => Object.fromEntries(Object.entries(vars).filter(([k]) => /^--(bg|fg|acc|s1|s2|line|line2|dim|mid|dim2|ok|warn|crit|bad|c-|on-acc|tip-bg|blob-a|glass-tint)/.test(k)));
 
 test("switching the style family never changes a colour or the glass", () => {
-  for (const base of [{}, preset("nord").look, preset("solarized-light").look, preset("terminal").look]) {
+  for (const base of [{}, lk("nord"), lk("solarized", "light"), lk("terminal")]) {
     const before = lookToCss(base);
     for (const [id] of FAMILIES) {
       const after = lookToCss(applyPairs(base, familyEdits(id)));
@@ -31,8 +33,8 @@ test("switching the style family never changes a colour or the glass", () => {
 
 test("the Terminal and Blueprint colours live in their themes, not in the style CSS", () => {
   const fx = text("../src/styles/stylefx.css");
-  assert.equal(preset("terminal").look.colors.bg, "#000000"); assert.equal(preset("terminal").look.colors.fg, "#39ff6a");
-  assert.equal(preset("blueprint").look.colors.bg, "#0b2e63"); assert.equal(preset("blueprint").look.shape.family, "blueprint");
+  assert.equal(lk("terminal").colors.bg, "#000000"); assert.equal(lk("terminal").colors.fg, "#39ff6a");
+  assert.equal(lk("blueprint").colors.bg, "#0b2e63"); assert.equal(preset("blueprint").look.shape.family, "blueprint");
   for (const rule of fx.split("\n").filter(l => /data-family="(terminal|blueprint)"/.test(l) && l.includes("--glass-line"))) assert.match(rule, /:not\(\[data-glass="off"\]\)/, "Glass Off removes the glass edge line");
   assert.ok(!/#39ff6a|#0b2e63/i.test(fx), "no family colours in the style CSS");
   assert.ok(!/#0000005c|#ffffff14|#ffffff0f/i.test(fx), "Soft, Blueprint and the picture dim use the look's own colours");
@@ -65,20 +67,20 @@ test("an edit is kept when it differs from the theme's value, not the global def
 test("light or dark follows the background that is really shown, never a stored choice", () => {
   assert.equal(baseOf({}), "dark"); assert.equal(baseOf({}, "light"), "light");
   assert.equal(baseOf({ colors: { bg: "#ffffff" } }, "dark"), "light"); assert.equal(baseOf({ colors: { bg: "#000000" } }, "light"), "dark");
-  assert.equal(lookToCss(preset("terminal").look).attrs["data-theme"], "dark");
-  assert.equal(lookToCss(preset("solarized-light").look).attrs["data-theme"], "light");
-  assert.equal(lookToCss(preset("light").look, { base: "light" }).attrs["data-theme"], "light");
+  assert.equal(lookToCss(lk("terminal")).attrs["data-theme"], "dark");
+  assert.equal(lookToCss(lk("solarized", "light")).attrs["data-theme"], "light");
+  assert.equal(lookToCss(lk("dark", "light"), { base: "light" }).attrs["data-theme"], "light");
   assert.equal(lookToCss({ colors: { bg: "#101010" } }, { base: "light" }).attrs["data-theme"], "dark");
-  const lightOnDark = resolveTheme([], "dark", { colors: { bg: "#fafafa" } }).look;
+  const lightOnDark = resolveTheme([], "dark", { colors: { dark: { bg: "#fafafa" } } }).look;
   assert.equal(lookToCss(lightOnDark, { base: "dark" }).attrs["data-theme"], "light");
   assert.equal(fullColors(lightOnDark, "dark").fg, "#14171c", "the plain light text colour goes with a light background");
   assert.equal(colorMap({ cb: true, colors: { bg: "#fafafa" } }, "dark").good, "#0072b2");
 });
 
 test("the faintest text keeps a readable floor on every theme", () => {
-  for (const p of PRESETS) {
-    const c = fullColors(p.look, p.base);
-    for (const on of [c.bg, c.card]) assert.ok(contrast(c.dim2, on) >= MIN_FAINT - 0.01, p.id + " faint text on " + on);
+  for (const p of PRESETS) for (const s of ["dark", "light"]) {
+    const c = fullColors(lookFor(p, {}, s), s);
+    for (const on of [c.bg, c.card]) assert.ok(contrast(c.dim2, on) >= MIN_FAINT - 0.01, p.id + " " + s + " faint text on " + on);
   }
   const d = deriveColors({ bg: "#000000", fg: "#39ff6a" });
   assert.ok(contrast(d.dim2, "#000000") >= MIN_FAINT);
@@ -87,11 +89,11 @@ test("the faintest text keeps a readable floor on every theme", () => {
 test("older theme and text size settings become part of the one look, once", () => {
   const none = { themes: [], themeId: "", edits: {} };
   const light = migratePrefs({ ...none, theme: "light" });
-  assert.equal(light.themeId, "light"); assert.equal(light.changed, true);
-  assert.deepEqual(migratePrefs({ ...none, theme: "system" }).edits, { surface: { os: true } });
+  assert.equal(light.themeId, ""); assert.equal(light.mode, "light"); assert.equal(light.changed, true);
+  assert.deepEqual(migratePrefs({ ...none, theme: "system" }).edits, { surface: { os: true } }); assert.equal(migratePrefs({ ...none, theme: "system" }).mode, "system");
   assert.deepEqual(migratePrefs({ ...none, size: "large" }).edits, { scale: LARGE_SCALE });
   assert.deepEqual(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.2 }, size: "large" }).edits, { scale: 1.39 });
   assert.equal(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.5 }, size: "large" }).edits.scale, 1.5);
-  const keep = migratePrefs({ themes: [], themeId: "dracula", edits: { graph: { style: "bars" } }, theme: "dark", size: "normal" });
+  const keep = migratePrefs({ themes: [], themeId: "dracula", edits: { graph: { style: "bars" } }, theme: "dark", size: "normal", mode: "dark" });
   assert.equal(keep.themeId, "dracula"); assert.deepEqual(keep.edits, { graph: { style: "bars" } }); assert.equal(keep.changed, false);
 });

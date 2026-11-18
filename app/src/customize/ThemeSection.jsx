@@ -1,22 +1,29 @@
 import { useContext, useRef, useState } from "react";
-import { Find } from "./controls.jsx";
+import { Find, Seg } from "./controls.jsx";
 import { matches } from "./find.js";
 import { toast } from "../toast.js";
 import { PRESETS, BUILT_IN_COUNT, themeTitle } from "../theme/presets.js";
+import { MODES, lookFor } from "../theme/modes.js";
+import { fullColors } from "../theme/css.js";
 import Thumb from "./Thumb.jsx";
-const Tile = ({ t, on, note, onPick }) => (
-  <button role="option" aria-selected={on} className={"ctile" + (on ? " on" : "")} onClick={() => onPick(t.id)}><Thumb theme={t} /><span className="ctname">{t.name}</span>{note && <em>{note}</em>}</button>);
+// A theme tile shows the version for the current mode, and a tiny half-and-half swatch of both versions.
+const half = (t, s) => fullColors(lookFor(t, {}, s), s).bg;
+const Tile = ({ t, side, on, note, onPick }) => (
+  <button role="option" aria-selected={on} className={"ctile" + (on ? " on" : "")} onClick={() => onPick(t.id)}><Thumb theme={t} side={side} />
+    <span className="ctname">{t.name}<i className="cdual" aria-label="Has a dark and a light version" style={{ background: `linear-gradient(135deg, ${half(t, "dark")} 50%, ${half(t, "light")} 50%)` }} /></span>{note && <em>{note}</em>}</button>);
 // Theme: the gallery (built in, popular palettes, yours), Save / Save as new / Revert for the look in use, and sharing (copy code, export file, import).
 export default function ThemeSection({ c }) {
   const [renaming, setRenaming] = useState(null), [naming, setNaming] = useState(false), [name, setName] = useState(""), [text, setText] = useState(""), [msg, setMsg] = useState(null), [copied, setCopied] = useState(false), file = useRef(null);
   const note = t => (c.id === t.id && c.dirty ? "changed" : "");
-  const q = useContext(Find), tiles = list => { const some = list.filter(t => !q || matches(q, t.name, "theme palette")); return some.length ? <div className={"cgrid" + (q ? " hit" : "")} role="listbox" aria-label="Themes">{some.map(t => <Tile key={t.id} t={t} on={c.id === t.id} note={note(t)} onPick={c.pick} />)}</div> : null; };
+  const q = useContext(Find), tiles = list => { const some = list.filter(t => !q || matches(q, t.name, "theme palette")); return some.length ? <div className={"cgrid" + (q ? " hit" : "")} role="listbox" aria-label="Themes">{some.map(t => <Tile key={t.id} t={t} side={c.side} on={c.id === t.id} note={note(t)} onPick={c.pick} />)}</div> : null; };
   const saveNew = () => { c.saveAs(name || "My theme"); setName(""); setNaming(false); };
   const doImport = pasted => { const r = c.importText(typeof pasted === "string" ? pasted : text); setMsg(r.ok ? { ok: true, t: `Added "${r.theme.name}".` } : { ok: false, t: r.error }); if (r.ok) setText(""); };
   const copy = () => navigator.clipboard?.writeText(c.exportText()).then(() => { toast("Copied"); setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {});
   const download = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([c.exportText()], { type: "application/json" })); a.download = (c.theme?.name || "theme").toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".xsm-theme.json"; a.click(); URL.revokeObjectURL(a.href); };
   return (
     <>
+      <div className="crow" data-setting="mode"><span className="clabel">Appearance</span><div className="cctl"><Seg label="Appearance" value={c.mode} options={MODES} onChange={c.setMode} /></div>
+        <p className="chint">Every theme has a dark and a light version. Windows follows your system setting.</p></div>
       <div className="cnow" role="status"><b>{themeTitle(c.theme, c.dirty)}</b>
         <span className="cbtns"><button disabled={!c.dirty || !c.canSave} onClick={c.save} data-tip={c.canSave ? "Keep your changes in this theme" : "Built-in themes stay as they are: use Save as new"}>Save</button>
           <button onClick={() => setNaming(n => !n)} aria-expanded={naming}>Save as new</button><button disabled={!c.dirty} onClick={c.resetAll}>Revert</button></span></div>

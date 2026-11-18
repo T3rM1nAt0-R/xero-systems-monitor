@@ -10,6 +10,7 @@ export function migrateLook(raw) {
   if (glass !== undefined) out.surface = { glass, ...rest.surface };
   return out;
 }
-// The built-in theme an old theme id now means (Solarized-like became a real Solarized Dark).
-const RENAMED = { solarized: "solarized-dark" };
+// The built-in theme an old theme id now means: Solarized-like became a real Solarized, and a theme that was the light (or dark) twin of another is now one theme with both versions
+// (the mode, not the theme, says which is shown: see migratePrefs).
+const RENAMED = { light: "dark", "solarized-dark": "solarized", "solarized-light": "solarized", "catppuccin-mocha": "catppuccin", "catppuccin-latte": "catppuccin" };
 export const migrateThemeId = id => RENAMED[id] || id;

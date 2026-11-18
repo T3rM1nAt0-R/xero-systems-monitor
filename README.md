@@ -31,6 +31,10 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme with frosted glass cards"></td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/theme-dark.png" alt="The Nord theme in its dark version, with the Appearance switch (Dark, Light, Windows) at the top of Customize"></td>
+<td width="50%"><img src="docs/screenshots/theme-light.png" alt="The same Nord theme in its light version"></td>
+</tr>
+<tr>
 <td colspan="2" align="center"><img src="docs/screenshots/mini.png" alt="The mini view: one frosted surface, a row per machine with number tiles" width="560"></td>
 </tr>
 <tr>
@@ -50,7 +54,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/customized.png" alt="The Terminal style with the Shape section of the Customize panel"></td>
 </tr>
 <tr>
-<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>) is the one place for the look, including dark or light, Match Windows and the text size (there is no separate Theme or Large text switch): a docked side panel (the window stays live beside it) with one scroll: a theme gallery (Dark, Light, Midnight, Contrast, Neon, Terminal and popular palettes such as Dracula, Nord, Catppuccin, Gruvbox, Tokyo Night and Solarized), three base colours that every other colour follows, a font, size and weight for each kind of text (12 bundled fonts), graph style, density (Tight, Comfortable, Roomy), five style families (Rounded, Sharp, Terminal, Soft, Blueprint; they change shape only, the green-on-black and blue-paper colours are the Terminal and Blueprint themes) with corner radius, borders and shadow, glass, a picture background, grain, and motion (Full, Subtle, Off). Search, a pick mode (click anything in the window to jump to its setting), undo and redo (Ctrl+Z / Ctrl+Y), and hold the eye to compare with how it looked when you opened the panel. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point; cards glide, tabs slide, toasts confirm saves and copies, and risky actions (stop or restart a container, end a task, stop everything) need a hold.</td>
+<td valign="top">Customize (More &gt; Look &gt; Customize…, or <b>Ctrl+K</b>) is the one place for the look, including dark or light (an Appearance switch of Dark, Light or Windows, which follows the system live), the Windows accent colour and the text size (there is no separate Theme or Large text switch): a docked side panel (the window stays live beside it) with one scroll: a theme gallery where every theme has a hand-made dark and a light version, and you can edit the colours of each separately (Dark, Midnight, Contrast, Neon, Terminal, Blueprint and popular palettes such as Dracula, Nord, Catppuccin, Gruvbox, Tokyo Night and Solarized), three base colours that every other colour follows, a font, size and weight for each kind of text (12 bundled fonts), graph style, density (Tight, Comfortable, Roomy), five style families (Rounded, Sharp, Terminal, Soft, Blueprint; they change shape only, the green-on-black and blue-paper colours are the Terminal and Blueprint themes) with corner radius, borders and shadow, glass, a picture background, grain, and motion (Full, Subtle, Off). Search, a pick mode (click anything in the window to jump to its setting), undo and redo (Ctrl+Z / Ctrl+Y), and hold the eye to compare with how it looked when you opened the panel. Graphs roll their numbers, slide new points in and glow on the newest point and the highest point; cards glide, tabs slide, toasts confirm saves and copies, and risky actions (stop or restart a container, end a task, stop everything) need a hold.</td>
 <td valign="top">The same window with the Midnight theme, other fonts, filled smooth graphs and a purple tint for one machine.</td>
 </tr>
 <tr>

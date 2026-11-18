@@ -128,6 +128,7 @@
   --fg:#14171c; --mid:#454d5b; --dim:#555d6b; --dim2:#7e8590;
   --acc:#066486; --warn:#8a5200; --crit:#b3243e; --ok:#0e7434; --busy:#8a5200; --bad:#b3243e; --bad-text:#b3243e;
   color-scheme: light;
+  --c-cpu:#1a7f3c; --c-temp:#c2570c; --c-ram:#2563c9; --c-gpu:#7c4dd6; --c-gtemp:#c42b45; --c-vram:#0b7fa8; --c-down:#2563c9; --c-up:#b8337f; --c-ping:#0b7fa8; --c-disk:#8a6400;
   --on-acc:#fff;
   --shadow-menu: 0 8px 28px #0003; --shadow-drawer: 0 8px 28px #0003; --shadow-dlg: 0 8px 28px #0003;
   --glass-bg: color-mix(in srgb, var(--glass-tint, var(--s1)) 66%, transparent); --glass-bg-solid: color-mix(in srgb, var(--glass-tint, var(--s1)) 90%, transparent);
