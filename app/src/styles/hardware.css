@@ -8,6 +8,6 @@
 .batnum{display:flex;align-items:baseline;gap:var(--sp-10)}
 .batnum b{font-size:var(--fs-20);font-weight:600;color:var(--fg)}
 .batnum span{font-size:var(--fs-12);color:var(--mid)}
-.battery .meter{height:var(--sz-8)}
+.battery .meter{flex:none;height:var(--sz-8)}
 .prow.gpurow{grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) 70px}
 .fsub .quiet{margin:0;padding:var(--sp-4);font-size:var(--fs-12);color:var(--dim)}

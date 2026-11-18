@@ -135,18 +135,10 @@ fn snapshot_has_the_window_shape() {
             cpu_power_w: Some(30.0),
             gpu_power_w: None,
             core_load_pct: vec![5.0, 15.0],
-            core_temp_c: vec![50.0, 52.0],
+            core_temp_c: Vec::new(),
         }),
-        battery: Some(BatteryReading {
-            charge_pct: 80.0,
-            plugged_in: false,
-            minutes_left: Some(95),
-        }),
-        gpu_apps: Some(vec![GpuApp {
-            name: "game".into(),
-            vram_bytes: 2 * 1024 * 1024,
-            processes: 1,
-        }]),
+        battery: None,
+        gpu_apps: None,
         updates: UpdateInfo {
             restart_needed: Some(true),
             restart_packages: Some(2),
@@ -160,7 +152,7 @@ fn snapshot_has_the_window_shape() {
         "d": {
             "cpu": 12.5, "temp": 55.0, "ram": 25.0, "disk": 40.0, "gpu": 3.0, "gtemp": 40.0, "vram": 25.0,
             "down": 10.0, "up": 5.0, "ping": 11.0, "speed": 1000, "uptime": 99.0, "ip": "192.0.2.5",
-            "mhz": 3500.0, "cpu_w": 30.0, "fans": [900.0], "cores": [5.0, 15.0], "ctemps": [50.0, 52.0], "bat": [80.0, false, 95], "gpuapps": [["game", 2.0, 1]],
+            "mhz": 3500.0, "cpu_w": 30.0, "fans": [900.0], "cores": [5.0, 15.0],
             "restart": true, "restart_pkgs": 2, "updates": 7,
             "ram_gb": [2.0, 8.0], "vram_gb": [1.0, 4.0], "storage": [["/", 40.0, 100.0]],
             "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]],
@@ -199,5 +191,47 @@ fn empty_machine_snapshot_and_docker_error() {
     assert_eq!(
         serde_json::to_value(t.snapshot()).unwrap()["d"],
         json!({"docker": []})
+    );
+}
+
+#[test]
+fn battery_core_temperatures_and_gpu_programs_have_the_window_shape() {
+    let mut t = tracker(false);
+    let r = Reading {
+        sensors: Some(SensorDetail {
+            core_temp_c: vec![50.0, 52.0],
+            ..SensorDetail::default()
+        }),
+        battery: Some(BatteryReading {
+            charge_pct: 80.0,
+            plugged_in: false,
+            minutes_left: Some(95),
+        }),
+        gpu_apps: Some(vec![GpuApp {
+            name: "game".into(),
+            vram_bytes: 2 * 1024 * 1024,
+            processes: 1,
+        }]),
+        ..Reading::default()
+    };
+    t.observe(r, 1);
+    let d = serde_json::to_value(t.snapshot()).unwrap()["d"].clone();
+    assert_eq!(
+        d,
+        json!({"ctemps": [50.0, 52.0], "bat": [80.0, false, 95], "gpuapps": [["game", 2.0, 1]]})
+    );
+    let mut t = tracker(false);
+    t.observe(
+        Reading {
+            gpu_apps: Some(vec![]),
+            ..Reading::default()
+        },
+        1,
+    );
+    let d = serde_json::to_value(t.snapshot()).unwrap()["d"].clone();
+    assert_eq!(
+        d,
+        json!({"gpuapps": []}),
+        "asked and none is not the same as not asked"
     );
 }

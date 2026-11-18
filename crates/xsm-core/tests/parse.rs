@@ -324,7 +324,11 @@ fn extras_that_cannot_be_read_are_skipped_and_gpu_programs_are_kept() {
     let kept = parse_frame("cpu 1 1 1 1 1 0 0 0\n", Some(&before));
     assert_eq!(kept.gpu_apps.as_ref().map(Vec::len), Some(2));
     let same = parse_frame(&fixture("hardware_extras.txt"), Some(&before));
-    assert_eq!(same.cpu.unwrap().core_usage_pct, [0.0, 0.0], "no ticks passed");
+    assert_eq!(
+        same.cpu.unwrap().core_usage_pct,
+        [0.0, 0.0],
+        "no ticks passed"
+    );
     let none = parse_frame("GPUAPP -\n", Some(&before));
     assert!(none.gpu_apps.unwrap().is_empty());
 }
