@@ -117,6 +117,7 @@ export function demoMachine(m, now) {
   for (const j of allJobs(m.name, now - SLOT, now).filter(x => x.t1 > now)) {
     d.runners[j.runner] = true; d.jobs[j.runner] = [j.flow, "", `refs/pull/${j.n}/merge`, "example/example-repo"]; d.jobres[j.runner] = [40, 3000, null, null]; out.started[j.runner] = j.t0;
   }
+  d.queued = [["PR #412 · Build (example/example-repo)", now - 340], ["PR #413 · Unit tests (example/example-repo)", now - 95]];   // jobs waiting for one of these runners
   d.docker = [["web", "running", "Up 3 days", "example/web:1", "80/tcp", ""], ["db", "running", "Up 3 days", "example/db:1", "5432/tcp", ""]]; d.failed = [];
   return out;
 }

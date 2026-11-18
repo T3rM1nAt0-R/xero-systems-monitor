@@ -98,6 +98,8 @@ pub fn run() {
             commands::get_forecast,
             commands::get_machines,
             commands::save_machines,
+            commands::set_mini_size,
+            commands::get_work_size,
             commands::container_action,
             commands::system_query,
             commands::system_action,

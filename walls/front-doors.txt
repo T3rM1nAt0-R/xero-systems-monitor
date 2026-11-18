@@ -1,5 +1,8 @@
 # Public items per crate. A new public item adds a line here, so a growing API shows in review.
 xsm_collector::Backend trait
+xsm_collector::WorkSize struct
+xsm_collector::WorkSize.bytes field
+xsm_collector::WorkSize.runner field
 xsm_collector::State struct
 xsm_collector::State.machines field
 xsm_collector::busy::Busy use
@@ -487,3 +490,8 @@ xsm_core::system::Priority::Warnings variant
 xsm_core::system::linux_logs fn
 xsm_core::system::windows_logs fn
 xsm_sources::system::run_logs fn
+xsm_sources::workdir mod
+xsm_sources::workdir::Size type
+xsm_sources::workdir::local_sizes fn
+xsm_sources::workdir::parse_sizes fn
+xsm_sources::workdir::remote_sizes fn

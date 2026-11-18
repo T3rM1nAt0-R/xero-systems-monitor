@@ -29,6 +29,18 @@ pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
 use serde::Serialize;
 
+/// What the demo backend (which has no real machine) answers to the system calls.
+const NO_SYSTEM: &str = "Demo: there is no real machine to ask.";
+
+/// The size of one runner's `_work` folder (`get_work_size`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct WorkSize {
+    /// The runner's name (its folder name).
+    pub runner: String,
+    /// Bytes in its work folder; `None` when it could not be measured in time.
+    pub bytes: Option<u64>,
+}
+
 /// The answer of `get_state`: one snapshot per machine, in list order.
 #[derive(Debug, Clone, Serialize)]
 pub struct State {
@@ -131,11 +143,19 @@ pub trait Backend: Send + Sync {
     fn container_action(&self, machine: &str, action: Action, name: &str)
         -> Result<String, String>;
 
+    /// The size of each runner's work folder on one machine (slow, so only on demand).
+    ///
+    /// # Errors
+    /// Plain text for the window: unknown machine, ssh failing, or a timeout.
+    fn get_work_size(&self, machine: &str) -> Result<Vec<WorkSize>, String>;
+
     /// Read the services of a machine, or its waiting updates (Linux); returns text for the window to read.
     ///
     /// # Errors
     /// Plain text for the window: no such machine, ssh or PowerShell failing, or a timeout.
-    fn system_query(&self, machine: &str, query: Query) -> Result<String, String>;
+    fn system_query(&self, _machine: &str, _query: Query) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
 
     /// Read the recent system log lines of a machine at this priority (Linux: optionally one unit); returns text for the window to read.
     ///
@@ -143,17 +163,21 @@ pub trait Backend: Send + Sync {
     /// Plain text for the window: no such machine, a bad unit name, ssh or PowerShell failing, or a timeout.
     fn system_logs(
         &self,
-        machine: &str,
-        priority: Priority,
-        unit: Option<String>,
-    ) -> Result<String, String>;
+        _machine: &str,
+        _priority: Priority,
+        _unit: Option<String>,
+    ) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
 
     /// Restart, stop or start a service, install updates or restart a Linux machine. Linux uses `sudo -n` only: when it needs
     /// a password the error starts with `needs-password:` and then the command for the person to run themselves.
     ///
     /// # Errors
     /// Plain text for the window, or the password reply above.
-    fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String>;
+    fn system_action(&self, _machine: &str, _act: Act, _name: &str) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
 
     /// Restart polling.
     ///
