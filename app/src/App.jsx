@@ -5,6 +5,7 @@ import useFlip from "./useFlip.js";
 import Toasts from "./Toasts.jsx";
 import Card from "./Card.jsx";
 import Compact from "./Compact.jsx";
+import MiniView from "./MiniView.jsx";
 import ActivityDrawer from "./ActivityDrawer.jsx";
 import Machines from "./Machines.jsx";
 import Strip from "./Strip.jsx";
@@ -26,7 +27,8 @@ import { DEFAULT_QUIET, mute, unmute } from "./quiet.js";
 import Limits from "./Limits.jsx";
 import Customize from "./customize/Customize.jsx";
 import { DEFAULT_PREFS } from "./alerts.js";
-import useMiniSize, { quietFor, MINI_SETTLE_MS } from "./useMiniSize.js";
+import useMiniSize from "./useMiniSize.js";
+import useMiniFit from "./useMiniFit.js";
 import { unseenFailures } from "./events.js";
 import { RANGES, snapRange, SHORT, KEYS, NONE, NO_HOT } from "./consts.js";
 import { trackMachines } from "./calm.js";
@@ -80,11 +82,7 @@ export default function App() {
   const toggleOpen = useCallback(n => setExpanded(s => { const x = new Set(s); x.has(n) ? x.delete(n) : x.add(n); return x; }), []);
   const effRef = useRef(false); effRef.current = effCompact;
   const open = useCallback(n => { if (effRef.current) toggleOpen(n); else setTimeout(() => document.getElementById("m-" + n)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); }, [toggleOpen]);
-  useEffect(() => {   // in mini mode the window is exactly as tall as its content
-    if (!mini) return;
-    const fit = () => { const el = appRef.current; if (!el || miniSize) return; let h = 0; for (const c of el.children) if (!c.classList.contains("dock") && !c.classList.contains("modal")) h += c.offsetHeight; quietFor(MINI_SETTLE_MS); api.setMiniHeight(h + 2); };
-    fit(); const id = setInterval(fit, 1500); const tm = setTimeout(fit, 250); return () => { clearInterval(id); clearTimeout(tm); };
-  }, [mini, state, miniSize]);
+  useMiniFit(mini, appRef, miniSize);   // in mini mode the window is as tall as its content (see miniFit.js)
 
   useEffect(() => {   // "Auto" strip: measure everything but the strip; when it all fits the window, the strip is not needed
     const fit = () => { const el = appRef.current; if (!el) return; let h = 0; for (const c of el.children) if (!c.classList.contains("stripwrap") && !c.classList.contains("modal") && !c.classList.contains("dock")) h += c.offsetHeight; setFits(fitsWindow(h + (el.querySelector(".dock")?.offsetHeight || 0), window.innerHeight)); };
@@ -117,8 +115,8 @@ export default function App() {
         <span className="live"><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" />
         {!effCompact && <span className="live hide-s clock"><Clock /></span>}
-        {!mini && <ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
-        {mini && <button className="on" onClick={toggleMini} data-tip="Back to the normal window (M)">Expand</button>}{mini && miniSize && <button onClick={forgetMini} data-tip="Forget the size you dragged; fit the content again">Fit</button>}
+        {<ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
+        {mini && miniSize && <button onClick={forgetMini} data-tip="Forget the size you dragged; fit the content again">Fit</button>}
       </div>
 
       {err && state && <div className="stalebar" role="status"><b>Collector not answering since {hm(stamp / 1000)}.</b> Showing the last numbers it sent; they are not live. Retrying every few seconds.<button onClick={retry}>Try now</button></div>}
@@ -128,7 +126,8 @@ export default function App() {
 
       {state && !effCompact && <div className={"stripwrap" + (stripOn ? " open" : "") + (cascade ? " cascade" : "")} aria-hidden={!stripOn}><div><Strip ms={stripOrder(vms, localName)} hist={hist} lastOk={lastOk} onHide={hideMachine} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} /></div></div>}
       {state && !!ms.length && !vms.length && <div className="empty">All machines are hidden.<small><button onClick={() => setHidDlg(true)}>Hidden machines…</button></small></div>}
-      {state && effCompact && <Compact limitsOf={limitsOf} ms={vms} now={now} lastOk={lastOk} hot={hot} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
+      {state && mini && <MiniView ms={vms} hist={hist} limitsOf={limitsOf} now={now} lastOk={lastOk} hot={hot} />}
+      {state && effCompact && !mini && <Compact limitsOf={limitsOf} ms={vms} now={now} lastOk={lastOk} hot={hot} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
       {state && !effCompact && <main className={"grid" + (cascade ? " cascade" : "")} ref={gridRef} onPointerDown={dragProps}>{vms.map(card)}</main>}
 
       <div className="dock" hidden={mini} onClick={e => e.stopPropagation()}>

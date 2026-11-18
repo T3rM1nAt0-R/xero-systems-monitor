@@ -12,11 +12,10 @@ body{background:radial-gradient(60vw 50vh at 8% -5%,var(--blob-a),transparent 70
 .modal{-webkit-backdrop-filter:none;backdrop-filter:none}
 /* flat inside the card: no boxes in boxes */
 .card .panel,.detail .panel{background:none;border:0;border-radius:0;padding:0;box-shadow:none}
-.card .job,.card .track,.card .offbox .last,.card .logtext,.card .termbody,.card .mrow,.card .crow,.card .ptile{background:none;box-shadow:none}
+.card .job,.card .offbox .last,.card .logtext,.card .termbody,.card .mrow,.card .crow,.card .ptile{background:none;box-shadow:none}
 .card .svcnote,.card .sysnote{background:none;border:0;border-left:2px solid color-mix(in srgb,var(--busy) 70%,transparent);border-radius:0;padding:var(--sp-4) var(--sp-10)}
 .card .chip,.card .fchip{background:none}
 .job{border:0;border-bottom:1px solid var(--hair);border-radius:0;padding:var(--sp-6) 0}
-.track{border:0;border-bottom:1px solid var(--hair);border-radius:0}
 .ptile{border:0;border-radius:0}
 .logtext,.termbody{border-color:var(--hair)}
 /* groups: a plain heading and a hairline */

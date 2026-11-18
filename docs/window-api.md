@@ -37,8 +37,8 @@ Rules for every command:
 | `set_pinned` | `on: boolean` (always on top) | the pin now in effect (boolean) |
 | `set_theme` | `theme: "light" or "dark"` (title-bar buttons follow it) | `null` |
 | `set_tray_status` | `status: "calm" or "look" or "bad"` (green, amber or red dot on the tray icon), `tooltip: string` (the tray hover text), optional `pulse: boolean` (with `"bad"`, the dot pulses for a few seconds; the window sends it when something has just gone red and Motion is Full) | `null`; an error text for any other status |
-| `set_mini_height` | `height: number` (CSS pixels; in mini mode the window follows its content, growing upward) | `null` |
-| `set_mini_size` | `width: number, height: number` (CSS pixels; mini mode only: the size you dragged the mini window to, put back when it opens; its bottom-right corner stays put) | `null` |
+| `set_mini_height` | `height: number` (CSS pixels of the page, not counting the window frame; in mini mode the window follows its content, growing upward; nothing happens when the size is already right) | `null` |
+| `set_mini_size` | `width: number, height: number` (CSS pixels; mini mode only: the page size you dragged the mini window to, put back when it opens; its bottom-right corner stays put, and the window is only moved to keep it on the screen) | `null` |
 | `get_work_size` | `machine: string` | `{ runner: string, bytes: number or null }[]`, the size of each runner's `_work` folder (`null` when `du` or the walk was too slow). Slow, so only on demand: over ssh on Linux (`du` with a 15 s limit per folder), walked on This PC |
 | `check_for_updates` | none | `true` an update is waiting, `false` up to date, `null` could not check |
 | `apply_update` | none | `true` installed (restart to finish), `"dirty"` local edits block it, `false` failed |

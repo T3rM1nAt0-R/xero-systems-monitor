@@ -1,24 +1,17 @@
 /* Section bodies: runners (timeline, jobs, trends, heatmap, history), containers and services, busiest programs, connections. */
-.jobs{display:flex;flex-direction:column;gap:var(--sp-6)}
 .job{display:grid;grid-template-columns:1fr auto;gap:0 var(--sp-10);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-8);padding:var(--sp-4) var(--sp-8)}
 .job b{font-weight:600}
 .job .pr{color:var(--acc)}
 .job .t{color:var(--mid)}
 .job .s{grid-column:1/-1;color:var(--dim);font-size:var(--fs-11-5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.tl{display:flex;flex-direction:column;gap:var(--sp-5);position:relative}
-.lane{display:grid;grid-template-columns:62px 1fr;gap:var(--sp-8);align-items:center}
-.lane>.tick{color:var(--mid);font-size:var(--fs-12)}
-.track{position:relative;height:var(--sz-20);background:var(--bg);border-radius:var(--r-5);border:1px solid var(--line)}
 .jb{position:absolute;top:var(--sp-2);bottom:var(--sp-2);border-radius:var(--r-4);background:color-mix(in srgb,var(--acc) 26%,var(--s2));font-size:var(--fs-10-5);line-height:14px;color:var(--fg);overflow:hidden;white-space:nowrap;min-width:var(--sz-3);container-type:inline-size;cursor:default;transition:filter .12s}
 .jb .jl{display:none;padding:0 var(--sp-5);overflow:hidden;text-overflow:ellipsis}
 @container (min-width:64px){.jb .jl{display:block}}
 .jb.run{background:var(--acc);color:var(--on-acc);font-weight:600}
-.tl .xax{margin-left:var(--sp-70)}
 @media (prefers-reduced-motion:no-preference){.jb.run{animation:breathe 4s ease-in-out infinite}}
-.tlx{margin-left:var(--sp-70)}
 .smooth{overflow:hidden;transition:height .28s ease}
-.job,.chip,.lane{animation:rowin .28s ease both}
-@media (prefers-reduced-motion:reduce){.smooth{transition:none}.job,.chip,.lane{animation:none}}
+.job,.chip{animation:rowin .28s ease both}
+@media (prefers-reduced-motion:reduce){.smooth{transition:none}.job,.chip{animation:none}}
 .jb:hover{filter:brightness(1.5);z-index:1}
 .jb.bad{background:color-mix(in srgb,var(--bad) 55%,var(--s2));color:var(--on-strong)}
 .jb.stop{background:color-mix(in srgb,var(--busy) 40%,var(--s2))}

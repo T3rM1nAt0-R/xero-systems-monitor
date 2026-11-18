@@ -9,6 +9,9 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 - Added: three base colours (background, text, accent) now give the cards, borders, dimmed text and fills; per-metric and status colours are under Fine-tune. A Colour-blind safe switch changes the status colours and marks status by shape (circle ok, triangle warning, square bad).
 - Changed: machine colours moved from Customize to each machine's ⋯ menu (same saved setting). Graph style gained a Step line.
 - Changed: your saved themes, edits and the "Solarized-like" theme are carried over when you update (it is now Solarized Dark); older exported theme files still import.
+- Fixed: the mini window no longer wanders. Each resize mixed the outer window size (with its frame) and the inner page size, so the window crept and grew a little on every call; it now works on the page size only, moves only to keep its bottom-right corner or to stay on screen, and is resized only when the content height changes by 4 px or more (checked at most every quarter second, never while you drag an edge).
+- Changed: the mini window is redrawn as one frosted surface with a tight row per machine: status dot and name, then CPU, memory, GPU (network speed when there is no GPU) and temperature, each with a big number and a tiny line. An alert chip shows only when something needs a look. The View control is now in the mini window too.
+- Changed: the runner list and the swimlane timeline are now one table: a row per runner (dot, name, Busy / Idle / Offline, current job or "Idle · last job 22 min ago", time in the job) with that runner's own timeline lane filling the rest of the row, one shared 12-hour time axis and the 24 h / 7 d chips in the header. Rows are the same height with aligned columns; on a narrow window the lanes shrink and the job text is cut with an ellipsis. The Overview shows a smaller version with no status or time columns.
 
 ## [0.3.0] - 2026-11-18
 
