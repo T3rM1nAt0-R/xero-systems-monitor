@@ -3,8 +3,10 @@
 
 mod commands;
 mod frame;
+mod links;
 mod prefs;
 mod tray;
+mod tray_icon;
 mod updates;
 
 use std::sync::Arc;
@@ -86,6 +88,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_state,
             commands::get_history,
+            commands::get_busy_at,
             commands::get_events,
             commands::get_jobs,
             commands::get_forecast,
@@ -97,6 +100,7 @@ pub fn run() {
             commands::set_window_mode,
             commands::set_pinned,
             commands::set_theme,
+            commands::set_tray_status,
             commands::set_mini_height,
             commands::check_for_updates,
             commands::apply_update,
@@ -105,6 +109,7 @@ pub fn run() {
             commands::relaunch,
             commands::stop_everything,
             commands::quit,
+            commands::open_link,
         ])
         .build(tauri::generate_context!());
     match built {

@@ -133,6 +133,7 @@ impl Slot {
         let events = match got {
             Some(r) => {
                 logged(store.add_sample(&self.name, now, &r));
+                logged(store.add_top(&self.name, now, &r.top));
                 self.previous = Some(r.clone());
                 self.tracker.observe(r, now)
             }

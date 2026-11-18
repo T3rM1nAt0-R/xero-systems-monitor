@@ -312,12 +312,6 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .menu .mlabel{padding:4px 12px 2px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim2)}
 .menu{max-height:calc(100vh - 70px);overflow-y:auto}
 
-/* busy per day */
-.bpd{display:flex;align-items:flex-end;gap:6px;margin-top:8px;height:42px}
-.bpd .lbl{color:var(--dim);font-size:11px;align-self:center;margin-right:6px;text-transform:uppercase;letter-spacing:.05em}
-.bcol{position:relative;width:26px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden}
-.bcol i{display:block;background:color-mix(in srgb,var(--acc) 70%,var(--s2))}
-.bcol b{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:9px;font-weight:500;color:var(--fg);opacity:.7;pointer-events:none}
 .sum.fc{margin-left:10px}.sum.fc.warn{color:var(--warn)}
 
 /* More menu: groups, switches, refresh buttons */
@@ -403,6 +397,54 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
 
+/* ---- machines strip, Ctrl+K palette, card order and group choices, tidy-up ---- */
+.strip{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 0}
+.tile{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:5px 9px;border-radius:9px;background:var(--s1);border-color:var(--line);color:var(--acc);min-width:128px;flex:1 1 128px;max-width:240px}
+.tile .th{display:flex;align-items:center;gap:6px;color:var(--fg);max-width:100%}.tile .th b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .tn{display:flex;flex-wrap:wrap;gap:0 8px;color:var(--fg);font-size:12px}.tile .tn small{color:var(--dim);font-size:10px;letter-spacing:.04em}
+.tile.off{background:var(--bg);border-style:dashed}.tile.off .th,.tile.off .tn{color:var(--dim)}.tile.off .th b{color:var(--dim)}
+.tile .tspark{display:block;opacity:.85}
+.pal{align-items:start;padding-top:12vh}
+.pal .dlg{gap:6px;max-height:70vh}
+.pal input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:8px 10px}
+.plist{overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.popt{display:flex;justify-content:space-between;gap:12px;padding:6px 9px;border-radius:7px;cursor:pointer;color:var(--mid)}
+.popt em{font-style:normal;color:var(--dim);font-size:11px}
+.popt.sel{background:var(--s2);color:var(--fg);box-shadow:inset 2px 0 var(--acc)}
+.grid .chead{cursor:grab}.dragging-card,.dragging-card *{user-select:none;cursor:grabbing!important}
+.card.dragging{opacity:.5}.card.dropto{outline:2px dashed var(--acc);outline-offset:2px}
+.gmenu{position:relative;margin-left:auto}.gmenu>button{padding:1px 8px;font-size:11px;color:var(--dim)}
+.gpop{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;gap:2px;min-width:200px;padding:8px;background:var(--s1);border:1px solid var(--line2);border-radius:10px;box-shadow:0 8px 28px #0008}
+.grow2{display:flex;align-items:center;gap:4px}.grow2 label{flex:1;display:flex;align-items:center;gap:6px;color:var(--fg)}.grow2 button{padding:0 6px;font-size:10px}
+.detail.inline{display:flex;flex-direction:column;gap:6px}
+.card.full{gap:6px}.grid>.card{margin-bottom:8px}
+.grp h5 em{font-size:15px;font-weight:600;color:var(--fg);margin-left:10px}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding:0 14px;margin-left:-14px;margin-right:-14px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+.chips .chip{flex:none}
+@container (min-width:860px){.detail.inline{display:grid}}
+/* Runner insights: busy heatmap, clickable jobs, job history */
+.heat{margin-top:10px}.heat h4{margin:0 0 6px}
+.hrow{display:grid;grid-template-columns:44px 1fr;gap:6px;align-items:center;margin-bottom:2px}
+.hd{color:var(--dim);font-size:11px}
+.hcells{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px}
+.hcells i{display:block;height:13px;border-radius:2px;background:color-mix(in srgb,var(--acc) calc(var(--p) * 1%),var(--bg));border:1px solid var(--line)}
+.hcells i.future{background:none;border-style:dashed;opacity:.4}
+.hcells i.fail{box-shadow:inset 0 -2px #fb5a72}
+.hcells b{font-size:9px;font-weight:400;color:var(--dim);white-space:nowrap;overflow:visible}
+.hdays{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 14px;margin-top:6px;font-size:11.5px}
+.hdays b{display:inline-block;width:46px;font-weight:600}.hdays .bad{color:#fb5a72}.hdays .dim{color:var(--dim)}
+.link{cursor:pointer}.job.link:hover,.trow.link:hover,.dev.link:hover{background:var(--s2)}
+.jb.link{cursor:pointer}
+.hist{margin-top:10px}
+.hfilters{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.hfilters input,.hfilters select{background:var(--bg);color:var(--fg);border:1px solid var(--line2);border-radius:7px;padding:4px 8px;font:inherit;font-size:12px;min-width:0}
+.hfilters input{flex:1 1 140px}
+.hlist{max-height:280px;overflow-y:auto}
+.hitem{display:grid;grid-template-columns:minmax(0,1fr) 90px 78px 62px 108px;gap:8px;padding:3px 6px;font-size:11.5px;color:var(--mid);align-items:baseline;border-radius:5px}
+.hitem.link:hover{background:var(--s2)}
+.hitem span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hitem .succeeded{color:#4ade80}.hitem .failed{color:#fb5a72}.hitem .stopped{color:#fbbf24}.hitem .unknown{color:var(--dim)}
+@media (max-width:560px){.hitem{grid-template-columns:minmax(0,1fr) 70px 90px}.hitem .rn,.hitem .tk{display:none}}
 /* container actions (Restart / Stop / Start / Logs on a container row) */
 .cacts{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;margin-left:auto}.cacts button{padding:1px 8px;font-size:11px}
 .cask{color:var(--mid);font-size:11.5px}.cnote{color:var(--dim);font-size:11.5px}.cnote.bad{color:var(--crit)}
@@ -425,3 +467,31 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .crow{display:grid;grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) 40px;gap:10px;align-items:center;padding:2px 4px;border-radius:5px;color:var(--mid)}
 .crow:hover{background:var(--s2)}.crow b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crow .meter{min-width:0}.crow span:nth-child(3){text-align:right;font-variant-numeric:tabular-nums}
+/* What was busy then? (BusyPopover.jsx): opens where a CPU or memory graph is clicked */
+.chart.pick{cursor:pointer}
+.busypop{position:fixed;z-index:9000;width:270px;padding:8px 10px;background:#12151c;border:1px solid var(--line2);border-radius:8px;box-shadow:0 8px 24px #000a;font-size:12px;color:var(--fg)}
+.busypop .bp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.busypop .bp-h button{background:none;border:0;color:var(--dim);font-size:15px;line-height:1;cursor:pointer;padding:0 2px}
+.busypop .bp-r{display:grid;grid-template-columns:minmax(0,1fr) 46px 62px;gap:8px;padding:2px 0}
+.busypop .bp-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.busypop .bp-r em{font-style:normal;text-align:right;color:var(--dim)}
+/* graph tools: compare, zoom, save, full-window graph */
+.chart path.cmp{stroke-dasharray:5 4;opacity:.45;stroke-width:1.5}
+.chart .sel{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--c,#60a5fa) 22%,transparent);border-left:1px solid var(--c,#60a5fa);border-right:1px solid var(--c,#60a5fa);pointer-events:none;opacity:0}
+.chart{user-select:none}
+.ph .ttl{all:unset;cursor:pointer;font-size:13px;font-weight:600}.ph .ttl:hover,.ph .ttl:focus-visible{text-decoration:underline}
+.gsave{order:9;display:inline-flex;gap:4px;margin-left:auto;opacity:0;transition:opacity .15s}.panel:hover .gsave,.gsave:focus-within{opacity:1}
+.gsave button{padding:1px 7px;font-size:11px}.gsave em{color:var(--warn);font-size:11px;font-style:normal}
+.zchip{align-self:flex-start;margin:0 0 8px;padding:2px 10px;font-size:12px;border-radius:999px}
+.cmpsel select{margin-left:6px;font:inherit;background:var(--s2);color:var(--fg);border:1px solid var(--line2);border-radius:7px;padding:2px 4px}
+.dlg.fullgraph{width:min(1100px,100%);max-height:100%;overflow:auto}
+.fullgraph .chart{height:min(420px,52vh)}
+.fghead{display:flex;align-items:center;justify-content:space-between;gap:8px}.fghead h3{margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px;font-size:12.5px}
+.legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.legend i{width:14px;height:3px;border-radius:2px;background:var(--c)}
+/* Extra hardware numbers under the CPU graphs (LibreHardwareMonitor) */
+.hwstrip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 2px 0;font-size:12px;color:var(--mid)}
+.hwstrip small{color:var(--dim);font-size:11px;margin-right:2px}
+.hwstrip .cores{display:inline-flex;align-items:flex-end;gap:2px;height:18px}
+.hwstrip .cores i{display:block;width:3px;min-height:1px;background:var(--acc);opacity:.75;border-radius:1px}
+.hwstrip .cores i.hot{background:var(--warn);opacity:1}

@@ -1,6 +1,8 @@
 import { Fragment, useMemo, useState } from "react";
 import { eventKind, FILTERS } from "./events.js";
 import { hm } from "./format.js";
+import { labelUrl } from "./github.js";
+import { linkProps, linkClass } from "./jobLink.js";
 import { isMuted } from "./quiet.js";
 const dayName = t => { const d = new Date(t * 1000), n = new Date(), y = new Date(n - 86400000); const same = (a, b) => a.toDateString() === b.toDateString(); return same(d, n) ? "Today" : same(d, y) ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
 // The Activity list as a drawer above the footer: the graphs stay visible above it.
@@ -15,9 +17,9 @@ export default function ActivityDrawer({ events, muted, onMute, onClose }) {
         <div className="seg" role="group" aria-label="Filter">{FILTERS.map(([k, l]) => <button key={k} className={f === k ? "on" : ""} onClick={() => setF(k)}>{l}{k !== "all" && counts[k] ? ` · ${counts[k]}` : ""}</button>)}</div>
         <span className="grow" /><button className="ghost" onClick={onClose} data-tip="Close (Esc)">Close ▾</button></div>
       <div className="dbody">
-        {shown.map((e, i) => { const day = dayName(e[0]), head = day !== last; last = day; const k = eventKind(e[2], e[1]);
+        {shown.map((e, i) => { const day = dayName(e[0]), head = day !== last; last = day; const k = eventKind(e[2], e[1]), url = k.kind === "fail" ? labelUrl(e[2]) : null;
           return <Fragment key={i}>{head && <div className="dday">{day}</div>}
-            <div className="dev"><time>{hm(e[0])}</time><u className={k.tone} /><span><b>{e[1]}</b> {e[2]}</span>{e[3]?.machine && <button className="ghost mutebtn" data-tip="Stop this kind of alert for this machine" onClick={() => onMute(e[3].machine, e[3].kind, !isMuted(muted, e[3].machine, e[3].kind))}>{isMuted(muted, e[3].machine, e[3].kind) ? "Unmute" : "Mute"}</button>}</div></Fragment>; })}
+            <div className={"dev" + linkClass(url)} data-tip={url ? "Open on GitHub" : undefined} {...linkProps(url)}><time>{hm(e[0])}</time><u className={k.tone} /><span><b>{e[1]}</b> {e[2]}</span>{e[3]?.machine && <button className="ghost mutebtn" data-tip="Stop this kind of alert for this machine" onClick={ev => { ev.stopPropagation(); onMute(e[3].machine, e[3].kind, !isMuted(muted, e[3].machine, e[3].kind)); }}>{isMuted(muted, e[3].machine, e[3].kind) ? "Unmute" : "Mute"}</button>}</div></Fragment>; })}
         {!shown.length && <div className="quiet dempty">{events.length ? "Nothing in this filter." : "Nothing has happened in the last day."}</div>}
       </div>
     </div>);

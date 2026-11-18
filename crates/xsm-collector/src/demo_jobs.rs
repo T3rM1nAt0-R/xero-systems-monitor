@@ -23,7 +23,7 @@ pub(crate) fn jobs(machines: &[MachineConfig], since: i64, now: i64) -> Vec<Fini
                     end,
                     result: if n == 2 { "Failed" } else { "Succeeded" }.to_owned(),
                     label: format!(
-                        "PR #{} · branch-{slot} · Build (example-repo)",
+                        "PR #{} · branch-{slot} · Build (example/example-repo)",
                         100 + slot % 900
                     ),
                 });

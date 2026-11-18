@@ -3,7 +3,13 @@ import Card from "./Card.jsx";
 import Compact from "./Compact.jsx";
 import ActivityDrawer from "./ActivityDrawer.jsx";
 import Machines from "./Machines.jsx";
-import MoreMenu from "./MoreMenu.jsx";
+import Strip from "./Strip.jsx";
+import Palette from "./Palette.jsx";
+import { buildCommands } from "./commands.js";
+import { applyOrder, moveTo, stripOrder, groupsFor } from "./order.js";
+import { loadGroups, saveGroups, revealGroup } from "./groupPrefs.js";
+import useCardDrag from "./cardDrag.js";
+import MoreMenu, { REFRESH } from "./MoreMenu.jsx";
 import { Clock, Ago } from "./Clock.jsx";
 import * as api from "./api.js";
 import { isWarn, hm } from "./format.js";
@@ -21,15 +27,20 @@ import useUpdates from "./useUpdates.js";
 import useWindowMode from "./useWindowMode.js";
 import useShortcuts from "./useShortcuts.js";
 import useLook from "./useLook.js";
+import useTrayStatus from "./useTrayStatus.js";
+import { COMPARE } from "./graphTools.js";
+import { publishHistory, setCompare, useCompare } from "./graphView.js";
 
 export default function App() {
   const [range, setRange] = usePersisted("range", () => 300), [refresh, setRefresh] = usePersisted("refresh", 3), [auto, setAuto] = usePersisted("auto", true);
   const safeRange = snapRange(range);
-  const { state, err, stamp, now, hist, events, rows, fc, retry } = useCollectorData(safeRange, refresh);
+  const back = useCompare();
+  const { state, err, stamp, now, hist, hist2, events, rows, fc, retry } = useCollectorData(safeRange, refresh, back);
+  useEffect(() => publishHistory(hist), [hist]);
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
   const { upd, fail, busy, act, apply, checkNow, ready, ver, restart } = useUpdates(auto);
-  const [menu, setMenu] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
+  const [menu, setMenu] = useState(false), [pal, setPal] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
   const [expanded, setExpanded] = useState(() => new Set()), [evSeen, setEvSeen] = useState(() => load("evseen", 0));
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
@@ -38,7 +49,10 @@ export default function App() {
   useEffect(() => save("alerts", alertPrefs), [alertPrefs]);
   const [limits, setLimits] = usePersisted("limits", {}), [quiet, setQuiet] = usePersisted("quiet", DEFAULT_QUIET), [muted, setMuted] = usePersisted("muted", []);
 
-  const ms = useMemo(() => state?.machines || [], [state]), t = now / 1000;
+  const [localName, setLocalName] = useState("");   // which machine is this PC (the strip lists it first)
+  useEffect(() => { if (!dlg) api.getMachines().then(c => setLocalName(c?.machines?.find(m => m.kind === "local")?.name || ""), () => {}); }, [dlg]);
+  const [order, setOrder] = usePersisted("order", []);   // the card order you chose by dragging
+  const all = useMemo(() => state?.machines || [], [state]), ms = useMemo(() => applyOrder(all, order), [all, order]), t = now / 1000;
   ms.forEach(m => {   // remember when each machine was last seen, and how long CPU has been above its limit
     const h = hot.current[m.name] ||= {};
     if (!m.err) { lastOk.current[m.name] = m.t || t; if (isWarn("cpu", m.d?.cpu, limitsFor(limits, m.name))) h.cpu ||= m.t ? m.t * 1000 : now; else h.cpu = 0; } else h.cpu = 0;
@@ -58,12 +72,20 @@ export default function App() {
     fit(); const id = setInterval(fit, 1500); const tm = setTimeout(fit, 250); return () => { clearInterval(id); clearTimeout(tm); };
   }, [mini, state]);
 
+  const goMachine = useCallback(n => { if (effRef.current) setExpanded(s => new Set(s).add(n)); open(n); }, [open]);
+  const goGroup = useCallback((n, k) => {
+    const g = loadGroups(n); if (g.hidden.includes(k)) saveGroups(n, { ...g, hidden: g.hidden.filter(x => x !== k) });   // asking for a hidden group shows it again
+    goMachine(n); setTimeout(() => revealGroup(n + "." + k), 120);
+  }, [goMachine]);
+  const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
+  const cmds = useMemo(() => buildCommands({ machines: ms, groupsOf: m => groupsFor(m.d), goMachine, goGroup, ranges: RANGES, setRange, look, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [ms, foldMachines, goMachine, goGroup, look, refresh, pin, compact, alertPrefs, quiet.on, checkNow]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
+  useTrayStatus(ms, limits, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
-  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, foldMachines });
+  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });
 
-  const card = m => <Card key={m.name} m={m} h={hist[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} limits={limitsFor(limits, m.name)} auto={calmFold} flat={effCompact} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
+  const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} limits={limitsFor(limits, m.name)} auto={calmFold} flat={effCompact} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <div className="bar top">
@@ -82,8 +104,9 @@ export default function App() {
       {!state && <div className="empty">{err ? <>Waiting for the collector…<small>{err}</small></> : "Loading…"}</div>}
 
 
+      {state && !effCompact && <Strip ms={stripOrder(ms, localName)} hist={hist} lastOk={lastOk.current} onOpen={n => { foldAll(true, CARD + n); goMachine(n); }} />}
       {state && effCompact && <Compact limits={limits} ms={ms} now={now} lastOk={lastOk.current} hot={hot.current} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
-      {state && !effCompact && <main className="grid">{ms.map(card)}</main>}
+      {state && !effCompact && <main className="grid" onPointerDown={dragProps}>{ms.map(card)}</main>}
 
       <div className="dock" hidden={mini} onClick={e => e.stopPropagation()}>
       {showEv && <ActivityDrawer events={log} muted={muted} onMute={onMute} onClose={closeEv} />}
@@ -91,6 +114,7 @@ export default function App() {
         <button className={showEv ? "on" : ""} onClick={() => (showEv ? closeEv() : openEv())} data-tip="Activity drawer (E)">Activity{unseen > 0 && !showEv && <span className="badge">{unseen}</span>}</button>
         {!effCompact && <span className="lbl hide-s">Graphs show</span>}
         <div className="seg" role="group" aria-label="Time range">{RANGES.map(([l, s]) => <button key={s} className={safeRange === s ? "on" : ""} onClick={() => setRange(s)}>{effCompact ? SHORT(l) : l}</button>)}</div>
+        {!effCompact && <label className="lbl hide-s cmpsel" data-tip="Draw a faint dashed copy of every graph from an earlier time">Compare<select value={back} onChange={e => setCompare(+e.target.value)}>{COMPARE.map(([l, s]) => <option key={s} value={s}>{l}</option>)}</select></label>}
         <span className="grow" />
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
         {upd && !ready && <button className="cta" disabled={!!busy} onClick={apply}>{busy === "u" ? "Updating…" : "Update available"}</button>}
@@ -100,6 +124,7 @@ export default function App() {
           onStop={() => window.confirm("Stop everything? The monitor and its collector will close until you open it again.") && act("s", () => api.stopEverything())} />
       </div>
       </div>
+      {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
       {dlg && <Machines onClose={() => setDlg(false)} />}
       {help && <div className="modal" onClick={() => setHelp(false)}><div className="dlg" onClick={e => e.stopPropagation()}><h3>Keyboard shortcuts</h3>{KEYS.map(([k, t]) => <div className="mrow" key={k}><kbd>{k}</kbd><span>{t}</span></div>)}<div className="mfoot"><button className="cta" onClick={() => setHelp(false)}>Close</button></div></div></div>}

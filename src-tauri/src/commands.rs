@@ -1,16 +1,17 @@
-//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 24. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
 
 use crate::frame::{self, Mode};
+use crate::links;
 use crate::prefs::{self, Prefs, PrefsPatch};
 use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
-    Action, Backend, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList,
-    SaveOutcome, State as Readings,
+    Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
+    MachineList, SaveOutcome, State as Readings,
 };
 
 /// The collector the commands talk to.
@@ -30,6 +31,15 @@ pub async fn get_history(
     range: f64,
 ) -> Reply<HistoryReply> {
     backend.0.get_history(&machine, range)
+}
+
+#[tauri::command]
+pub async fn get_busy_at(
+    backend: State<'_, BackendState>,
+    machine: String,
+    t: f64,
+) -> Reply<BusyReply> {
+    backend.0.get_busy_at(&machine, t)
 }
 
 #[tauri::command]
@@ -100,6 +110,11 @@ pub fn set_theme(app: AppHandle, theme: String) -> Reply<()> {
 }
 
 #[tauri::command]
+pub fn set_tray_status(app: AppHandle, status: String, tooltip: String) -> Reply<()> {
+    crate::tray::set_status(&app, &status, &tooltip)
+}
+
+#[tauri::command]
 pub fn set_mini_height(app: AppHandle, height: f64) -> Reply<()> {
     frame::set_mini_height(&app, height)
 }
@@ -141,4 +156,9 @@ pub async fn stop_everything(app: AppHandle, backend: State<'_, BackendState>) -
 pub fn quit(app: AppHandle) -> Reply<()> {
     frame::quit(&app);
     Ok(())
+}
+
+#[tauri::command]
+pub fn open_link(url: String) -> Reply<()> {
+    links::open(&url)
 }

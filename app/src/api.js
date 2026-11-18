@@ -3,6 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { handle } from "./fakeBackend.js";
+import { isGithubUrl } from "./github.js";
 
 const inTauri = () => typeof window !== "undefined" && !!window.__TAURI_INTERNALS__;
 const call = (command, args) => (inTauri() ? invoke(command, args) : handle(command, args));
@@ -10,9 +11,12 @@ const call = (command, args) => (inTauri() ? invoke(command, args) : handle(comm
 // Readings
 export const getState = () => call("get_state");
 export const getHistory = (machine, range) => call("get_history", { machine, range });
+export const getBusyAt = (machine, t) => call("get_busy_at", { machine, t });
 export const getEvents = (since, n = 60) => call("get_events", { since, n });
 export const getJobs = since => call("get_jobs", { since });
 export const getForecast = machine => call("get_forecast", { machine });
+// Open a job on GitHub in the browser. Only https://github.com/ addresses go through.
+export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : Promise.resolve(null));
 export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 // Settings
 export const getMachines = () => call("get_machines");
@@ -23,6 +27,7 @@ export const setPrefs = patch => call("set_prefs", { patch });
 export const windowMode = mode => call("set_window_mode", { mode });   // "mini" | "full" | "compact"
 export const setPinned = on => call("set_pinned", { on });
 export const setTheme = theme => call("set_theme", { theme });   // "light" | "dark"
+export const setTrayStatus = (status, tooltip) => call("set_tray_status", { status, tooltip });   // "calm" | "look" | "bad"
 export const setMiniHeight = height => call("set_mini_height", { height });
 // Updates and life cycle
 export const checkForUpdates = () => call("check_for_updates");

@@ -4,9 +4,9 @@ import * as api from "./api.js";
 const perMachine = async (names, ask) => (await Promise.all(names.split("|").map(n => ask(n).then(a => [n, a], () => null)))).filter(Boolean);
 // Everything the window reads from the collector: the live state, graph history, the activity list, finished jobs and the disk forecast.
 // Each piece refreshes on its own timer and pauses while the window is hidden.
-export default function useCollectorData(range, refresh) {
+export default function useCollectorData(range, refresh, back = 0) {
   const [state, setState] = useState(null), [err, setErr] = useState(null), [stamp, setStamp] = useState(0), [now, setNow] = useState(Date.now());
-  const [hist, setHist] = useState({}), [events, setEvents] = useState([]), [rows, setRows] = useState([]), [fc, setFc] = useState({}), [tick, setTick] = useState(0);
+  const [hist, setHist] = useState({}), [hist2, setHist2] = useState({}), [events, setEvents] = useState([]), [rows, setRows] = useState([]), [fc, setFc] = useState({}), [tick, setTick] = useState(0);
   const poll = useCallback(async () => {
     if (document.hidden) return;
     try { const s = await api.getState(); setState(s); setErr(null); setStamp(Date.now()); setNow(Date.now()); } catch (e) { setErr(String(e.message || e)); }
@@ -19,6 +19,11 @@ export default function useCollectorData(range, refresh) {
     const go = async () => { if (document.hidden) return; const got = await perMachine(names, n => api.getHistory(n, range)); if (live) setHist(p => ({ ...p, ...Object.fromEntries(got) })); };
     go(); const id = setInterval(go, range >= 604800 ? 300000 : range >= 3600 ? 60000 : 10000); return () => { live = false; clearInterval(id); };
   }, [names, range, tick]);
+  useEffect(() => {   // compare mode: the same graphs from `back` seconds ago. get_history always ends now, so ask for a longer range; the graphs cut out the older part and slide it forward.
+    if (!names || !back) { setHist2({}); return; } let live = true;
+    const go = async () => { if (document.hidden) return; const got = await perMachine(names, n => api.getHistory(n, range + back)); if (live) setHist2(Object.fromEntries(got)); };
+    go(); const id = setInterval(go, 300000); return () => { live = false; clearInterval(id); };
+  }, [names, range, back, tick]);
   useEffect(() => {   // the Activity list: what happened in the last day
     let live = true;
     const go = () => { if (!document.hidden) api.getEvents(Math.floor(Date.now() / 1000 - 86400), 60).then(e => live && Array.isArray(e) && setEvents(e)).catch(() => {}); };
@@ -35,5 +40,5 @@ export default function useCollectorData(range, refresh) {
     go(); const id = setInterval(go, 600000); return () => { live = false; clearInterval(id); };
   }, [names]);
   const retry = useCallback(() => { poll(); setTick(x => x + 1); }, [poll]);
-  return { state, err, stamp, now, hist, events, rows, fc, retry };
+  return { state, err, stamp, now, hist, hist2, events, rows, fc, retry };
 }

@@ -15,6 +15,7 @@ Rules for every command:
 | --- | --- | --- |
 | `get_state` | none | `{ machines: Machine[] }` |
 | `get_history` | `machine: string`, `range: number` (seconds, 1 to 400 days) | `History` |
+| `get_busy_at` | `machine: string`, `t: number` (unix seconds) | `BusyAt`, or `{}` when no programs were kept near `t` |
 | `get_events` | `since: number`, `n: number` | `Event[]`, newest first, at most `n` |
 | `get_jobs` | `since: number` | `Job[]`, oldest first, finished jobs that ended at or after `since` |
 | `get_forecast` | `machine: string` | `{ per_day: number or null, days: number or null }` |
@@ -26,6 +27,7 @@ Rules for every command:
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
 | `set_pinned` | `on: boolean` (always on top) | the pin now in effect (boolean) |
 | `set_theme` | `theme: "light" or "dark"` (title-bar buttons follow it) | `null` |
+| `set_tray_status` | `status: "calm" or "look" or "bad"` (green, amber or red dot on the tray icon), `tooltip: string` (the tray hover text) | `null`; an error text for any other status |
 | `set_mini_height` | `height: number` (CSS pixels; in mini mode the window follows its content, growing upward) | `null` |
 | `check_for_updates` | none | `true` an update is waiting, `false` up to date, `null` could not check |
 | `apply_update` | none | `true` installed (restart to finish), `"dirty"` local edits block it, `false` failed |
@@ -34,6 +36,7 @@ Rules for every command:
 | `relaunch` | none | `null` (the app restarts) |
 | `stop_everything` | none | `null` (collector and window close) |
 | `quit` | none | `null` (the window closes, the app exits) |
+| `open_link` | `url: string` (must start with `https://github.com/` and hold only letters, digits and `. _ - /`; anything else is refused) | `null` (the address opens in the browser) |
 
 `set_window_mode`: `mini` is the small always-on-top corner window; `full` and `compact` are the normal window (compact is the one-row-per-machine layout, which the window draws itself; the shell may remember the size per mode). Leaving `mini` restores the earlier size and place.
 
@@ -60,6 +63,10 @@ Reading = {                       // every field optional; absent means "not mea
   restart_pkgs: number,           // how many packages asked for it, when known
   updates: number,                // updates waiting, when known
   ip: string,
+  mhz: number,                    // CPU clock, average over cores (MHz). mhz, cpu_w, gpu_w, fans and cores come from
+  cpu_w, gpu_w: number,           // package power, watts. LibreHardwareMonitor and are absent when it is not running
+  fans: number[],                 // fan speeds, RPM
+  cores: number[],                // load of each CPU core, %
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
   hw: { board?, os?, cpu?, gpu? },
@@ -79,8 +86,12 @@ update count from `apt-check` when that is installed (read about every 100th fra
 History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null }
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine
 
+BusyAt = { t: number, top: [name, cpu_percent, ram_mb, count][] }
+         // the busiest programs of the stored minute nearest to the asked time (within 2 minutes), busiest first, at most 10;
+         // kept once a minute for 3 days (as long as the 1-minute history); names have spaces shown as `_`
+
 Event = [t, machine, message]
-Job = [machine, runner, start, end, result, label]   // result "" when unknown
+Job = [machine, runner, start, end, result, label]   // result "" when unknown; label "PR #7 · branch · Build (owner/name)" (the last part is the repository, which the window turns into a GitHub link)
 
 MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: boolean, was?: string }
           // `was` is the old name after a rename, so the collector moves the history over
@@ -88,3 +99,9 @@ MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: 
 
 Prefs = { closeToTray: boolean, login: boolean, updates: boolean }  // updates: the More menu shows Check for updates (installed, not portable)
 ```
+
+## Looking further back (graph compare)
+
+`get_history` always ends now, and it has no "end" argument. The window's "Compare: yesterday / last week" asks for `range + 86400` (or `+ 604800`) seconds and then cuts out the older part itself (`app/src/graphTools.js`, `shiftSeries`), sliding it forward onto today's clock. No backend change was needed. The cost: the roughly 400 points are spread over the longer span, so the dashed copy is coarser than the live line, most visibly on the 5 minute and 1 hour ranges.
+
+Saving a graph uses a plain browser download (a link with the `download` attribute); the shell needs no dialog plugin or extra permission for it.

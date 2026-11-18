@@ -29,20 +29,24 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/light.png" alt="The light theme"></td>
 </tr>
 <tr>
-<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all.</td>
+<td valign="top">Compact view (press <b>C</b>): one line per machine. There is also a mini corner view (<b>M</b>). Click a machine name to fold its card into one bar; <b>F</b> folds all, <b>Shift+F</b> opens all. Press <b>Ctrl+K</b> to search for a machine, group or setting; drag cards to reorder them.</td>
 <td valign="top">Light and dark themes, or follow Windows.</td>
 </tr>
 </table>
 
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
+- This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Every machine card: uptime, last restart time and "Restart needed for updates" (Debian/Ubuntu and Windows)
 - Remote Linux machines over your own SSH config, no agent to install on them
+- Runner insights: a busy-hours heatmap for the week, a searchable job history, and a click on any job opens it on GitHub (its pull request, or the Actions page)
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)
 - Docker containers and failed systemd services on remote machines, with Restart, Stop, Start and Logs buttons (the ssh user needs the docker group)
 - History from 5 minutes to 1 year, stored locally in SQLite
+- "What was busy then?": click a point on a CPU or memory graph to see the busiest programs at that moment (kept once a minute for 3 days)
+- Graph tools: drag across a graph to zoom (every graph of that machine follows, double-click to reset), compare with yesterday or last week (dashed copy), open one graph full-window to overlay other machines, save a graph as a picture or CSV
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
 - Your own limits per machine (CPU %, CPU and GPU temperature, disk % and "full in N days"), quiet hours (11 PM to 8 AM by default; pop-ups wait except "machine offline"), and a Mute button on each alert in the Activity drawer
-- Tray icon, autostart
+- Tray icon with a status dot (green all calm, amber something needs a look, red a machine is offline or a job or container failed) and a hover text like "3 calm, 1 needs a look · CPU 23%"; autostart
 - Updates itself from GitHub Releases (when you ask it to check)
 
 Windows first. Linux and macOS later.

@@ -262,7 +262,7 @@ fn temp_db(name: &str) -> std::path::PathBuf {
 fn migrates_from_empty_and_reopens() {
     let path = temp_db("migrate");
     let s = Store::open(&path).unwrap();
-    assert_eq!(s.schema_version().unwrap(), 1);
+    assert_eq!(s.schema_version().unwrap(), 2);
     s.add_event(&Event {
         t: 1,
         machine: "a".into(),
@@ -271,11 +271,11 @@ fn migrates_from_empty_and_reopens() {
     .unwrap();
     drop(s);
     let s = Store::open(&path).unwrap();
-    assert_eq!(s.schema_version().unwrap(), 1);
+    assert_eq!(s.schema_version().unwrap(), 2);
     assert_eq!(s.events(0, 5).unwrap().len(), 1);
     assert_eq!(
         Store::open_in_memory().unwrap().schema_version().unwrap(),
-        1
+        2
     );
 }
 

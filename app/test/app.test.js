@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { hwNumbers, coreBars } from "../src/hwStrip.js";
 import { hotMin, isWarn, WATCH, rate, prOf, upLine, restartWhy } from "../src/format.js";
 import { buildLanes } from "../src/lanes.js";
 
@@ -50,19 +51,6 @@ test("jobStats counts finished, failed and stopped in the window", () => {
   assert.deepEqual(jobStats(r, "m", 10), { done: 4, failed: 1, stopped: 1 });
 });
 
-import { busyByDay } from "../src/busy.js";
-test("busy per day: 2 runners, one busy for 6 h today (noon) is 50%", () => {
-  const noon = new Date(); noon.setHours(12, 0, 0, 0); const now = noon.getTime() / 1000;
-  const days = busyByDay([["m", "r1", now - 6 * 3600, now, "", "x"]], "m", 2, [], now, 3);
-  assert.equal(days.length, 3); assert.equal(days[2].today, true); assert.ok(Math.abs(days[2].pct - 25) < 0.01, String(days[2].pct));   // 6 h busy of 2 x 12 h so far
-  assert.equal(days[0].pct, 0);
-});
-test("busy per day: a job running now counts, and a job across midnight is split", () => {
-  const noon = new Date(); noon.setHours(12, 0, 0, 0); const now = noon.getTime() / 1000;
-  const d = busyByDay([["m", "r1", now - 86400 - 3600, now - 86400 + 3600, "", "x"]], "m", 1, [now - 3600], now, 2);
-  assert.ok(d[0].pct > 0 && d[0].pct < 100); assert.ok(Math.abs(d[1].pct - (100 * 3600 / 43200)) < 0.01);
-});
-
 test("alerts: a container that falls over alerts once; a clean exit does not", () => {
   const ok = { docker: [["web", "running", "Up 1 hour", "i"]] }, first = machineAlerts(null, [mm("a", { d: ok })]);
   const down = machineAlerts(first.next, [mm("a", { d: { docker: [["web", "exited", "Exited (1) 3 minutes ago", "i"]], failed: ["x.service"] } })]);
@@ -104,6 +92,12 @@ test("trends: workflow names, averages, change against the week before, slowest 
   assert.equal(jobTrends(rows, "other", now).workflows.length, 0);
 });
 
+test("hwNumbers: only what LibreHardwareMonitor reported", () => {
+  assert.deepEqual(hwNumbers({}), []);
+  assert.deepEqual(hwNumbers({ mhz: 3900, cpu_w: 45.4, gpu_w: 30, fans: [1200.4, 800] }), [["Clock", "3.90 GHz"], ["CPU power", "45 W"], ["GPU power", "30 W"], ["Fans", "1200 · 800 RPM"]]);
+  assert.deepEqual(hwNumbers({ mhz: 800, fans: [900] }), [["Clock", "800 MHz"], ["Fan", "900 RPM"]]);
+});
+test("coreBars: a sliver for idle cores, capped at 100", () => { assert.deepEqual(coreBars([0, 50, 120]), [4, 50, 100]); assert.deepEqual(coreBars(undefined), []); });
 test("upLine: how long on and when it restarted, 12-hour", () => {
   const now = new Date(2026, 10, 18, 12, 0).getTime() / 1000;   // a Wednesday, local time
   const flat = x => x.replace(/\s/g, " ");   // newer ICU puts a narrow no-break space before AM

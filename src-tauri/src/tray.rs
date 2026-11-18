@@ -1,7 +1,9 @@
 //! The tray icon: click shows or hides the window; the menu has Mini, Always on top and Quit.
 
 use crate::frame::{self, Frame};
+use crate::tray_icon::{self, Status};
 use std::sync::Mutex;
+use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager};
@@ -62,6 +64,21 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
     }
     builder.build(app)?;
     Ok(())
+}
+
+/// Show how calm things are: the program icon with a green, amber or red dot, and `tooltip` as its hover text.
+///
+/// # Errors
+/// Text when `status` is not `calm`, `look` or `bad`, or the system refuses the icon.
+pub fn set_status(app: &AppHandle, status: &str, tooltip: &str) -> Result<(), String> {
+    let status = Status::parse(status).ok_or_else(|| format!("unknown status {status}"))?;
+    let tray = app.tray_by_id("main").ok_or("no tray icon")?;
+    if let Some(base) = app.default_window_icon() {
+        let rgba = tray_icon::with_dot(base.rgba(), base.width() as usize, status);
+        tray.set_icon(Some(Image::new_owned(rgba, base.width(), base.height())))
+            .map_err(|e| e.to_string())?;
+    }
+    tray.set_tooltip(Some(tooltip)).map_err(|e| e.to_string())
 }
 
 /// Tick the menu boxes to match the window (it may have changed from the window itself).

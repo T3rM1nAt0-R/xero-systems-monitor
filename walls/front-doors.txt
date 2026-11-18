@@ -2,6 +2,8 @@
 xsm_collector::Backend trait
 xsm_collector::State struct
 xsm_collector::State.machines field
+xsm_collector::busy::Busy use
+xsm_collector::busy::BusyReply use
 xsm_collector::config::alert_limits use
 xsm_collector::demo::DemoBackend use
 xsm_collector::history::History use
@@ -51,6 +53,8 @@ xsm_core::forecast::Forecast struct
 xsm_core::forecast::Forecast.days field
 xsm_core::forecast::Forecast.per_day field
 xsm_core::forecast::forecast fn
+xsm_core::lhm mod
+xsm_core::lhm::parse_lhm fn
 xsm_core::parse mod
 xsm_core::parse::parse_frame fn
 xsm_core::reading mod
@@ -123,11 +127,18 @@ xsm_core::reading::Reading.memory field
 xsm_core::reading::Reading.net field
 xsm_core::reading::Reading.ping_ms field
 xsm_core::reading::Reading.runners field
+xsm_core::reading::Reading.sensors field
 xsm_core::reading::Reading.top field
 xsm_core::reading::Reading.updates field
 xsm_core::reading::RunnerState struct
 xsm_core::reading::RunnerState.busy field
 xsm_core::reading::RunnerState.name field
+xsm_core::reading::SensorDetail struct
+xsm_core::reading::SensorDetail.core_load_pct field
+xsm_core::reading::SensorDetail.cpu_clock_mhz field
+xsm_core::reading::SensorDetail.cpu_power_w field
+xsm_core::reading::SensorDetail.fans_rpm field
+xsm_core::reading::SensorDetail.gpu_power_w field
 xsm_core::reading::TopProgram struct
 xsm_core::reading::TopProgram.cpu_pct field
 xsm_core::reading::TopProgram.name field
@@ -266,6 +277,8 @@ xsm_store::Result type
 xsm_store::Store struct
 xsm_store::Store::add_event fn
 xsm_store::Store::add_job fn
+xsm_store::Store::add_top fn
+xsm_store::Store::busiest_at fn
 xsm_store::Store::add_sample fn
 xsm_store::Store::backup_daily fn
 xsm_store::Store::disk_points fn
@@ -279,6 +292,8 @@ xsm_store::Store::rename_machine fn
 xsm_store::Store::schema_version fn
 xsm_store::history::History use
 xsm_store::history::Points use
+xsm_store::top::Busiest use
+xsm_store::top::TOP_KEPT use
 xsm_collector::xsm_core::container::Action use
 xsm_core::container mod
 xsm_core::container::Action enum
