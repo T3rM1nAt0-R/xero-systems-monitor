@@ -1,0 +1,13 @@
+/* The window's own title bar: the top bar is the drag handle (data-tauri-drag-region; a double-click maximises) and ends with the window buttons. The system frame is off. */
+.top{padding-right:0;-webkit-app-region:no-drag;user-select:none;-webkit-user-select:none}
+.top .menu{bottom:auto;top:calc(100% + var(--sp-6))}
+.winbtns{display:flex;align-self:stretch;margin:calc(-1 * var(--sp-8)) 0 calc(-1 * var(--sp-8)) var(--sp-4)}
+.wbtn{width:var(--sz-46);min-height:var(--sz-38);padding:0;border:0;border-radius:0;background:none;color:var(--dim);display:inline-flex;align-items:center;justify-content:center;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
+.wbtn:hover:not(:disabled){background:var(--s2);color:var(--fg)}
+.wbtn.close:hover:not(:disabled){background:var(--crit);color:var(--on-strong)}
+.mini .winbtns{margin-top:calc(-1 * var(--sp-2));margin-bottom:calc(-1 * var(--sp-2))}
+.mini .wbtn{width:var(--sz-32);min-height:var(--sz-32)}
+html[data-motion="off"] .wbtn{transition:none}
+/* Mica behind glass: only when the shell said the Windows 11 backdrop is on. The page's own backgrounds turn part see-through so the backdrop shows. */
+html[data-mica],html[data-mica] body{background:transparent}
+html[data-mica] .app,html[data-mica] .top,html[data-mica] .dock{background:color-mix(in srgb,var(--bg) 55%,transparent)}

@@ -36,6 +36,19 @@ export const setPrefs = patch => call("set_prefs", { patch });
 // The window itself
 export const windowMode = mode => call("set_window_mode", { mode });   // "mini" | "full" | "compact"
 export const setPinned = on => call("set_pinned", { on });
+export const setMica = on => call("set_mica", { on });   // true when the Windows 11 backdrop is showing; false when it could not be turned on (the window stays opaque)
+// The title bar's own buttons. Inside Tauri they use the window API (each needs a permission in capabilities/default.json); in a browser they do nothing.
+const win = fn => (inTauri() ? import("@tauri-apps/api/window").then(m => fn(m.getCurrentWindow())) : Promise.resolve(false));
+export const winMinimize = () => win(w => w.minimize());
+export const winToggleMaximize = () => win(w => w.toggleMaximize());
+export const winClose = () => win(w => w.close());   // the shell's close rule decides: hide to the tray or end the app
+export const winIsMaximized = () => win(w => w.isMaximized());
+export function onWinResized(fn) {   // fn runs when the window is resized or maximised; returns the way to stop listening
+  if (!inTauri()) return () => {};
+  let stop, gone = false;
+  win(w => w.onResized(fn)).then(u => { if (gone) u?.(); else stop = u; }, () => {});
+  return () => { gone = true; stop?.(); };
+}
 export const setTheme = theme => call("set_theme", { theme });   // "light" | "dark"
 export const setTrayStatus = (status, tooltip, pulse = false) => call("set_tray_status", { status, tooltip, pulse });   // "calm" | "look" | "bad"
 export const setMiniHeight = height => call("set_mini_height", { height });
