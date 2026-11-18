@@ -1,0 +1,55 @@
+/* Graph panels: title, big number, chart, axis, legend, save buttons, full-window graph, tooltips and the "What was busy then?" box. */
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:var(--r-12);padding:var(--sp-12);min-width:0;position:relative}
+.panel.wide{grid-column:1/-1}
+.ph{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-4) var(--sp-10);margin-bottom:var(--sp-8)}
+.ph h4{margin:0;font-size:var(--fs-13);font-weight:600}
+.ph .now{font-size:var(--fs-20);font-weight:300}
+.ph .now small{font-size:var(--fs-11);color:var(--dim)}
+.ph .now.warn{color:var(--warn)}
+.ph .sum{color:var(--dim);font-size:var(--fs-12);margin-left:auto}
+.legend{color:var(--mid);display:flex;flex-wrap:wrap;gap:var(--sp-8) var(--sp-16);margin-top:var(--sp-6);font-size:var(--fs-12-5)}
+.legend i{display:inline-block;vertical-align:middle;margin-right:var(--sp-5);width:var(--sz-14);height:var(--sz-3);border-radius:var(--r-2);background:var(--c)}
+.chart{position:relative;height:var(--sz-150);margin-left:var(--sp-30);border-bottom:1px solid var(--line2);cursor:crosshair;user-select:none}
+.chart svg{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+.chart path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.chart .gl{position:absolute;left:0;right:0;border-top:1px solid var(--line);pointer-events:none}
+.chart .gl span{position:absolute;right:100%;margin-right:var(--sp-6);top:calc(-1 * var(--sp-8));color:var(--dim2);font-size:var(--fs-10-5);white-space:nowrap;overflow:visible}
+.chart .thr{position:absolute;left:0;right:0;border-top:1px dashed color-mix(in srgb,var(--warn) 70%,transparent);pointer-events:none}
+.chart .thr span{position:absolute;right:var(--sp-2);bottom:var(--sp-2);font-size:var(--fs-10-5);color:var(--warn)}
+.chart .ev{position:absolute;top:0;bottom:0;border-left:1px dotted var(--dim2);pointer-events:none}
+.chart .x{position:absolute;top:0;bottom:0;width:1px;background:var(--chart-cursor);pointer-events:none;display:block;opacity:0;will-change:transform;left:0}
+.xax{position:relative;height:var(--sz-14);margin:var(--sp-4) 0 0 var(--sp-30);color:var(--dim2);font-size:var(--fs-10-5)}
+.xax span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.xax span.now{transform:none}
+.vg{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.5;pointer-events:none}
+.drive{display:grid;grid-template-columns:64px 1fr auto;gap:var(--sp-10);align-items:center;color:var(--mid);font-size:var(--fs-12);padding:var(--sp-2) 0}
+.drive span{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drive .meter{height:var(--sz-6)}
+@media (max-width:520px){.chart{height:var(--sz-120)}}
+.chart svg path.a{opacity:.08}
+.legend i.k{width:var(--sz-14);height:var(--sz-8);border-radius:var(--r-3);background:color-mix(in srgb,var(--acc) 26%,var(--s2))}
+.legend i.k.run{background:var(--acc)}
+.diskcard .chart{height:var(--sz-34)}
+.diskcard .drives{margin-top:var(--sp-6);border-top:1px solid var(--line);padding-top:var(--sp-6);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-2) var(--sp-18)}
+.xmtip{position:fixed;left:0;top:0;z-index:99999;opacity:0;pointer-events:none;max-width:min(380px,calc(100vw - 16px));padding:var(--sp-6) var(--sp-9);background:var(--tip-bg);border:1px solid var(--line2);border-radius:var(--r-8);box-shadow:var(--shadow-tip);font-size:var(--fs-12);line-height:1.35;color:var(--fg);white-space:normal;overflow-wrap:anywhere;transition:opacity .08s}
+.xmtip .dim{color:var(--dim);font-size:var(--fs-11)}
+.sum.fc{margin-left:var(--sp-10)}
+.sum.fc.warn{color:var(--warn)}
+.chart.pick{cursor:pointer}
+.busypop{position:fixed;z-index:9000;width:var(--sz-270);padding:var(--sp-8) var(--sp-10);background:var(--tip-bg);border:1px solid var(--line2);border-radius:var(--r-8);box-shadow:var(--shadow-tip);font-size:var(--fs-12);color:var(--fg)}
+.busypop .bp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-4)}
+.busypop .bp-h button{background:none;border:0;color:var(--dim);font-size:var(--fs-15);line-height:1;cursor:pointer;padding:0 var(--sp-2)}
+.busypop .bp-r{display:grid;grid-template-columns:minmax(0,1fr) 46px 62px;gap:var(--sp-8);padding:var(--sp-2) 0}
+.busypop .bp-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.busypop .bp-r em{font-style:normal;text-align:right;color:var(--dim)}
+.chart path.cmp{stroke-dasharray:5 4;opacity:.45;stroke-width:1.5}
+.chart .sel{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--c,var(--c-ram)) 22%,transparent);border-left:1px solid var(--c,var(--c-ram));border-right:1px solid var(--c,var(--c-ram));pointer-events:none;opacity:0}
+.ph .ttl{all:unset;cursor:pointer;font-size:var(--size-label);font-family:var(--font-label);font-weight:600}
+.ph .ttl:hover,.ph .ttl:focus-visible{text-decoration:underline}
+.gsave{display:inline-flex;gap:var(--sp-4);opacity:0;transition:opacity .15s;position:absolute;top:var(--sp-2);right:var(--sp-6);order:0;margin:0;z-index:2;background:var(--s1);border-radius:var(--r-6)}
+.panel:hover .gsave,.gsave:focus-within{opacity:1}
+.gsave button{font-size:var(--fs-11);padding:0 var(--sp-6);line-height:16px}
+.gsave em{color:var(--warn);font-size:var(--fs-11);font-style:normal}
+.cmpsel select{margin-left:var(--sp-6);font:inherit;background:var(--s2);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r-7);padding:var(--sp-2) var(--sp-4)}
+.fullgraph .chart{height:min(420px,52vh)}
+.legend label{display:inline-flex;align-items:center;gap:var(--sp-6);cursor:pointer}

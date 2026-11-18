@@ -2,6 +2,7 @@ import N from "./Pill.jsx";
 import Spark from "./Spark.jsx";
 import { isWarn } from "./format.js";
 import { badNow } from "./alerts.js";
+import { metricVar } from "./colors.js";
 // What a folded machine card still shows: the top-level numbers, and a tiny CPU line.
 export default function CardBar({ d, h, off, bad, limits }) {
   if (off) return null;
@@ -12,6 +13,6 @@ export default function CardBar({ d, h, off, bad, limits }) {
       {d.gpu != null && <N label="GPU" v={d.gpu} u="%" />}{d.disk != null && <N label="Disk" v={d.disk} u="%" />}
       {total > 0 && <span className="cn"><small>Runners</small>{Object.keys(d.jobs || {}).length}/{total} busy</span>}
       {failing > 0 && <span className="cn warn">{failing} failing</span>}
-      <Spark pts={h?.cpu} color={bad ? "var(--warn)" : "#4ade80"} />
+      <Spark pts={h?.cpu} color={bad ? "var(--warn)" : metricVar("cpu")} />
     </span>);
 }

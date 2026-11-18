@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Chart from "./Chart.jsx";
 import { saveCsv, savePng } from "./graphExport.js";
 import { shade } from "./graphTools.js";
+import { useMetricColors } from "./colors.js";
 import { setZoom, useAllHistory } from "./graphView.js";
 // The small things around a graph card: save buttons, the reset-zoom chip, and the full-window graph.
 export function SaveButtons({ title, series, card }) {
@@ -12,7 +13,8 @@ export function SaveButtons({ title, series, card }) {
 export const ZoomChip = ({ machine, span }) => span && <button className="zchip" onClick={() => setZoom(machine, null)} data-tip="Show the full time range again (or double-click a graph)">× Reset zoom</button>;
 
 // One metric big, with checkboxes to lay the same metric from the other machines over it. Esc or a click outside closes it.
-export function FullGraph({ title, k, color, machine, pts, onClose, ...chart }) {
+export function FullGraph({ title, k, machine, pts, onClose, ...chart }) {
+  const color = useMetricColors()[k];   // a real colour value: shades for the other machines are worked out from it
   const all = useAllHistory(), others = Object.keys(all).filter(n => n !== machine && all[n]?.[k]?.length);
   const [on, setOn] = useState(() => new Set());
   useEffect(() => { const f = e => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }; window.addEventListener("keydown", f, true); return () => window.removeEventListener("keydown", f, true); }, [onClose]);

@@ -1,0 +1,114 @@
+/* Design tokens. Every colour, font, size, radius and space used by the other style files is a custom property here.
+   Dark is the default; the light theme and the text scale override only what differs. Named text levels (machine, group, section,
+   number, label, small) each have a font family and a size, so a theme can change one level without touching the rest.
+   The numbered scales (--fs-N, --sp-N, --r-N, --sz-N) are the pixel value N times --scale. */
+:root {
+  --bg:#07080b; --s1:#0d0f14; --s2:#13161d; --line:#1b1f28; --line2:#282e39;
+  --fg:#e7e9ee; --mid:#aab1bd; --dim:#7b8392; --dim2:#4d5462;
+  --acc:#4cc9f0; --warn:#f5b544; --crit:#f2637a;
+  color-scheme: dark;
+  /* metric colours (graphs, group markers) */
+  --c-cpu:#4ade80; --c-temp:#fb923c; --c-ram:#60a5fa; --c-gpu:#a78bfa; --c-gtemp:#fb5a72; --c-vram:#38bdf8; --c-down:#60a5fa; --c-up:#f472b6; --c-ping:#4cc9f0; --c-disk:#fbbf24;
+  --c-net: var(--c-down); --c-run: var(--c-ping); --c-svc: var(--ok);
+  /* state colours */
+  --ok:#4ade80; --busy:#fbbf24; --bad:#fb5a72; --bad-text:#fb7a8c; --bad-glow:#fb5a7288;
+  --danger-text:#f2637acc; --danger-line:#f2637a55;
+  --on-acc:#04121a; --on-strong:#fff; --hover-mix:#fff; --mask-solid:#000;
+  --tip-bg:#12151c; --scrim:#000a; --chart-cursor:#ffffff38; --c-fallback:#888;
+  /* shadows */
+  --shadow-menu: 0 12px 40px #000c; --shadow-drawer: 0 -10px 28px #000a; --shadow-tip: 0 8px 24px #000a; --shadow-pop: 0 8px 28px #0008; --shadow-dlg: none;
+  /* fonts: one family per text level; all default to the system stack */
+  --font-ui: "Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono: ui-monospace,Consolas,monospace;
+  --font-machine: var(--font-ui); --font-group: var(--font-ui); --font-section: var(--font-ui);
+  --font-number: var(--font-ui); --font-label: var(--font-ui); --font-small: var(--font-ui);
+  /* text scale: 1 is normal, the Large text setting raises it */
+  --scale: 1;
+  --size-machine: calc(15px * var(--scale)); --size-group: calc(10px * var(--scale)); --size-section: calc(10px * var(--scale));
+  --size-number: calc(16px * var(--scale)); --size-label: calc(13px * var(--scale)); --size-small: calc(11px * var(--scale));
+  /* font sizes */
+  --fs-9: calc(9px * var(--scale));
+  --fs-9-5: calc(9.5px * var(--scale));
+  --fs-10: calc(10px * var(--scale));
+  --fs-10-5: calc(10.5px * var(--scale));
+  --fs-11: calc(11px * var(--scale));
+  --fs-11-5: calc(11.5px * var(--scale));
+  --fs-12: calc(12px * var(--scale));
+  --fs-12-5: calc(12.5px * var(--scale));
+  --fs-13: calc(13px * var(--scale));
+  --fs-15: calc(15px * var(--scale));
+  --fs-20: calc(20px * var(--scale));
+  /* spacing */
+  --sp-1: calc(1px * var(--scale));
+  --sp-2: calc(2px * var(--scale));
+  --sp-3: calc(3px * var(--scale));
+  --sp-4: calc(4px * var(--scale));
+  --sp-5: calc(5px * var(--scale));
+  --sp-6: calc(6px * var(--scale));
+  --sp-7: calc(7px * var(--scale));
+  --sp-8: calc(8px * var(--scale));
+  --sp-9: calc(9px * var(--scale));
+  --sp-10: calc(10px * var(--scale));
+  --sp-11: calc(11px * var(--scale));
+  --sp-12: calc(12px * var(--scale));
+  --sp-14: calc(14px * var(--scale));
+  --sp-16: calc(16px * var(--scale));
+  --sp-18: calc(18px * var(--scale));
+  --sp-30: calc(30px * var(--scale));
+  --sp-32: calc(32px * var(--scale));
+  --sp-40: calc(40px * var(--scale));
+  --sp-70: calc(70px * var(--scale));
+  --sp-150: calc(150px * var(--scale));
+  /* radii */
+  --r-1: calc(1px * var(--scale));
+  --r-2: calc(2px * var(--scale));
+  --r-3: calc(3px * var(--scale));
+  --r-4: calc(4px * var(--scale));
+  --r-5: calc(5px * var(--scale));
+  --r-6: calc(6px * var(--scale));
+  --r-7: calc(7px * var(--scale));
+  --r-8: calc(8px * var(--scale));
+  --r-9: calc(9px * var(--scale));
+  --r-10: calc(10px * var(--scale));
+  --r-12: calc(12px * var(--scale));
+  --r-14: calc(14px * var(--scale));
+  --r-99: calc(99px * var(--scale));
+  --r-999: calc(999px * var(--scale));
+  /* fixed sizes (heights and widths of dots, meters, tracks, ...) */
+  --sz-3: calc(3px * var(--scale));
+  --sz-4: calc(4px * var(--scale));
+  --sz-6: calc(6px * var(--scale));
+  --sz-7: calc(7px * var(--scale));
+  --sz-8: calc(8px * var(--scale));
+  --sz-10: calc(10px * var(--scale));
+  --sz-13: calc(13px * var(--scale));
+  --sz-14: calc(14px * var(--scale));
+  --sz-15: calc(15px * var(--scale));
+  --sz-16: calc(16px * var(--scale));
+  --sz-18: calc(18px * var(--scale));
+  --sz-20: calc(20px * var(--scale));
+  --sz-26: calc(26px * var(--scale));
+  --sz-28: calc(28px * var(--scale));
+  --sz-32: calc(32px * var(--scale));
+  --sz-34: calc(34px * var(--scale));
+  --sz-38: calc(38px * var(--scale));
+  --sz-40: calc(40px * var(--scale));
+  --sz-46: calc(46px * var(--scale));
+  --sz-56: calc(56px * var(--scale));
+  --sz-120: calc(120px * var(--scale));
+  --sz-130: calc(130px * var(--scale));
+  --sz-150: calc(150px * var(--scale));
+  --sz-200: calc(200px * var(--scale));
+  --sz-270: calc(270px * var(--scale));
+  --sz-276: calc(276px * var(--scale));
+  --sz-280: calc(280px * var(--scale));
+}
+:root[data-theme="light"] {
+  --bg:#f3f4f7; --s1:#ffffff; --s2:#eceff4; --line:#e0e4ea; --line2:#c9cfda;
+  --fg:#14171c; --mid:#454d5b; --dim:#6a7280; --dim2:#98a0ad;
+  --acc:#0a7ea4; --warn:#b26b00; --crit:#d23b55;
+  color-scheme: light;
+  --on-acc:#fff;
+  --shadow-menu: 0 8px 28px #0003; --shadow-drawer: 0 8px 28px #0003; --shadow-dlg: 0 8px 28px #0003;
+}
+html[data-size="large"] { --scale: 1.16; }

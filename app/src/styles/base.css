@@ -1,0 +1,53 @@
+/* Shared look: reset, buttons, the top and bottom bars, status dots, banners. Colours, fonts, sizes, radii and spacing come from tokens.css. */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:var(--fs-13)/1.45 var(--font-ui);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+button{font:inherit;color:var(--mid);background:var(--s2);border:1px solid var(--line2);border-radius:var(--r-8);padding:var(--sp-5) var(--sp-11);cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+button:hover:not(:disabled){color:var(--fg);border-color:var(--dim2);background:color-mix(in srgb,var(--s2) 82%,var(--hover-mix))}
+button:active:not(:disabled){background:var(--s1)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.on{color:var(--acc);background:color-mix(in srgb,var(--acc) 13%,var(--s2));border-color:color-mix(in srgb,var(--acc) 55%,var(--line2))}
+button.on:hover:not(:disabled){color:var(--acc);background:color-mix(in srgb,var(--acc) 20%,var(--s2));border-color:var(--acc)}
+button.cta{color:var(--on-acc);background:var(--acc);border-color:var(--acc);font-weight:600}
+button.cta:hover:not(:disabled){color:var(--on-acc);background:color-mix(in srgb,var(--acc) 85%,var(--hover-mix));border-color:var(--acc)}
+button.ghost{background:none;border-color:transparent}
+kbd{font:var(--fs-11) var(--font-mono);color:var(--mid);background:var(--s2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:var(--r-5);padding:0 var(--sp-5)}
+[hidden]{display:none!important}   /* the one place !important is needed: hidden must beat every display rule */
+.bar{display:flex;flex-wrap:wrap;gap:var(--sp-8);align-items:center;padding:var(--sp-8) var(--sp-12);border-bottom:1px solid var(--line)}
+.bar.foot{border-bottom:0;border-top:1px solid var(--line)}
+.brand{letter-spacing:.14em;font-size:var(--fs-11);color:var(--dim)}
+.brand b{color:var(--acc)}
+.grow{flex:1}
+.live{color:var(--dim);font-size:var(--fs-12);display:inline-flex;align-items:center;gap:var(--sp-6)}
+.dot{width:var(--sz-8);height:var(--sz-8);border-radius:50%;background:var(--acc);flex:none}
+.dot.warn{background:var(--warn)}
+.dot.off{background:none;border:1.5px solid var(--dim2)}
+.lbl{font-size:var(--fs-10);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.seg{display:inline-flex;max-width:100%;border:1px solid var(--line2);border-radius:var(--r-8);overflow-x:auto}
+.seg button{border:0;border-radius:0;background:none;padding:var(--sp-4) var(--sp-9);color:var(--dim);white-space:nowrap}
+.seg button:hover:not(:disabled){background:var(--s2);color:var(--fg)}
+.seg button.on,.seg button.on:hover:not(:disabled){background:var(--s2);color:var(--fg);box-shadow:inset 0 -2px var(--acc);border-color:transparent}
+.warn>.spark path.l{stroke:var(--warn)}
+.warn>.spark path.a{fill:var(--warn)}
+.quiet{color:var(--dim);font-size:var(--fs-12)}
+@media (max-width:520px){.bar .hide-s{display:none}.seg button{padding:var(--sp-4) var(--sp-7);font-size:var(--fs-12)}}
+html,body,#root{min-height:100%}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.top{position:sticky;top:0;background:var(--bg);z-index:5;min-height:var(--sz-38);padding-right:var(--sp-150);-webkit-app-region:drag}
+.top button,.top .live{-webkit-app-region:no-drag}
+.dock{position:sticky;bottom:0;background:var(--bg);margin-top:auto;z-index:5}
+.amber{color:var(--warn);font-weight:600}
+.empty{padding:var(--sp-40);text-align:center;color:var(--dim)}
+.empty small{display:block;color:var(--dim2);margin-top:var(--sp-6)}
+.tick{display:block;min-width:0;overflow:hidden;white-space:nowrap}
+.tick>span{display:inline-block}
+.tick[data-run="1"]>span{animation:tick var(--dur) ease-in-out infinite alternate}
+@media (prefers-reduced-motion:reduce){.tick[data-run="1"]>span{animation:none}.tick{text-overflow:ellipsis}.tick>span{display:inline}}
+.clock{color:var(--mid);font-weight:500}
+.badge{background:var(--crit);color:var(--on-strong);border-radius:var(--r-99);padding:0 var(--sp-6);font-size:var(--fs-10-5);margin-left:var(--sp-7);font-weight:600}
+.mver{padding:var(--sp-6) var(--sp-12) var(--sp-4);font-size:var(--fs-11);color:var(--dim2)}
+.stalebar{display:flex;flex-wrap:wrap;gap:var(--sp-6) var(--sp-12);align-items:center;margin:var(--sp-10) var(--sp-12) 0;padding:var(--sp-8) var(--sp-12);border-radius:var(--r-10);font-size:var(--fs-12-5);color:var(--mid);background:color-mix(in srgb,var(--crit) 10%,var(--s1));border:1px solid color-mix(in srgb,var(--crit) 40%,var(--line))}
+.stalebar b{color:var(--crit);font-weight:600}
+.stalebar button{margin-left:auto;padding:var(--sp-3) var(--sp-10)}
+.app.stale .grid,.app.stale .compact{opacity:.5;filter:saturate(.5);transition:opacity .3s}

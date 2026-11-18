@@ -1,0 +1,32 @@
+/* Compact view and the machines strip. */
+.strip{display:flex;padding:var(--sp-8) var(--sp-10) 0;flex-direction:row;flex-wrap:wrap;gap:var(--sp-6)}
+.strip .bar{padding:var(--sp-7) var(--sp-10)}
+.strip~.bar.foot .lbl{display:none}
+.compact{display:flex;flex-direction:column}
+.cattn{margin:var(--sp-8) var(--sp-10) 0;padding:var(--sp-6) var(--sp-10);border-radius:var(--r-8);font-size:var(--fs-12);background:color-mix(in srgb,var(--warn) 9%,var(--s1));border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line))}
+.cattn b{color:var(--warn)}
+.crow{border-bottom:1px solid var(--line)}
+.chead2{display:flex;align-items:center;gap:var(--sp-8);width:100%;border:0;border-radius:0;background:none;padding:var(--sp-9) var(--sp-12);text-align:left}
+.chead2:hover:not(:disabled){background:var(--s1)}
+.chead2 b{font-weight:600;color:var(--fg)}
+.chead2 em{margin-left:auto;font-style:normal;color:var(--dim2)}
+.cnums{display:flex;gap:var(--sp-12);margin-left:auto;color:var(--fg);flex-wrap:wrap;justify-content:flex-end}
+.cn{font-variant-numeric:tabular-nums}
+.cn small{color:var(--dim);font-size:var(--fs-10);letter-spacing:.06em;text-transform:uppercase;margin-right:var(--sp-4)}
+.cn.warn{color:var(--warn)}
+.cn.off{color:var(--dim);margin-left:auto}
+.cjobs{padding:0 var(--sp-12) var(--sp-8) var(--sp-32);color:var(--warn);font-size:var(--fs-11-5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cjobs i{font-style:normal;margin-right:var(--sp-4)}
+.cbody{padding:0 var(--sp-8) var(--sp-8)}
+.cbody .card{margin:0}
+.tile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border-radius:var(--r-9);background:var(--s1);border-color:var(--line);color:var(--acc);flex:0 0 auto;width:var(--sz-276);min-width:0;max-width:100%;height:var(--sz-56);box-sizing:border-box;justify-content:center;gap:var(--sp-3);padding:var(--sp-5) var(--sp-10)}
+.tile .th{display:flex;align-items:center;gap:var(--sp-6);color:var(--fg);max-width:100%}
+.tile .th b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .tn{display:flex;color:var(--fg);flex-wrap:nowrap;gap:0 var(--sp-6);font-size:var(--fs-11-5);white-space:nowrap;min-width:0}
+.tile .tn small{color:var(--dim);letter-spacing:.04em;font-size:var(--fs-9-5)}
+.tile.off{background:var(--bg);border-style:dashed}
+.tile.off .th,.tile.off .tn{color:var(--dim)}
+.tile.off .th b{color:var(--dim)}
+.tile .tspark{display:block;opacity:.85}
+.tile .tl2{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-8);width:100%}
+.cnums.bar{border-bottom:0}
