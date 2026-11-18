@@ -37,9 +37,9 @@ export const BASE_ITEMS = [C("bg", "Background", ["--bg"], "#07080b", "#f3f4f7")
 export const STATUS_ITEMS = [C("good", "Good", ["--ok"], "#4ade80", "#0e7434"), C("warn", "Warning", ["--warn"], "#f5b544", "#8a5200"), C("bad", "Bad", ["--crit", "--bad"], "#f2637a", "#b3243e")];
 export const DERIVED_ITEMS = [C("card", "Card", ["--s1"], "#0d0f14", "#ffffff"), C("s2", "Raised card", ["--s2"], "#13161d", "#eceff4"), C("line", "Border", ["--line"], "#1b1f28", "#e0e4ea"),
   C("line2", "Strong border", ["--line2"], "#282e39", "#c9cfda"), C("dim", "Dim text", ["--dim"], "#9099a8", "#555d6b"), C("mid", "Mid text", ["--mid"], "#aab1bd", "#454d5b"), C("dim2", "Faint text", ["--dim2"], "#646a77", "#7e8590")];
-export const METRIC_ITEMS = [["cpu", "CPU", "#4ade80"], ["temp", "CPU temperature", "#fb923c"], ["ram", "Memory", "#60a5fa"], ["gpu", "GPU", "#a78bfa"], ["gtemp", "GPU temperature", "#fb5a72"],
-  ["vram", "GPU memory", "#38bdf8"], ["down", "Download", "#60a5fa"], ["up", "Upload", "#f472b6"], ["ping", "Ping", "#4cc9f0"], ["disk", "Disk", "#fbbf24"]]
-  .map(([id, label, hex]) => C(id, label, ["--c-" + id], hex));
+export const METRIC_ITEMS = [["cpu", "CPU", "#4ade80", "#1a7f3c"], ["temp", "CPU temperature", "#fb923c", "#c2570c"], ["ram", "Memory", "#60a5fa", "#2563c9"], ["gpu", "GPU", "#a78bfa", "#7c4dd6"], ["gtemp", "GPU temperature", "#fb5a72", "#c42b45"],
+  ["vram", "GPU memory", "#38bdf8", "#0b7fa8"], ["down", "Download", "#60a5fa", "#2563c9"], ["up", "Upload", "#f472b6", "#b8337f"], ["ping", "Ping", "#4cc9f0", "#0b7fa8"], ["disk", "Disk", "#fbbf24", "#8a6400"]]
+  .map(([id, label, hex, light]) => C(id, label, ["--c-" + id], hex, light));
 export const ALL_COLORS = [...BASE_ITEMS, ...STATUS_ITEMS, ...DERIVED_ITEMS, ...METRIC_ITEMS];
 export const COLOR_IDS = ALL_COLORS.map(c => c.id);
 export const builtIn = (id, base) => { const c = ALL_COLORS.find(x => x.id === id); return c ? c[base] : ""; };

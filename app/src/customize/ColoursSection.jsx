@@ -6,11 +6,14 @@ import { Block, Find, Row, Toggle } from "./controls.jsx";
 // Colours: three base colours that every other colour follows, a Fine-tune fold for the per-metric and status colours, and the colour-blind switch.
 const Picker = ({ value, onChange, label }) => <input type="color" value={value} aria-label={label} onChange={e => onChange(e.target.value)} />;
 export default function ColoursSection({ c }) {
-  const q = useContext(Find), [open, setOpen] = useState(false), all = fullColors(c.look, c.base), warn = contrastWarning(c.look, c.base);
+  const q = useContext(Find), [open, setOpen] = useState(false), all = fullColors(c.editLook, c.editing), warn = contrastWarning(c.editLook, c.editing), other = c.editing === "dark" ? "light" : "dark";
   const set = id => v => c.edit(["colors", id], v);
   const fine = ({ id, label }) => <Row key={id} id={"colors." + id} label={label} keys="colour color metric status" c={c}><Picker value={all[id]} label={label + " colour"} onChange={set(id)} /><code>{all[id]}</code></Row>;
   return (
     <>
+      <div className="cnow" role="status" data-setting="colors.version"><b>Editing the {c.editing} version</b>
+        <span className="cbtns"><button onClick={() => c.setEditing(other)}>Edit the {other} version</button></span>
+        <p className="chint">Colours are kept separately for the dark and the light version. Everything else is shared.</p></div>
       <Block id="colors.base" label="Base colours" keys="background text accent colour color" className="cblock">
         <div className="cbase">
           {BASE_ITEMS.map(({ id, label }) => (
