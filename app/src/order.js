@@ -1,7 +1,8 @@
 // Pure helpers for "my order": machine cards and the groups inside a card. A saved order may be out of date, so it is always merged with what exists now.
-export const GROUPS = [["cpu", "CPU"], ["gpu", "GPU"], ["net", "Network"], ["disk", "Disk"], ["run", "Runners"], ["svc", "Containers & services"]];
-const KEYS = GROUPS.map(g => g[0]);
-export const groupLabel = k => GROUPS.find(g => g[0] === k)?.[1] || k;
+import { SECTION_IDS, sectionTitle, availableIds } from "./sections/meta.js";
+// The sections themselves (ids, names, which a machine has) are listed once, in sections/meta.js.
+const KEYS = SECTION_IDS;
+export const groupLabel = sectionTitle;
 
 // Saved names that still exist (once each, in saved order), then new names at the end.
 export const mergeOrder = (saved, names) => {
@@ -33,5 +34,5 @@ export const stripOrder = (ms, local) => [...ms.filter(m => m.name === local), .
 export const normGroups = s => ({ order: mergeOrder(s?.order, KEYS), hidden: (Array.isArray(s?.hidden) ? s.hidden : []).filter((k, i, a) => KEYS.includes(k) && a.indexOf(k) === i) });
 export const toggleHidden = (g, k) => ({ ...g, hidden: g.hidden.includes(k) ? g.hidden.filter(x => x !== k) : [...g.hidden, k] });
 export const moveGroup = (g, k, step) => ({ ...g, order: moveBy(g.order, k, step) });
-// Which groups a machine can show right now (GPU, runners and services only when it has them).
-export const groupsFor = d => KEYS.filter(k => k === "gpu" ? d?.gpu != null : k === "run" ? !!d?.runners : k === "svc" ? !!(d?.docker || d?.failed?.length) : true);
+// Which sections a machine can show right now (GPU, runners and services only when it has them). `h` is its graph history, if known.
+export const groupsFor = (d, h) => availableIds({ d }, h);
