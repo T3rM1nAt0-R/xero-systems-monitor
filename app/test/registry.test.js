@@ -8,7 +8,7 @@ import { normMachine, patchMachine, togglePinned, DEFAULT_MACHINE } from "../src
 
 test("registry: one entry per section, unique ids, every tab known, every function present", () => {
   assert.equal(new Set(SECTION_IDS).size, SECTION_META.length);
-  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "term"]);
+  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "logs", "term"]);
   assert.equal(new Set(TAB_IDS).size, TABS.length);
   assert.deepEqual(TAB_IDS.slice(0, 2), ["overview", "hardware"]);
   for (const s of SECTION_META) {
