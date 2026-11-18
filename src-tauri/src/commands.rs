@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 22. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
