@@ -65,6 +65,10 @@
   --sp-30: calc(30px * var(--scale) * var(--dens));
   --sp-32: calc(32px * var(--scale) * var(--dens));
   --sp-40: calc(40px * var(--scale) * var(--dens));
+  --sp-60: calc(60px * var(--scale) * var(--dens));
+  --sp-80: calc(80px * var(--scale) * var(--dens));
+  --sp-100: calc(100px * var(--scale) * var(--dens));
+  --sp-200: calc(200px * var(--scale) * var(--dens));
   --sp-70: calc(70px * var(--scale) * var(--dens));
   --sp-150: calc(150px * var(--scale) * var(--dens));
   /* radii */
@@ -98,6 +102,7 @@
   --sz-26: calc(26px * var(--scale));
   --sz-28: calc(28px * var(--scale));
   --sz-32: calc(32px * var(--scale));
+  --sz-36: calc(36px * var(--scale));
   --sz-34: calc(34px * var(--scale));
   --sz-38: calc(38px * var(--scale));
   --sz-40: calc(40px * var(--scale));
