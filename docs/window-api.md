@@ -20,6 +20,7 @@ Rules for every command:
 | `get_forecast` | `machine: string` | `{ per_day: number or null, days: number or null }` |
 | `get_machines` | none | `{ machines: MachineConfig[] }` |
 | `save_machines` | `machines: MachineConfig[]` | `{}` when saved (the collector restarts), or `{ error: string }` and nothing saved |
+| `container_action` | `machine: string, action: "restart" or "stop" or "start" or "logs", name: string` (an ssh machine; the name must match `[a-zA-Z0-9][a-zA-Z0-9_.-]*`) | text: the last 50 log lines for `logs`, else a short sentence. Runs one `docker <action> <name>` over its own `ssh` (20 second limit); a failure is a plain-words error (for example the ssh user needs the docker group) |
 | `get_prefs` | none | `Prefs` |
 | `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray` and `login` can change) | the new `Prefs` |
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
@@ -55,6 +56,9 @@ Reading = {                       // every field optional; absent means "not mea
   ping: number,                   // ms
   speed: number,                  // link, Mbps
   uptime: number,                 // seconds
+  restart: boolean,               // a restart is waiting for updates; absent when not known (see below)
+  restart_pkgs: number,           // how many packages asked for it, when known
+  updates: number,                // updates waiting, when known
   ip: string,
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
@@ -67,6 +71,10 @@ Reading = {                       // every field optional; absent means "not mea
   docker: [name, state, text, image, ports, created][], docker_err: string,
   failed: string[]                // failed systemd units
 }
+
+Restart status: Debian and Ubuntu machines report it from `/var/run/reboot-required` (and its `.pkgs` list), and the
+update count from `apt-check` when that is installed (read about every 100th frame). This PC on Windows reads the two
+"restart pending" registry keys with `reg query`. Any other system leaves `restart` out: unknown, not "no".
 
 History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null }
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine

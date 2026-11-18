@@ -37,6 +37,8 @@ pub struct Reading {
     pub connections: Vec<ConnCount>,
     /// Hardware names (kept from the last frame that read them).
     pub hardware: HardwareInfo,
+    /// Restart and update state (kept from the last frame that read the update count).
+    pub updates: UpdateInfo,
 }
 
 /// Open network connections of one program name, all its processes added together.
@@ -228,4 +230,15 @@ pub struct HardwareInfo {
     pub os: Option<String>,
     /// Board or machine model.
     pub board: Option<String>,
+}
+
+/// Whether the machine wants a restart, and how many updates wait. `None` means not known.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UpdateInfo {
+    /// True when the system says a restart is needed for updates.
+    pub restart_needed: Option<bool>,
+    /// How many packages asked for the restart.
+    pub restart_packages: Option<u32>,
+    /// Updates waiting to be installed.
+    pub pending: Option<u32>,
 }

@@ -7,6 +7,7 @@ import Smooth from "./Smooth.jsx";
 import Busy from "./Busy.jsx";
 import Conns from "./Conns.jsx";
 import Trends from "./Trends.jsx";
+import ContainerActions from "./ContainerActions.jsx";
 import { jobStats, containerBad } from "./alerts.js";
 import { useFold, foldProps } from "./fold.js";
 import Sub from "./Sub.jsx";
@@ -93,7 +94,7 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone, limits =
             {d.docker_err && <div className="svcnote" role="alert">Docker is installed here but would not answer: <code>{d.docker_err}</code> The ssh user probably needs to be in the docker group.</div>}
             {failed.map(u => <div className="svcrow bad" key={"f" + u}><i /><b>{u}</b><span className="st">failed</span><span className="sub">systemd service</span></div>)}
             {cs.map(([n, st, text, img, ports, ago]) => <div className={"svcrow" + (containerBad([n, st, text]) ? " bad" : st === "running" ? " up" : "")} key={n}>
-              <i /><b data-tip={n}>{n}</b><span className="st">{text}</span><span className="sub" data-tip={[img, ports, ago && "created " + ago].filter(Boolean).join(" · ")}>{[img, ports].filter(Boolean).join(" · ")}</span></div>)}
+              <i /><b data-tip={n}>{n}</b><span className="st">{text}</span><span className="sub" data-tip={[img, ports, ago && "created " + ago].filter(Boolean).join(" · ")}>{[img, ports].filter(Boolean).join(" · ")}</span><ContainerActions machine={m.name} name={n} running={st === "running"} /></div>)}
             {gone.map(([n, t, , text, img]) => <div className="svcrow gone" key={"g" + n}><i /><b data-tip={n}>{n}</b><span className="st">gone {since(t)} ago</span><span className="sub">was: {text}{img ? " · " + img : ""}</span></div>)}
             {!cs.length && !gone.length && !failed.length && !d.docker_err && <div className="quiet">No containers on this machine right now.</div>}
           </div></Grp>; })()}

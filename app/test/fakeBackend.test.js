@@ -14,6 +14,13 @@ test("docs/window-api.md and the fake backend list the same commands", () => {
   assert.ok(documented.length > 15);
   assert.deepEqual([...COMMANDS].sort(), documented);
 });
+test("container_action: demo answers and refuses bad input", async () => {
+  assert.match(await handle("container_action", { machine: "example-server", action: "restart", name: "web" }), /^Restarted web/);
+  const logs = await api.containerAction("example-server", "logs", "web");
+  assert.equal(logs.trim().split("\n").length, 50);
+  await assert.rejects(async () => handle("container_action", { action: "stop", name: "a; rm -rf /" }), /container name/);
+  await assert.rejects(async () => handle("container_action", { action: "rm", name: "web" }), /Not an action/);
+});
 test("api.js outside Tauri answers from the fake backend", async () => {
   const s = await api.getState();
   assert.deepEqual(s.machines.map(m => m.name), ["This PC", "example-server"]);

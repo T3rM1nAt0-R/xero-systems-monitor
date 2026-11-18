@@ -2,7 +2,7 @@
 
 use crate::connections::open_pids;
 use crate::runners::RunnerWatch;
-use crate::sensors::{cpu_temp, ping_once};
+use crate::sensors::{cpu_temp, ping_once, windows_restart_needed};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ use sysinfo::{
 use xsm_core::connections::by_program;
 use xsm_core::reading::{
     ConnCount, CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading,
-    Reading, TopProgram,
+    Reading, TopProgram, UpdateInfo,
 };
 
 /// Percent scale.
@@ -45,6 +45,7 @@ pub struct LocalSource {
     acpi_temp: Option<f64>,
     last_net: Option<(Instant, f64, f64)>,
     ping_ms: Option<f64>,
+    updates: UpdateInfo,
     top: Vec<TopProgram>,
     connections: Vec<ConnCount>,
     hardware: HardwareInfo,
@@ -71,6 +72,7 @@ impl LocalSource {
             acpi_temp: None,
             last_net: None,
             ping_ms: None,
+            updates: UpdateInfo::default(),
             top: Vec::new(),
             connections: Vec::new(),
             hardware,
@@ -110,6 +112,7 @@ impl LocalSource {
             xsm_core::parse::parse_frame(&self.runners.lines(&self.sys, SystemTime::now()), None);
         if self.polls.is_multiple_of(PING_EVERY_POLLS) {
             self.ping_ms = ping_once();
+            self.updates.restart_needed = windows_restart_needed();
         }
         let poll_no = self.polls;
         self.polls = self.polls.wrapping_add(1);
@@ -129,6 +132,7 @@ impl LocalSource {
             top: self.top.clone(),
             connections: self.connections.clone(),
             hardware: self.hardware.clone(),
+            updates: self.updates.clone(),
             runners: ci.runners,
             jobs: ci.jobs,
             ..Reading::default()

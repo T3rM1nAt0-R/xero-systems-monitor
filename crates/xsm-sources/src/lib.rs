@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 
 mod connections;
+pub mod container;
 pub mod local;
 pub mod runners;
 pub mod sensors;

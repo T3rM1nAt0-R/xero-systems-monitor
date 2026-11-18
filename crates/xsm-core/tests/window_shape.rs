@@ -3,7 +3,7 @@
 use serde_json::json;
 use xsm_core::reading::{
     ConnCount, ContainerState, CpuReading, DiskReading, FailedService, GpuReading, HardwareInfo,
-    JobLine, MemoryReading, NetReading, Reading, RunnerState, TopProgram,
+    JobLine, MemoryReading, NetReading, Reading, RunnerState, TopProgram, UpdateInfo,
 };
 use xsm_core::tracker::{Rules, Tracker};
 
@@ -126,6 +126,11 @@ fn snapshot_has_the_window_shape() {
             ..HardwareInfo::default()
         },
         docker_error: None,
+        updates: UpdateInfo {
+            restart_needed: Some(true),
+            restart_packages: Some(2),
+            pending: Some(7),
+        },
     };
     t.observe(r, 1000);
     let v = serde_json::to_value(t.snapshot()).unwrap();
@@ -134,6 +139,7 @@ fn snapshot_has_the_window_shape() {
         "d": {
             "cpu": 12.5, "temp": 55.0, "ram": 25.0, "disk": 40.0, "gpu": 3.0, "gtemp": 40.0, "vram": 25.0,
             "down": 10.0, "up": 5.0, "ping": 11.0, "speed": 1000, "uptime": 99.0, "ip": "192.0.2.5",
+            "restart": true, "restart_pkgs": 2, "updates": 7,
             "ram_gb": [2.0, 8.0], "vram_gb": [1.0, 4.0], "storage": [["/", 40.0, 100.0]],
             "hw": {"os": "Linux"}, "top": [["prog", 7.0, 5.0, 2]], "conns": [["prog", 4]],
             "runners": {"r1": true},
