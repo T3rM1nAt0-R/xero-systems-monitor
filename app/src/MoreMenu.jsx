@@ -3,6 +3,7 @@ import { since } from "./format.js";
 import { ALERTS } from "./alerts.js";
 import { notify } from "./useAlerts.js";
 import * as api from "./api.js";
+import QuietMenu from "./QuietMenu.jsx";
 export const REFRESH = [3, 5, 10, 30, 60];   // seconds; the collector itself samples every 3 s
 
 // One menu row. `on` (true/false) makes it a switch; `hint` is the small text on the right (a shortcut or a status).
@@ -14,7 +15,7 @@ const Row = ({ on, hint, danger, onClick, disabled, children }) => (
 const Head = ({ children }) => <div className="mlabel">{children}</div>;
 
 // The More menu, in groups: Monitor, Alerts, Window, Updates, then Help and Stop.
-export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, calmFold, setCalmFold, snoozeUntil, setSnoozeUntil, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
+export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, calmFold, setCalmFold, snoozeUntil, setSnoozeUntil, quiet, setQuiet, muted, onMute, onLimits, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
   const [alerts, setAlerts] = useState(false);
   const close = fn => () => { setOpen(false); fn(); };
   const onCount = ALERTS.filter(([k]) => alertPrefs[k]).length;
@@ -35,8 +36,10 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
             <div className="seg"><button className={snoozeUntil > Date.now() && snoozeUntil - Date.now() <= 3600000 ? "on" : ""} onClick={() => setSnoozeUntil(Date.now() + 3600000)}>1 h</button>
               <button className={snoozeUntil - Date.now() > 3600000 ? "on" : ""} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); setSnoozeUntil(+d); }}>Till 8 AM</button>
               <button disabled={!(snoozeUntil > Date.now())} onClick={() => setSnoozeUntil(0)}>Off</button></div></div>
+          <QuietMenu quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} />
           <Row onClick={close(() => notify({ key: "test" + Date.now(), title: "Xero Systems Monitor", body: "Notifications work." }))}>Send a test notification</Row>
         </div>}
+        <Row onClick={close(onLimits)}>Limits…</Row>
 
         <hr /><Head>Look</Head>
         <div className="mseg" role="group" aria-label="Theme"><span>Theme</span><div className="seg">{[["dark", "Dark"], ["light", "Light"], ["system", "Windows"]].map(([k, l]) => <button key={k} className={look.theme === k ? "on" : ""} onClick={() => look.setTheme(k)}>{l}</button>)}</div></div>

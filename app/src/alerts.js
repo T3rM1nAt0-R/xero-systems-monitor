@@ -11,6 +11,7 @@ export const HOT_MIN = 10;
 // Same rule as the collector's container_bad(): restarting, dead, a non-zero exit, or a failing health check. A clean exit is not a failure.
 export const containerBad = ([, state, status]) => state === "restarting" || state === "dead" || /\(unhealthy\)/.test(status) || (state === "exited" && /^Exited \((?!0\))\d+\)/.test(status));
 export const badNow = d => [...(d?.docker || []).filter(containerBad).map(c => "c:" + c[0]), ...(d?.failed || []).map(u => "f:" + u)];
+import { DISK_DAYS, limitsFor } from "./limits.js";
 export const DEFAULT_PREFS = { offline: true, failed: true, runner: true, hot: true, svc: true, disk: true };
 
 // Compare the last state with this one. `prev` is what this returned last time (null the first time: nothing alerts).
@@ -21,10 +22,10 @@ export function machineAlerts(prev, machines, hotSince = {}, now = Date.now()) {
     const hot = hotSince[m.name]?.cpu || 0, old = prev?.[m.name];
     next[m.name] = { err: !!m.err, gone: m.gone || [], bad: badNow(m.d), hotSent: old?.hotSent && hot > 0 };
     if (!prev) continue;
-    if (old && !old.err && m.err) alerts.push({ key: m.name + ":off", kind: "offline", title: `${m.name} is offline`, body: "The monitor can't reach it." });
-    for (const r of next[m.name].gone) if (old && !old.gone.includes(r)) alerts.push({ key: `${m.name}:${r}:gone`, kind: "runner", title: `Runner ${r} stopped reporting`, body: `On ${m.name}.` });
-    for (const k of next[m.name].bad) if (old && !(old.bad || []).includes(k)) alerts.push({ key: `${m.name}:${k}:${Math.floor(now / 60000)}`, kind: "svc", title: k.startsWith("c:") ? `Container ${k.slice(2)} failed` : `Service ${k.slice(2)} failed`, body: `On ${m.name}.` });
-    if (hot > 0 && now - hot >= HOT_MIN * 60000 && !old?.hotSent) { alerts.push({ key: m.name + ":hot", kind: "hot", title: `${m.name} CPU has been high`, body: `Above the limit for ${Math.round((now - hot) / 60000)} min.` }); next[m.name].hotSent = true; }
+    if (old && !old.err && m.err) alerts.push({ key: m.name + ":off", machine: m.name, kind: "offline", title: `${m.name} is offline`, body: "The monitor can't reach it." });
+    for (const r of next[m.name].gone) if (old && !old.gone.includes(r)) alerts.push({ key: `${m.name}:${r}:gone`, machine: m.name, kind: "runner", title: `Runner ${r} stopped reporting`, body: `On ${m.name}.` });
+    for (const k of next[m.name].bad) if (old && !(old.bad || []).includes(k)) alerts.push({ key: `${m.name}:${k}:${Math.floor(now / 60000)}`, machine: m.name, kind: "svc", title: k.startsWith("c:") ? `Container ${k.slice(2)} failed` : `Service ${k.slice(2)} failed`, body: `On ${m.name}.` });
+    if (hot > 0 && now - hot >= HOT_MIN * 60000 && !old?.hotSent) { alerts.push({ key: m.name + ":hot", machine: m.name, kind: "hot", title: `${m.name} CPU has been high`, body: `Above the limit for ${Math.round((now - hot) / 60000)} min.` }); next[m.name].hotSent = true; }
   }
   return { alerts, next };
 }
@@ -35,7 +36,7 @@ export function failedAlerts(rows, after) {
   for (const [machine, runner, , e, res, label] of rows) {
     if (e > top) top = e;
     if (after == null || e <= after || res !== "Failed") continue;   // the first load only sets the mark
-    alerts.push({ key: `${machine}:${runner}:${e}`, kind: "failed", title: `Job failed on ${runner}`, body: `${label} (${machine})` });
+    alerts.push({ key: `${machine}:${runner}:${e}`, machine, kind: "failed", title: `Job failed on ${runner}`, body: `${label} (${machine})` });
   }
   return { alerts, after: top };
 }
@@ -50,15 +51,16 @@ export function jobStats(rows, machine, since) {
   return { done, failed, stopped };
 }
 
-// Disks: any drive above 90 % used, or the forecast says the disk fills within 14 days. One alert per machine per day.
-export const DISK_DAYS = 14;
-export function diskAlerts(machines, fc, now = Date.now()) {
+// Disks: any drive above its limit (90 % unless set), or the forecast says the disk fills within its days (14 unless set). One alert per machine per day.
+export { DISK_DAYS };
+export function diskAlerts(machines, fc, now = Date.now(), limits = {}) {
   const day = Math.floor(now / 86400000), out = [];
   for (const m of machines) {
     if (m.err) continue;
-    const full = (m.d?.storage || []).filter(([, u, t]) => t > 0 && u / t > 0.9).sort((x, y) => y[1] / y[2] - x[1] / x[2])[0], days = fc?.[m.name]?.days;
-    if (full) out.push({ key: `${m.name}:disk:full:${day}`, kind: "disk", title: `Disk ${full[0]} on ${m.name} is ${Math.round(100 * full[1] / full[2])}% full`, body: "Free some space soon." });
-    else if (days != null && days <= DISK_DAYS) out.push({ key: `${m.name}:disk:fc:${day}`, kind: "disk", title: `Disk on ${m.name} fills in about ${days} day${days === 1 ? "" : "s"}`, body: "At the current pace." });
+    const lim = limitsFor(limits, m.name);
+    const full = (m.d?.storage || []).filter(([, u, t]) => t > 0 && 100 * u / t > lim.disk).sort((x, y) => y[1] / y[2] - x[1] / x[2])[0], days = fc?.[m.name]?.days;
+    if (full) out.push({ key: `${m.name}:disk:full:${day}`, machine: m.name, kind: "disk", title: `Disk ${full[0]} on ${m.name} is ${Math.round(100 * full[1] / full[2])}% full`, body: "Free some space soon." });
+    else if (days != null && days <= lim.days) out.push({ key: `${m.name}:disk:fc:${day}`, machine: m.name, kind: "disk", title: `Disk on ${m.name} fills in about ${days} day${days === 1 ? "" : "s"}`, body: "At the current pace." });
   }
   return out;
 }
@@ -69,7 +71,7 @@ export function eventAlerts(events, after) {
   for (const [t, machine, msg] of events) {
     if (t > top) top = t;
     if (after == null || t <= after || !/keeps restarting/.test(msg)) continue;
-    alerts.push({ key: `${machine}:${msg}:${t}`, kind: "svc", title: msg.replace(/ \(.*\)$/, ""), body: `On ${machine}.` });
+    alerts.push({ key: `${machine}:${msg}:${t}`, machine, kind: "svc", title: msg.replace(/ \(.*\)$/, ""), body: `On ${machine}.` });
   }
   return { alerts, after: top };
 }

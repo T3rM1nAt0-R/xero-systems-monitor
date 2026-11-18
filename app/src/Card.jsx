@@ -6,13 +6,13 @@ import { isCalm } from "./calm.js";
 import { gb, uptime, isWarn, hm, hotMin, WATCH } from "./format.js";
 const GENERIC = /^(system product name|to be filled|default string|not specified|unknown|none|o\.?e\.?m)/i;
 const hwLine = d => d.hw && [GENERIC.test(d.hw.board || "") ? "" : d.hw.board, d.hw.os].filter(Boolean).join(" · ");
-function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, auto, flat, onOpen: open, onTry }) {
+function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, limits, auto, flat, onOpen: open, onTry }) {
   const d = m.d || {};
   const off = !!m.err;
-  const warnings = WATCH.filter(k => !off && isWarn(k, d[k]));
+  const warnings = WATCH.filter(k => !off && isWarn(k, d[k], limits));
   const state = off ? `Offline` : hot.cpu ? `Working hard for ${hotMin(hot.cpu, now * 1000)} min` : warnings.length ? "Needs a look" : d.uptime != null ? `All calm · on for ${uptime(d.uptime)}` : "All calm";
   const bad = !off && (hot.cpu || warnings.length);
-  const [shown, flip] = useCardFold(m.name, isCalm(m, hot, rows, now), auto), isOpen = flat || shown;   // folding is ignored inside the compact view
+  const [shown, flip] = useCardFold(m.name, isCalm(m, hot, rows, now, limits), auto), isOpen = flat || shown;   // folding is ignored inside the compact view
   const head = flat ? {} : { ...foldProps(isOpen, flip), className: "chead fold" };
   const chev = !flat && <b className="chev">{isOpen ? "▾" : "▸"}</b>;
   if (off) return (
@@ -25,8 +25,8 @@ function Card({ m, h, rows, fc, range, now, lastOk, hot, gone, auto, flat, onOpe
   return (
     <article className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name}>
       <div className="chead" {...head}>{chev}<i className={"dot" + (bad ? " warn" : "")} /><h3>{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
-        {isOpen ? <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span> : <CardBar d={d} h={h} bad={bad} />}</div>
-      {isOpen && <MachineBody m={m} h={h} rows={rows} fc={fc} range={range} now={now} gone={gone} />}
+        {isOpen ? <span className="meta">{[hwLine(d), d.ip].filter(Boolean).join(" · ")}</span> : <CardBar d={d} h={h} bad={bad} limits={limits} />}</div>
+      {isOpen && <MachineBody limits={limits} m={m} h={h} rows={rows} fc={fc} range={range} now={now} gone={gone} />}
     </article>
   );
 }

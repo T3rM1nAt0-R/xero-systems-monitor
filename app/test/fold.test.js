@@ -33,3 +33,7 @@ test("sparkPath: needs two points, stays inside the box, thins long series", () 
   assert.ok(sparkPath(Array.from({ length: 600 }, (_, i) => [i, i % 100])).split("L").length <= 62);
   assert.ok(sparkPath([[0, 2], [1, 4]], 0).startsWith("M"));
 });
+test("calm: uses the machine own limits", () => {
+  assert.equal(isCalm(ok, {}, [], 1000, { temp: 30 }), false);
+  assert.equal(isCalm({ ...ok, d: { ...ok.d, temp: 85 } }, {}, [], 1000, { temp: 95 }), true);
+});
