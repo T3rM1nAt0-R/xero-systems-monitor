@@ -2,7 +2,7 @@
 // in a plain browser (`npm run dev`) the same commands are answered by fakeBackend.js with demo data.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { handle } from "./fakeBackend.js";
+import { handle, onFakeEvent } from "./fakeBackend.js";
 import { isGithubUrl } from "./github.js";
 
 const inTauri = () => typeof window !== "undefined" && !!window.__TAURI_INTERNALS__;
@@ -38,9 +38,15 @@ export const relaunch = () => call("relaunch");
 export const stopEverything = () => call("stop_everything");
 export const quit = () => call("quit");
 
+// Terminal tab (docs/window-api.md): output and exit arrive as events, see onShellEvent("terminal-output" | "terminal-exit", fn).
+export const terminalOpen = (id, machine, cols, rows) => call("terminal_open", { id, machine, cols, rows });
+export const terminalWrite = (id, data) => call("terminal_write", { id, data });
+export const terminalResize = (id, cols, rows) => call("terminal_resize", { id, cols, rows });
+export const terminalClose = id => call("terminal_close", { id });
+
 // Things the shell pushes (the tray menu): "window-mode" with a mode name, "pinned" with true/false. Returns a function that stops listening.
 export function onShellEvent(name, fn) {
-  if (!inTauri()) return () => {};
+  if (!inTauri()) return onFakeEvent(name, fn);
   let off = null, stopped = false;
   listen(name, e => fn(e.payload)).then(un => (stopped ? un() : (off = un)));
   return () => { stopped = true; if (off) off(); };
