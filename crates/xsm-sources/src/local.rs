@@ -3,6 +3,7 @@
 use crate::connections::open_pids;
 use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
+use crate::slow::SlowWorker;
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
@@ -11,6 +12,7 @@ use sysinfo::{
     Disks, Motherboard, Networks, Pid, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
 };
 use xsm_core::connections::by_program;
+use xsm_core::drives::DiskIo;
 use xsm_core::reading::{
     ConnCount, CpuReading, DiskReading, GpuReading, HardwareInfo, MemoryReading, NetReading,
     Reading, TopProgram, UpdateInfo,
@@ -50,6 +52,8 @@ pub struct LocalSource {
     connections: Vec<ConnCount>,
     hardware: HardwareInfo,
     runners: RunnerWatch,
+    slow: SlowWorker,
+    last_io: Option<Instant>,
 }
 
 impl LocalSource {
@@ -77,6 +81,8 @@ impl LocalSource {
             connections: Vec::new(),
             hardware,
             runners: RunnerWatch::default(),
+            slow: SlowWorker::start(),
+            last_io: None,
         })
     }
 
@@ -118,6 +124,8 @@ impl LocalSource {
         let poll_no = self.polls;
         self.polls = self.polls.wrapping_add(1);
         let disks = disk_readings(&self.disks);
+        let disk_io = self.disk_io();
+        let slow = self.slow.facts();
         Reading {
             cpu: Some(CpuReading {
                 usage_pct: (!first).then(|| f64::from(self.sys.global_cpu_usage())),
@@ -127,6 +135,9 @@ impl LocalSource {
             memory: memory_reading(&self.sys),
             disk_used_pct: root_used_pct(&self.disks),
             disks,
+            disk_io,
+            drive_health: slow.drive_health,
+            health_note: slow.health_note,
             net: Some(self.net_reading()),
             gpu: self.nvml.as_ref().and_then(gpu_reading),
             ping_ms: self.ping_ms,
@@ -139,6 +150,31 @@ impl LocalSource {
             jobs: ci.jobs,
             ..Reading::default()
         }
+    }
+
+    /// Read and write speed of each drive since the previous poll (none on the first poll).
+    fn disk_io(&mut self) -> Vec<DiskIo> {
+        let now = Instant::now();
+        let secs = self
+            .last_io
+            .replace(now)
+            .map(|t| now.duration_since(t).as_secs_f64());
+        let Some(secs) = secs.filter(|s| *s > 0.0) else {
+            return Vec::new();
+        };
+        // reason: byte counts stay far below 2^53, where f64 is exact
+        #[allow(clippy::cast_precision_loss)]
+        let per_s = |bytes: u64| bytes as f64 / secs;
+        self.disks
+            .iter()
+            .filter(|d| d.total_space() > 0)
+            .filter(|d| !VIRTUAL_FS.contains(&d.file_system().to_string_lossy().as_ref()))
+            .map(|d| DiskIo {
+                name: d.mount_point().to_string_lossy().into_owned(),
+                read_bytes_per_s: per_s(d.usage().read_bytes),
+                write_bytes_per_s: per_s(d.usage().written_bytes),
+            })
+            .collect()
     }
 
     fn net_reading(&mut self) -> NetReading {

@@ -56,9 +56,14 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">Tabs on every machine card: Overview, Hardware, Processes, Disks, Network, Services and Runners (only the ones that machine has). Overview keeps the main graphs, a short runners block and any failing containers. Use the arrow keys to move between tabs; each machine remembers its tab. Hover the <b>i</b> in the header for the board, system and address.</td>
 <td valign="top">The Runners tab: runner chips, running jobs, timeline, last 7 days, slowest jobs, the busy heatmap and job history. Click the pin on any section header to pin that section to Overview.</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/disks.png" alt="The Disks tab with drive speed graphs, drive health and the biggest folders"></td>
+<td width="50%" valign="top">The Disks tab: read and write speed per drive, drive health (temperature, hours, SSD wear), and "Find biggest folders", a search you start yourself that shows a loading bar, can be stopped and never deletes anything.</td>
+</tr>
 </table>
 
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
+- Disks tab: read and write speed of every drive over time, drive health (OK or needs a look, temperature, hours, SSD wear; on Linux it needs smartmontools), and a "Find biggest folders" search you start yourself, with a loading bar and a Stop button, that only reads and never deletes
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Smooth folds, tab changes and menus, a thin loading bar and graph placeholders while data arrives (all off with the system "reduce motion" setting)

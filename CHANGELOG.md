@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: Disks tab: read and write speed of every drive as graphs (kept in the history), drive health (OK or needs a look, temperature, hours powered on, wear for SSDs; read every 10 minutes, with a hint to install smartmontools on Linux), and an on-demand "Find biggest folders" search for a drive or folder that shows a loading bar, can be stopped and never deletes anything.
+
 - Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs and Terminal are ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
 - Added: a pin on every section header pins that section (whole) to Overview; click again to unpin.
 - Changed: the machine card header is one status line (name, status, uptime, restart needed); board, system and address moved to a hover tooltip on an (i) icon.

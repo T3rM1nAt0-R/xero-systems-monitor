@@ -19,6 +19,9 @@
 #   TEMPS sensor millidegrees  one per sensor (hwmon name, or tz-<type> for thermal zones)
 #   GPU util_pct, temp_c, mem_used_mib, mem_total_mib    or "GPU none"; util and mem_used are the
 #                              peaks of the samples nvidia-smi took while the frame ran
+#   DISKIO dev read_bps write_bps       speed of each whole drive since the last frame (needs the scratch folder T; none on the first frame)
+#   SMART dev|model|health|temp|hours|wear    drive health from smartctl (ok or warning; empty = unknown), read every 10 minutes and repeated from a cache
+#   SMARTNOTE missing | denied   no smartctl installed, or it needs more rights than this user has
 #   NET iface ip speed_mbps rx_bytes tx_bytes uptime_s  default route; "-" when no ip, -1 when no speed
 #   PING ms                    round trip to a public resolver
 #   RUNNER <ps args>           a GitHub Actions Runner.Listener or Runner.Worker process
@@ -86,6 +89,44 @@ for z in /sys/class/thermal/thermal_zone*; do
 done
 
 df -P -BM -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs 2>/dev/null | tail -n +2 | sed 's/^/DF /'
+
+# Drive speed: /proc/diskstats counters against the last frame's (kept in $T), timed by uptime.
+if [ -n "$T" ]; then
+  awk -v up="$(cut -d' ' -f1 /proc/uptime)" -v old="$T/dio" '
+    BEGIN { while ((getline l < old) > 0) { split(l, a, " "); if (a[1] == "t") pt = a[2]; else { pr[a[1]] = a[2]; pw[a[1]] = a[3] } } }
+    $3 ~ /^(sd[a-z]+|vd[a-z]+|xvd[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+)$/ {
+      r = $6 * 512; w = $10 * 512; print $3, r, w > (old ".new")
+      if (pt != "" && up > pt && ($3 in pr) && r >= pr[$3] && w >= pw[$3]) printf "DISKIO %s %d %d\n", $3, (r - pr[$3]) / (up - pt), (w - pw[$3]) / (up - pt)
+    }
+    END { print "t", up > (old ".new") }' /proc/diskstats 2>/dev/null
+  mv "$T/dio.new" "$T/dio" 2>/dev/null
+fi
+
+# Drive health: smartctl needs no sudo on some systems. It is slow, so it runs in the background every 10 minutes and the answer is cached in $T.
+if [ -n "$T" ]; then
+  if ! find "$T/smart" -mmin -10 2>/dev/null | grep -q .; then
+    touch "$T/smart"
+    (if command -v smartctl >/dev/null; then
+      for dev in $(lsblk -dno NAME,TYPE 2>/dev/null | awk '$2=="disk"{print $1}'); do
+        timeout 5 smartctl -H -A -i "/dev/$dev" 2>/dev/null | awk -v n="$dev" '
+          /Device Model|Model Number|Product:/ { sub(/^[^:]*: */, ""); gsub(/ /, "_"); m = $0 }
+          /overall-health|Health Status/ { h = ($NF == "PASSED" || $NF == "OK") ? "ok" : "warning" }
+          $1 == 194 || $1 == 190 { t = $10 }
+          /^Temperature:/ { t = $2 }
+          $1 == 9 { o = $10 }
+          /^Power On Hours:/ { gsub(/,/, "", $4); o = $4 }
+          $2 ~ /Wear_Leveling|Media_Wearout|Lifetime_Remain|SSD_Life_Left/ { w = 100 - $4 }
+          /^Percentage Used:/ { w = $3 + 0 }
+          END { if (h) printf "SMART %s|%s|%s|%s|%s|%s\n", n, m, h, t, o, w }'
+      done >"$T/smart.new"
+      [ -s "$T/smart.new" ] || echo "SMARTNOTE denied" >"$T/smart.new"
+    else
+      echo "SMARTNOTE missing" >"$T/smart.new"
+    fi
+    mv "$T/smart.new" "$T/smart" 2>/dev/null) >/dev/null 2>&1 &
+  fi
+  cat "$T/smart" 2>/dev/null
+fi
 
 # The sampler has been running since the top of the frame; stop it and take the peaks.
 n=

@@ -1,0 +1,27 @@
+/* The Disks tab: drive health rows and the biggest-folders search. */
+.health{display:flex;flex-direction:column;gap:var(--sp-4);margin-top:var(--sp-4)}
+.hrow2{display:grid;grid-template-columns:var(--sp-10) minmax(60px,.8fr) 100px minmax(120px,2fr) minmax(60px,.8fr);gap:var(--sp-10);align-items:center;font-size:var(--fs-12);color:var(--mid);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
+.hrow2:hover{background:var(--s2)}
+.hrow2 b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow2 em{font-style:normal;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow2.warn span:nth-child(3){color:var(--warn)}
+.hdot{width:var(--sp-8);height:var(--sp-8);border-radius:var(--r-999);background:var(--ok)}
+.hdot.warn{background:var(--warn)}
+
+.bigf{display:flex;flex-direction:column;gap:var(--sp-6);margin-top:var(--sp-4)}
+.bigf-form{display:flex;flex-wrap:wrap;gap:var(--sp-6)}
+.bigf-form input{flex:1 1 200px;min-width:0}
+.bigf-note{font-size:var(--fs-12);color:var(--mid)}
+.bigf-note.bad{color:var(--bad-text)}
+.bigf-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-2);animation:fadein var(--dur) var(--ease) both}
+.bigf-list li{display:grid;grid-template-columns:minmax(80px,3fr) minmax(60px,2fr) 70px;gap:var(--sp-10);align-items:center;font-size:var(--fs-12);color:var(--mid);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
+.bigf-list li:hover{background:var(--s2)}
+.bigf-list li span:first-child{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bigf-list em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
+.scanbar{position:relative;overflow:hidden;height:var(--sz-4);border-radius:var(--r-3);background:var(--s2)}
+.scanbar i{position:absolute;inset:0 auto 0 0;width:35%;border-radius:var(--r-3);background:var(--acc);animation:scanslide 1.2s var(--ease) infinite}
+.scanbar span{position:absolute;top:var(--sp-6);left:0;font-size:var(--fs-11);color:var(--dim);white-space:nowrap}
+.scanbar{margin-bottom:var(--sp-14)}
+@keyframes scanslide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@media (prefers-reduced-motion:reduce){.scanbar i{animation:none;width:100%;opacity:.5}.bigf-list{animation:none}}
+@media (max-width:640px){.hrow2{grid-template-columns:var(--sp-10) 1fr 90px}.hrow2 em,.hrow2 .meter{grid-column:2 / -1}}
