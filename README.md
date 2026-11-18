@@ -34,9 +34,9 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 </tr>
 </table>
 
+- This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Every machine card: uptime, last restart time and "Restart needed for updates" (Debian/Ubuntu and Windows)
-- This PC: CPU, memory, disk, network, ping, top programs, GPU (NVIDIA), CPU temperature
 - Remote Linux machines over your own SSH config, no agent to install on them
 - Runner insights: a busy-hours heatmap for the week, a searchable job history, and a click on any job opens it on GitHub (its pull request, or the Actions page)
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)

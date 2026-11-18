@@ -463,6 +463,10 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .mutebtn{margin-left:8px;padding:0 6px;font-size:11px;opacity:.6}.dev:hover .mutebtn{opacity:1}
 .dev:has(.mutebtn){grid-template-columns:68px 8px minmax(0,1fr) auto}
 
+/* Network connections by program (Conns.jsx) */
+.crow{display:grid;grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) 40px;gap:10px;align-items:center;padding:2px 4px;border-radius:5px;color:var(--mid)}
+.crow:hover{background:var(--s2)}.crow b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .meter{min-width:0}.crow span:nth-child(3){text-align:right;font-variant-numeric:tabular-nums}
 /* What was busy then? (BusyPopover.jsx): opens where a CPU or memory graph is clicked */
 .chart.pick{cursor:pointer}
 .busypop{position:fixed;z-index:9000;width:270px;padding:8px 10px;background:#12151c;border:1px solid var(--line2);border-radius:8px;box-shadow:0 8px 24px #000a;font-size:12px;color:var(--fg)}

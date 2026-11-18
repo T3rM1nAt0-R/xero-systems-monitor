@@ -5611,6 +5611,7 @@ version = "0.1.2"
 dependencies = [
  "nvml-wrapper",
  "sysinfo",
+ "windows",
  "xsm-core",
 ]
 

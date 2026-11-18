@@ -11,6 +11,7 @@ import Timeline from "./Timeline.jsx";
 import Jobs from "./Jobs.jsx";
 import Smooth from "./Smooth.jsx";
 import Busy from "./Busy.jsx";
+import Conns from "./Conns.jsx";
 import Trends from "./Trends.jsx";
 import JobHistory from "./JobHistory.jsx";
 import ContainerActions from "./ContainerActions.jsx";
@@ -85,7 +86,8 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
         <Pn title="Download" k="down" now={d.down != null ? rateStr(d.down) : null} fmt={rateStr} />
         <Pn title="Upload" k="up" now={d.up != null ? rateStr(d.up) : null} fmt={rateStr} />
         <Pn title="Ping" k="ping" now={big(d.ping != null ? Number(d.ping).toFixed(0) : null, "ms")} sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
-      </div></Grp>
+      </div>
+      {d.conns?.length > 0 && <Conns list={d.conns} />}</Grp>
       <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" spark={P("disk")} sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }} ref={diskCard}>
           <div className="ph"><h4><button className="ttl" onClick={() => setDiskBig(true)} data-tip="Open this graph full window">Disk use</button></h4><SaveButtons title="Disk use" series={diskSeries} card={diskCard} />{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days <= limits.days ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
           <Chart series={diskSeries} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} group={m.name} title="Disk use" cmp={off && h2?.disk ? shiftSeries(h2.disk, off, t0, t1) : null} cmpLabel={off === 86400 ? "yesterday" : "last week"} />

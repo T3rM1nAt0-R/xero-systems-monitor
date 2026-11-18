@@ -71,6 +71,7 @@ Reading = {                       // every field optional; absent means "not mea
   storage: [name, used_gb, total_gb][],
   hw: { board?, os?, cpu?, gpu? },
   top: [name, cpu_percent, ram_mb, count][],
+  conns: [name, connections][],   // This PC on Windows only: open TCP connections plus UDP sockets per program, most first, at most 8, refreshed about every 10 s (counts, not data: bytes per program need administrator rights)
   runners: { [runner]: boolean }, // present only on machines with runners; true = busy
   jobs: { [runner]: [workflow, _, ref, repo] },
   jobres: { [runner]: [cpu_percent, ram_mb, gpu_mb, gpu_percent] },
