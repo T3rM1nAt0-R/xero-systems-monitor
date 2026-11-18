@@ -4,6 +4,8 @@ import Axis from "./Axis.jsx";
 import { join, hoverAt, hoverEnd } from "./hoverGroup.js";
 import { clipSeries, zoomRange, isClick } from "./graphTools.js";
 import { setZoom } from "./graphView.js";
+import { seriesPaths } from "./theme/graphStyle.js";
+import useGraphLook from "./theme/useGraphLook.js";
 // Full-size graph with hover readout. The hover is moved straight in the DOM (no React render per mouse move).
 function nearest(pts, t) {
   let lo = 0, hi = pts.length - 1;
@@ -11,18 +13,13 @@ function nearest(pts, t) {
   return Math.abs(pts[lo][0] - t) <= Math.abs(pts[hi][0] - t) ? pts[lo] : pts[hi];
 }
 function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, marks = [], group, title, cmp, cmpLabel = "", zoomable = true, live = true, onPick }) {
-  const W = 600, H = 150, root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0), downAt = useRef(null);
+  const W = 600, H = 150, look = useGraphLook(), root = useRef(null), x = useRef(null), sel = useRef(null), raf = useRef(0), cx = useRef(0), cy = useRef(0), downAt = useRef(null);
   const top = useMemo(() => max || Math.max(1, ...series.flatMap(s => s.pts.map(p => p[1])), ...(cmp || []).map(p => p[1])) * 1.15, [series, max, cmp]);
   const X = t => Math.max(0, Math.min(W, ((t - t0) / (t1 - t0)) * W)).toFixed(1);
   const line = pts => pts.map(([t, v], i) => (i ? "L" : "M") + X(t) + " " + (H - Math.min(1, v / top) * H).toFixed(1)).join("");
   // X and line are rebuilt each render from t0, t1 and top, so those three are the real inputs of the two memos below.
   const cmpPath = useMemo(() => { const c = cmp ? clipSeries(cmp, t0, t1) : []; return c.length > 1 ? line(c) : null; }, [cmp, t0, t1, top]);   // eslint-disable-line react-hooks/exhaustive-deps -- line() only reads t0, t1 and top; the faint dashed copy from an earlier day
-  const paths = useMemo(() => series.map(s => {
-    const pts = clipSeries(s.pts, t0, t1);   // zoomed in: only what is inside the window, cut exactly at its edges
-    if (pts.length < 2) return null;
-    const l = line(pts);
-    return { l, a: `${l}L${X(pts[pts.length - 1][0])} ${H}L${X(pts[0][0])} ${H}Z` };
-  }), [series, t0, t1, top]);   // eslint-disable-line react-hooks/exhaustive-deps -- X() only reads t0 and t1
+  const paths = useMemo(() => series.map(s => seriesPaths(clipSeries(s.pts, t0, t1), { x: t => +X(t), y: v => H - Math.min(1, v / top) * H, bottom: H, style: look.style, smooth: look.smooth })), [series, t0, t1, top, look.style, look.smooth]);   // eslint-disable-line react-hooks/exhaustive-deps -- X() only reads t0 and t1; zoomed in, only what is inside the window is drawn, cut exactly at its edges
   const f = fmt || (v => v.toFixed(0) + unit);
   const ticks = axisTicks(t0, t1, 3), pct = t => ((t - t0) / (t1 - t0)) * 100;
   const latest = useRef(); latest.current = { series, f, t0, t1, cmp, cmpLabel };
@@ -60,9 +57,9 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
         {ticks.map(t => <i key={t} className="vg" style={{ left: pct(t) + "%" }} />)}
         {[.5, 1].map(q => <div key={q} className="gl" style={{ bottom: q * 100 + "%" }}><span>{f(top * q).replace(/\.\d/, "")}</span></div>)}
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-          {paths[0] && series.length === 1 && <path d={paths[0].a} style={{ fill: series[0].color, stroke: "none", opacity: .08 }} />}
+          {paths[0] && paths[0].a && (series.length === 1 || look.style === "area") && [...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.a} style={{ fill: s.color, stroke: "none", opacity: "var(--area-op)" }} />; })}
           {cmpPath && <path className="cmp" d={cmpPath} style={{ stroke: series[0].color }} />}
-          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} style={{ stroke: s.color }} />; })}
+          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color } : { stroke: s.color }} />; })}
         </svg>
         {thr != null && thr <= top && <div className="thr" style={{ bottom: (thr / top) * 100 + "%" }}><span>{thrLabel}</span></div>}
         {marks.map((m, i) => m.t >= t0 && <div key={i} className="ev" data-tip={m.text} style={{ left: ((m.t - t0) / (t1 - t0)) * 100 + "%" }} />)}

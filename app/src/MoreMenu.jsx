@@ -15,7 +15,7 @@ const Row = ({ on, hint, danger, onClick, disabled, children }) => (
 const Head = ({ children }) => <div className="mlabel">{children}</div>;
 
 // The More menu, in groups: Monitor, Alerts, Window, Updates, then Help and Stop.
-export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, calmFold, setCalmFold, snoozeUntil, setSnoozeUntil, quiet, setQuiet, muted, onMute, onLimits, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
+export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, calmFold, setCalmFold, snoozeUntil, setSnoozeUntil, quiet, setQuiet, muted, onMute, onLimits, onCustomize, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
   const [alerts, setAlerts] = useState(false);
   const close = fn => () => { setOpen(false); fn(); };
   const onCount = ALERTS.filter(([k]) => alertPrefs[k]).length;
@@ -44,6 +44,7 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
         <hr /><Head>Look</Head>
         <div className="mseg" role="group" aria-label="Theme"><span>Theme</span><div className="seg">{[["dark", "Dark"], ["light", "Light"], ["system", "Windows"]].map(([k, l]) => <button key={k} className={look.theme === k ? "on" : ""} onClick={() => look.setTheme(k)}>{l}</button>)}</div></div>
         <div className="mseg" role="group" aria-label="Text size"><span>Text</span><div className="seg">{[["normal", "Normal"], ["large", "Large"]].map(([k, l]) => <button key={k} className={look.size === k ? "on" : ""} onClick={() => look.setSize(k)}>{l}</button>)}</div></div>
+        <Row onClick={close(onCustomize)}>Customize…</Row>
         {prefs && <><hr /><Head>Window</Head>
           <Row on={prefs.closeToTray} onClick={() => api.setPrefs({ closeToTray: !prefs.closeToTray }).then(setPrefs)}>Close button hides to the tray</Row>
           <Row on={prefs.login} onClick={() => api.setPrefs({ login: !prefs.login }).then(setPrefs)}>Start with Windows, hidden</Row></>}
