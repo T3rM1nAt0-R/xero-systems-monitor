@@ -28,6 +28,9 @@ pub struct MachineConfig {
     /// The old name after a rename, so history moves over.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub was: Option<String>,
+    /// True when the window asked to stop monitoring this machine (it is kept in the list but not polled).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub paused: Option<bool>,
 }
 
 /// The answer of `get_machines`.
@@ -46,6 +49,14 @@ pub struct SaveOutcome {
 }
 
 impl MachineConfig {
+    /// The machines the collector should poll: the list without the paused ones.
+    pub(crate) fn polled(list: &[MachineConfig]) -> Vec<MachineConfig> {
+        list.iter()
+            .filter(|m| m.paused != Some(true))
+            .cloned()
+            .collect()
+    }
+
     /// Check a list: at least one machine, unique non-empty names without `|`, a host for every ssh machine.
     ///
     /// # Errors
@@ -84,7 +95,26 @@ mod tests {
             host: host.map(str::to_owned),
             runner: None,
             was: None,
+            paused: None,
         }
+    }
+
+    #[test]
+    fn paused_machines_are_not_polled() {
+        let mut off = m("example-server", MachineKind::Ssh, Some("192.0.2.10"));
+        off.paused = Some(true);
+        let mut on = m("lab", MachineKind::Ssh, Some("192.0.2.11"));
+        on.paused = Some(false);
+        let list = [m("This PC", MachineKind::Local, None), off, on];
+        let names: Vec<String> = MachineConfig::polled(&list)
+            .into_iter()
+            .map(|x| x.name)
+            .collect();
+        assert_eq!(names, ["This PC", "lab"]);
+        let json = r#"{"name":"s","kind":"ssh","host":"192.0.2.10","paused":true}"#;
+        let parsed: MachineConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(parsed.paused, Some(true));
+        assert_eq!(serde_json::to_string(&parsed).unwrap(), json);
     }
 
     #[test]

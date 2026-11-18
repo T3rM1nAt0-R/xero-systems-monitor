@@ -9,6 +9,7 @@ import "./styles/sections.css";
 import "./styles/compact.css";
 import "./styles/menus.css";
 import "./styles/customize.css";
+import "./styles/view.css";
 import { installTips } from "./tooltip.js";
 installTips();
 createRoot(document.getElementById("root")).render(<App />);

@@ -22,7 +22,7 @@ export function checkMachines(list) {
 }
 
 const commands = {
-  get_state: () => ({ machines: store.machines.map(m => demoMachine(m, clock())) }),
+  get_state: () => ({ machines: store.machines.filter(m => !m.paused).map(m => demoMachine(m, clock())) }),
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
   get_busy_at: ({ machine, t }) => (named(machine) ? busyAt(named(machine), t) : {}),
   get_events:({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
