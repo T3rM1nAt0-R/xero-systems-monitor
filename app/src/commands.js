@@ -19,11 +19,7 @@ export function buildCommands(a) {
   add("Setting", "Snooze alerts for 1 hour", a.snooze1h, "mute notifications");
   if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");
   add("Setting", "Machines…", a.onMachines, "add remove edit");
-  if (a.onCustomize) {   // the one place for the look: the theme (dark, light, Windows), text size and everything else
-    add("Setting", "Customize…", () => a.onCustomize(), "look fonts colours graph style density appearance");
-    add("Setting", "Customize theme…", () => a.onCustomize("theme"), "theme dark light windows colours palette");
-    add("Setting", "Customize text size…", () => a.onCustomize("scale"), "text size large bigger smaller font zoom");
-  }
+  if (a.onCustomize) add("Setting", "Open Customize", () => a.onCustomize(), "customize look fonts colours theme dark light windows text size large graph style density appearance");   // the one place for the look
   if (a.onLimits) add("Setting", "Limits…", a.onLimits, "thresholds warn");
   for (const n of a.hiddenNames || []) add("Machine", `Show hidden machine ${n}`, () => a.showMachine(n), "unhide hidden machine");
   add("Setting", "Check for updates", a.onCheck, "update version");

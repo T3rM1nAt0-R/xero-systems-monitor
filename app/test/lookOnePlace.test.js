@@ -44,7 +44,7 @@ test("the More menu and the Ctrl+K commands have no look controls (Customize is 
   assert.match(menu, /Customize…/);
   const labels = buildCommands({ machines: [], ranges: [], refreshOptions: [], alertPrefs: {}, onCustomize: () => {} }).map(c => c.label);
   assert.ok(!labels.some(l => /^Theme:|^Text size:/.test(l)));
-  for (const l of ["Customize…", "Customize theme…", "Customize text size…"]) assert.ok(labels.includes(l), l);
+  assert.ok(labels.includes("Open Customize"));
 });
 
 test("an edit is kept when it differs from the theme's value, not the global default", () => {
