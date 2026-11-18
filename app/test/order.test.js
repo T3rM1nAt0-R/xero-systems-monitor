@@ -52,7 +52,11 @@ test("commands: machines, groups, ranges, settings; optional ones only when give
   for (const l of ["Go to Hoarder", "Hoarder > GPU", "Show 5 min", "Refresh every 1 min", "Always on top: turn off", "Compact view: turn on", "Alert: A machine goes offline: turn off", "Alert: A job fails: turn on", "Snooze alerts for 1 hour", "Machines…", "Check for updates"]) assert.ok(labels.includes(l), l);
   assert.ok(!labels.includes("Limits…") && !labels.includes("Fold all cards") && !labels.some(l => l.startsWith("Quiet hours")));
   const more = buildCommands(acts({ onCustomize: () => {}, onLimits: () => {}, foldAll: () => {}, setQuietOn: () => {}, quietOn: false })).map(c => c.label);
-  for (const l of ["Open Customize", "Limits…", "Fold all cards", "Unfold all cards", "Quiet hours: turn on"]) assert.ok(more.includes(l));
+  for (const l of ["Open Customize", "Open Customize", "Limits…", "Fold all cards", "Quiet hours: turn on"]) assert.ok(more.includes(l));
+  assert.ok(!more.includes("Unfold all cards"));
+  const shut = buildCommands(acts({ foldAll: () => {}, allFolded: true })).map(c => c.label);
+  assert.ok(shut.includes("Unfold all cards") && !shut.includes("Fold all cards"), "only the one that does something");
+  assert.ok(buildCommands(acts({ compact: true, mini: true, toggleCompact: () => {} })).some(c => c.label === "Compact view: turn on"), "from Mini the compact view is off");
 });
 test("commands run the action they wrap", () => {
   const seen = [], cs = buildCommands(acts({ goGroup: (n, k) => seen.push([n, k]), setAlert: (k, on) => seen.push([k, on]), setPin: v => seen.push(["pin", v]) }));

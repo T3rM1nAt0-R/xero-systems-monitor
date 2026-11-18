@@ -16,7 +16,7 @@ import useScrollbars from "./useScrollbars.js";
 import useMica from "./useMica.js";
 import ViewControl from "./ViewControl.jsx";
 import HiddenMachines from "./HiddenMachines.jsx";
-import { showStrip, fitsWindow, visibleMachines, hideName, showName } from "./view.js";
+import { showStrip, fitsWindow, visibleMachines, hideName, showName, nextCompact } from "./view.js";
 import { buildCommands } from "./commands.js";
 import { applyOrder, moveTo, stripOrder, groupsFor } from "./order.js";
 import { loadGroups, saveGroups, revealGroup } from "./groupPrefs.js";
@@ -33,10 +33,10 @@ import { DEFAULT_PREFS } from "./alerts.js";
 import useMiniSize from "./useMiniSize.js";
 import useMiniFit from "./useMiniFit.js";
 import { unseenFailures } from "./events.js";
-import { RANGES, snapRange, SHORT, KEYS, NONE, NO_HOT } from "./consts.js";
+import { RANGES, snapRange, KEYS, NONE, NO_HOT } from "./consts.js";
 import { trackMachines } from "./calm.js";
 import { load, save, usePersisted } from "./store.js";
-import { foldAll, CARD } from "./fold.js";
+import { foldAll, anyCardOpen, CARD } from "./fold.js";
 import useAlerts from "./useAlerts.js";
 import useCollectorData from "./useCollectorData.js";
 import useUpdates from "./useUpdates.js";
@@ -62,6 +62,7 @@ export default function App() {
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
   const foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
+  const toggleCompact = useCallback(() => { const n = nextCompact(compact, mini); setCompact(n.compact); if (mini) toggleMini(); }, [compact, mini, setCompact, toggleMini]);   // C works from Mini too
   const [miniSize, forgetMini] = useMiniSize(mini);
   const appRef = useRef(null), seen = useRef({ hot: {}, lastOk: {} });
   useEffect(() => save("alerts", alertPrefs), [alertPrefs]);
@@ -100,12 +101,12 @@ export default function App() {
     goMachine(n); setTimeout(() => revealGroup(n + "." + k), 120);
   }, [goMachine]);
   const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
-  const cmds = useMemo(() => buildCommands({ machines: vms, hiddenNames: hidden, showMachine, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, setCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), onCustomize: at => setCustDlg(at || ""), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: fold => foldMachines(!fold) }), [vms, hidden, showMachine, hist, foldMachines, goMachine, goGroup, pin, compact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, setCompact, toggleMini, setQuiet, setSnoozeUntil]);
+  const cmds = useMemo(() => buildCommands({ machines: vms, hiddenNames: hidden, showMachine, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, mini, toggleCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), onCustomize: at => setCustDlg(at || ""), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: effCompact ? undefined : fold => foldMachines(!fold), allFolded: pal && !effCompact && !anyCardOpen() }), [vms, hidden, showMachine, hist, foldMachines, goMachine, goGroup, pin, compact, mini, effCompact, pal, toggleCompact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, toggleMini, setQuiet, setSnoozeUntil]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
   useTrayStatus(vms, limitsOf, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
-  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms: vms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, setPal, foldMachines });
+  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms: vms, open, ranges: RANGES, range: safeRange, setRange, toggleCompact, toggleMini, setPin, setPal, foldMachines });
 
   const cascade = useWindowFx(appRef, !!state, `${effCompact}|${mini}`);   // startup cascade, and the morph between Full, Compact and Mini
   const gridRef = useRef(null);
@@ -119,7 +120,7 @@ export default function App() {
         <span className="live" data-tauri-drag-region><StatusDot off={!!err} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" data-tauri-drag-region />
         {!effCompact && <span className="live hide-s clock" data-tauri-drag-region><Clock /></span>}
-        {<ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} folded={folded} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
+        {<ViewControl compact={compact} mini={mini} setCompact={setCompact} setMini={on => on !== mini && toggleMini()} pin={pin} setPin={setPin} canFold={!effCompact} foldMachines={foldMachines} stripMode={stripMode} setStripMode={setStripMode} hiddenCount={hidden.length} onHidden={() => setHidDlg(true)} />}
         {mini && miniSize && <button onClick={forgetMini} data-tip="Forget the size you dragged; fit the content again">Fit</button>}
         <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
           auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCustomize={() => setCustDlg("")} onCheck={checkNow}
@@ -144,7 +145,7 @@ export default function App() {
       <div className="bar foot">
         <button className={showEv ? "on" : ""} onClick={() => (showEv ? closeEv() : openEv())} data-tip="Activity drawer (E)">Activity{unseen > 0 && !showEv && <span className="badge">{unseen}</span>}</button>
         {!effCompact && <span className="lbl hide-s">Graphs show</span>}
-        <div className="seg" role="group" aria-label="Time range">{RANGES.map(([l, s]) => <button key={s} className={safeRange === s ? "on" : ""} onClick={() => setRange(s)}>{effCompact ? SHORT(l) : l}</button>)}</div>
+        {!effCompact && <div className="seg" role="group" aria-label="Time range">{RANGES.map(([l, s]) => <button key={s} className={safeRange === s ? "on" : ""} onClick={() => setRange(s)}>{l}</button>)}</div>}
         {!effCompact && <label className="lbl hide-s cmpsel" data-tip="Draw a faint dashed copy of every graph from an earlier time">Compare<select value={back} onChange={e => setCompare(+e.target.value)}>{COMPARE.map(([l, s]) => <option key={s} value={s}>{l}</option>)}</select></label>}
         <span className="grow" />
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
@@ -154,7 +155,7 @@ export default function App() {
       <Toasts />
       {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
-      {custDlg !== null && <Customize c={look.custom} start={custDlg} onClose={() => setCustDlg(null)} />}
+      {custDlg !== null && <Customize c={look.custom} start={custDlg} full={!effCompact} onClose={() => setCustDlg(null)} />}
       {hidDlg && <HiddenMachines hidden={hidden} onShow={showMachine} onClose={() => setHidDlg(false)} />}
       {dlg && <Machines onClose={() => setDlg(false)} />}
       {help && <div className="modal" onClick={() => setHelp(false)}><div className="dlg" onClick={e => e.stopPropagation()}><h3>Keyboard shortcuts</h3>{KEYS.map(([k, t]) => <div className="mrow" key={k}><kbd>{k}</kbd><span>{t}</span></div>)}<div className="mfoot"><button className="cta" onClick={() => setHelp(false)}>Close</button></div></div></div>}

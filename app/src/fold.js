@@ -21,6 +21,8 @@ export function foldAll(open, prefix = "", exact = false) {
   if (hit.length < 2 || typeof document === "undefined" || !motionFull()) { hit.forEach(apply); return; }
   hit.sort((a, b) => topOf(a) - topOf(b)).forEach((id, i) => (i ? setTimeout(() => apply(id), Math.min(i, RIPPLE_MAX_STEPS) * RIPPLE_STEP_MS) : apply(id)));
 }
+// Is any machine card on screen open right now? (The real state, whatever folded it: a click, fold all, a restart or the calm rule.) Fold all is offered when it is true, Unfold all when not.
+export const anyCardOpen = () => typeof document !== "undefined" && document.querySelector('.card .chead.fold[aria-expanded="true"]') !== null;
 // Runs `fn(open)` when foldAll() reaches this id.
 export function useFoldEvent(id, fn) {
   const f = useRef(fn); f.current = fn;
