@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: an Actions workflow, Publish release, that publishes a draft release by its tag after checking it has `latest.json`.
+
 ## [0.2.0] - 2026-11-18
 
 - Fixed: polish after review: the machines strip is one compact row of tiles; the "What was busy then?" box no longer stays open under the hover readout, stays inside the window and no longer closes by itself on each refresh; sub headers share one small style (for example "DRIVES  2 drives"); folded group summaries are smaller; the Picture and CSV buttons show only on hover, away from the limit label; the stray line under a folded machine bar is gone; clicking a machine tile no longer also unfolds machines whose names start the same.

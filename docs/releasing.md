@@ -20,7 +20,7 @@ The version lives in one place: `version` under `[workspace.package]` in `Cargo.
    Or, without a tag: Actions > Release > Run workflow on `main`. The draft then carries the tag `v<version>`, which GitHub creates when you publish it.
    The draft also gets a portable zip: the program plus `portable.txt`, which keeps settings and history in a `data` folder next to it and turns off in-app updates.
 3. `.github/workflows/release.yml` (windows-latest) checks the tag matches the version, builds the window, then runs `tauri-apps/tauri-action`. It creates a **draft** release named "Xero Systems Monitor v0.2.0" with the NSIS `.exe`, the MSI and, when signing is on, the `.sig` files and `latest.json`.
-4. Install the draft's `.exe` on a clean Windows PC, then press Publish on the release. The updater reads `latest.json` from the latest published release only.
+4. Install the draft's `.exe` on a clean Windows PC, then press Publish on the release (or run Actions > Publish release with the tag; it refuses a draft without `latest.json`). The updater reads `latest.json` from the latest published release only.
 
 ## Windows code signing (planned)
 
