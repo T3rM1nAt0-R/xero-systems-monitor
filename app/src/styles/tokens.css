@@ -15,6 +15,13 @@
   --danger-text:#f2637acc; --danger-line:#f2637a55;
   --on-acc:#04121a; --on-strong:#fff; --hover-mix:#fff; --mask-solid:#000;
   --tip-bg:#12151c; --scrim:#000a; --chart-cursor:#ffffff38; --c-fallback:#888;
+  /* glass: the machine cards, header and dock, menus and dialogs are frosted; blur and opacity come from the Glass setting (data-glass on <html>) */
+  --glass-bg: color-mix(in srgb, var(--s1) 62%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 88%, transparent);
+  --glass-blur: 18px; --glass-sat: 1.4;
+  --glass-line: #ffffff17; --glass-sheen: inset 0 1px 0 #ffffff24, inset 0 18px 24px -18px #ffffff12;
+  --glass-shadow: 0 10px 34px #0006; --glass-radius: var(--r-14);
+  --blob-a:#4cc9f02e; --blob-b:#a78bfa29; --blob-c:#4ade8019; --blob-op: 1;
+  --hair: color-mix(in srgb, var(--line2) 70%, transparent);
   /* shadows */
   --shadow-menu: 0 12px 40px #000c; --shadow-drawer: 0 -10px 28px #000a; --shadow-tip: 0 8px 24px #000a; --shadow-pop: 0 8px 28px #0008; --shadow-dlg: none;
   /* fonts: one family per text level; all default to the system stack */
@@ -111,5 +118,13 @@
   color-scheme: light;
   --on-acc:#fff;
   --shadow-menu: 0 8px 28px #0003; --shadow-drawer: 0 8px 28px #0003; --shadow-dlg: 0 8px 28px #0003;
+  --glass-bg: color-mix(in srgb, var(--s1) 66%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 90%, transparent);
+  --glass-line: #ffffffcc; --glass-sheen: inset 0 1px 0 #ffffffe6, inset 0 18px 24px -18px #ffffffaa;
+  --glass-shadow: 0 8px 28px #1a233a1f;
+  --blob-a:#0a7ea42e; --blob-b:#8b5cf624; --blob-c:#16a34a1a;
 }
 html[data-size="large"] { --scale: 1.16; }
+/* Glass setting (Customize > Size): Subtle is the default above. Off is flat and solid; Full is clearer and more blurred. */
+html[data-glass="off"] { --glass-bg: var(--s1); --glass-bg-solid: var(--s1); --glass-blur: 0px; --glass-sat: 1; --glass-sheen: none; --glass-shadow: none; --blob-op: 0; --glass-line: var(--line); }
+html[data-glass="full"] { --glass-bg: color-mix(in srgb, var(--s1) 42%, transparent); --glass-bg-solid: color-mix(in srgb, var(--s1) 78%, transparent); --glass-blur: 28px; --glass-sat: 1.7; --blob-op: 1.6; }
+@media (prefers-reduced-transparency: reduce) { :root, html[data-glass] { --glass-bg: var(--s1); --glass-bg-solid: var(--s1); --glass-blur: 0px; --glass-sat: 1; --glass-sheen: none; --glass-shadow: none; --blob-op: 0; --glass-line: var(--line); } }
