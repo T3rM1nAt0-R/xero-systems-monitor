@@ -5,12 +5,14 @@ import { load, save } from "./store.js";
 const EVT = "xm-fold";
 export const CARD = "card.";   // prefix of every machine card's fold id
 const read = (id, def) => { const v = load("col." + id, null); return v == null ? def : v === 1; };
-export const foldAll = (open, prefix = "") => window.dispatchEvent(new CustomEvent(EVT, { detail: { open, prefix } }));
+// `exact` reaches only the fold whose id is the prefix itself (so "srv" does not also reach "srv2").
+export const foldAll = (open, prefix = "", exact = false) => window.dispatchEvent(new CustomEvent(EVT, { detail: { open, prefix, exact } }));
+export const reaches = (id, { prefix, exact }) => exact ? id === prefix : id.startsWith(prefix);
 // Runs `fn(open)` when foldAll() reaches an id that starts with the prefix.
 export function useFoldEvent(id, fn) {
   const f = useRef(fn); f.current = fn;
   useEffect(() => {
-    const on = e => { if (id.startsWith(e.detail.prefix)) f.current(e.detail.open); };
+    const on = e => { if (reaches(id, e.detail)) f.current(e.detail.open); };
     window.addEventListener(EVT, on); return () => window.removeEventListener(EVT, on);
   }, [id]);
 }

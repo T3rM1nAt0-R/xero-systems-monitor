@@ -37,3 +37,9 @@ test("calm: uses the machine own limits", () => {
   assert.equal(isCalm(ok, {}, [], 1000, { temp: 30 }), false);
   assert.equal(isCalm({ ...ok, d: { ...ok.d, temp: 85 } }, {}, [], 1000, { temp: 95 }), true);
 });
+test("reaches: a prefix reaches every id that starts with it, exact reaches only that id", async () => {
+  const { reaches } = await import("../src/fold.js");
+  assert.equal(reaches("card.srv2", { prefix: "card.srv", exact: false }), true);
+  assert.equal(reaches("card.srv2", { prefix: "card.srv", exact: true }), false);
+  assert.equal(reaches("card.srv", { prefix: "card.srv", exact: true }), true);
+});

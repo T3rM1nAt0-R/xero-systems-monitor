@@ -64,7 +64,9 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
   }), [rows, m.name, m.started, d.jobs]);
   const full = fc?.days ? `full in ~${fc.days < 60 ? fc.days + " days" : Math.round(fc.days / 30) + " months"}` : "";
   const marks = useMemo(() => rows.filter(r => r[0] === m.name && r[2] >= t0).map(r => ({ t: r[2], text: `${r[1]} started: ${r[5]}` })), [rows, m.name, Math.floor(t0 / 60)]);
-  const Pn = p => <Panel {...p} pts={P(p.k)} old={h2?.[p.k]} t0={t0} t1={t1} range={span} live={live} group={m.name} />;
+  // Pn must keep one identity between renders (a new component type would remount every card on each poll and close the "What was busy then?" box); it reads the latest values from a ref.
+  const pc = useRef(); pc.current = { P, h2, t0, t1, span, live, name: m.name };
+  const Pn = useRef(p => { const c = pc.current; return <Panel {...p} pts={c.P(p.k)} old={c.h2?.[p.k]} t0={c.t0} t1={c.t1} range={c.span} live={c.live} group={c.name} />; }).current;
   const diskSeries = useMemo(() => [{ name: "Disk use", pts: P("disk"), color: C.disk }], [h?.disk]);
   const big = (v, u) => v == null ? null : <>{v}<small>{u}</small></>;
   return (
@@ -92,7 +94,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
           <div className="ph"><h4><button className="ttl" onClick={() => setDiskBig(true)} data-tip="Open this graph full window">Disk use</button></h4><SaveButtons title="Disk use" series={diskSeries} card={diskCard} />{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days <= limits.days ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
           <Chart series={diskSeries} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} group={m.name} title="Disk use" cmp={off && h2?.disk ? shiftSeries(h2.disk, off, t0, t1) : null} cmpLabel={off === 86400 ? "yesterday" : "last week"} />
           {diskBig && <FullGraph title="Disk use" k="disk" color={C.disk} machine={m.name} pts={P("disk")} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} onClose={() => setDiskBig(false)} />}
-          <Sub id={m.name + ".drives"} title="Drives" hint={drives.length > 0 && `${drives.length}`}><div className="drives">
+          <Sub id={m.name + ".drives"} title="Drives" hint={drives.length > 0 && `${drives.length} ${drives.length === 1 ? "drive" : "drives"}`}><div className="drives">
             {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (100 * u / t > limits.disk ? " crit" : 100 * u / t > limits.disk - 15 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
           </div></Sub>
         </div>
