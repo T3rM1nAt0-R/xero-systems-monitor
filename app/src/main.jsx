@@ -13,6 +13,7 @@ import "./styles/chartfx.css";
 import "./styles/statusfx.css";
 import "./styles/windowfx.css";
 import "./styles/customize.css";
+import "./styles/lookfx.css";
 import "./styles/view.css";
 import "./styles/system.css";
 import "./styles/logs.css";

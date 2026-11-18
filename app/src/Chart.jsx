@@ -58,14 +58,15 @@ function Chart({ series, t0, t1, max, unit = "", fmt, thr, thrLabel, range, mark
   };
   return (
     <div>
-      <div className={"chart" + (onPick ? " pick" : "")} ref={root} onMouseMove={move} onMouseLeave={leave} onMouseDown={e => { downAt.current = [e.clientX, e.clientY]; down(e); }} onClick={pick} onDoubleClick={() => zoomable && setZoom(g, null)} role="img" aria-label={series.map(s => s.name).join(" and ")}>
+      <div data-look="graph.style" className={"chart" + (onPick ? " pick" : "")} ref={root} onMouseMove={move} onMouseLeave={leave} onMouseDown={e => { downAt.current = [e.clientX, e.clientY]; down(e); }} onClick={pick} onDoubleClick={() => zoomable && setZoom(g, null)} role="img" aria-label={series.map(s => s.name).join(" and ")}>
         {ticks.map(t => <i key={t} className="vg" style={{ left: pct(t) + "%" }} />)}
         {[.5, 1].map(q => <div key={q} className="gl" style={{ bottom: q * 100 + "%" }}><span>{f(top * q).replace(/\.\d/, "")}</span></div>)}
         <svg ref={svg} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
           {heat && <defs><linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" y1={H} x2="0" y2="0">{heat.map(([o, c], i) => <stop key={i} offset={o} style={{ stopColor: c === "own" ? color0 : c === "warn" ? "var(--warn)" : "var(--bad)" }} />)}</linearGradient></defs>}
-          {paths[0] && paths[0].a && (series.length === 1 || look.style === "area") && [...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.a} style={{ fill: s.color, stroke: "none", opacity: "var(--area-op)" }} />; })}
+          {paths[0] && paths[0].a && (series.length === 1 || look.style === "area") && [...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.a} className="af" style={{ fill: s.color, stroke: "none" }} />; })}
           {cmpPath && <path className="cmp" d={cmpPath} style={{ stroke: series[0].color }} />}
-          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color } : { stroke: heat ? `url(#${gid})` : s.color }} />; })}
+          {[...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className={look.style === "bars" ? "bars" : undefined} style={look.style === "bars" ? { fill: s.color, color: s.color } : { stroke: heat ? `url(#${gid})` : s.color, color: s.color }} />; })}
+          {look.dots && look.style !== "bars" && [...series].reverse().map((s, i) => { const p = paths[series.length - 1 - i]; return p && <path key={s.name} d={p.l} className="dp" style={{ stroke: s.color }} />; })}
         </svg>
         <ChartMarks layer={layer} series={series} t0={t0} t1={t1} top={top} f={f} />
         {thr != null && thr <= top && <div className="thr" style={{ bottom: (thr / top) * 100 + "%" }}><span>{thrLabel}</span></div>}
