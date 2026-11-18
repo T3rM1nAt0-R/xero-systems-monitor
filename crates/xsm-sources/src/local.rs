@@ -4,10 +4,11 @@ use crate::connections::open_pids;
 use crate::gpu_apps::{gpu_apps, windows_battery};
 use crate::runners::RunnerWatch;
 use crate::sensors::{cpu_temp, lhm_text, ping_once, windows_restart_needed};
-use crate::slow::SlowWorker;
+use crate::slow::{NetConfig, SlowWorker};
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use nvml_wrapper::Nvml;
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 use sysinfo::{
     Disks, Motherboard, Networks, Pid, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
@@ -67,7 +68,7 @@ impl LocalSource {
     ///
     /// # Errors
     /// The operating system would not list its processors, disks or network cards.
-    pub fn new() -> Result<Self, String> {
+    pub fn new(net: Arc<NetConfig>) -> Result<Self, String> {
         let why = |e: sysinfo::Error| e.to_string();
         let mut sys = System::new().map_err(why)?;
         sys.refresh_cpu_all();
@@ -89,7 +90,7 @@ impl LocalSource {
             connections: Vec::new(),
             hardware,
             runners: RunnerWatch::default(),
-            slow: SlowWorker::start(),
+            slow: SlowWorker::start(net),
             last_io: None,
         })
     }
@@ -149,6 +150,10 @@ impl LocalSource {
             disks,
             disk_io,
             drive_health: slow.drive_health,
+            adapters: slow.adapters,
+            wifi: slow.wifi,
+            internet: slow.internet,
+            pings: slow.pings,
             health_note: slow.health_note,
             net: Some(self.net_reading()),
             gpu: self.nvml.as_ref().and_then(gpu_reading),
@@ -333,7 +338,7 @@ mod tests {
 
     #[test]
     fn local_smoke_test() {
-        let mut src = LocalSource::new().expect("sysinfo works on this box");
+        let mut src = LocalSource::new(Arc::default()).expect("sysinfo works on this box");
         let first = src.poll();
         assert_eq!(first.cpu.as_ref().map(|c| c.usage_pct), Some(None));
         std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL * 2);
