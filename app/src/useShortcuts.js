@@ -4,12 +4,13 @@ export default function useShortcuts(h) {
   const r = useRef(h); r.current = h;
   useEffect(() => {
     const k = e => {
-      const { dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges, range, setRange, setCompact, toggleMini, setPin } = r.current;
+      const { dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges, range, setRange, setCompact, toggleMini, setPin, foldMachines } = r.current;
       if (/input|textarea/i.test(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === "Escape") { if (dlg) setDlg(false); else if (help) setHelp(false); else if (menu) setMenu(false); else if (showEv) closeEv(); return; }
       const i = ranges.findIndex(x => x[1] === range), key = e.key.toLowerCase();
       if (/^[1-9]$/.test(e.key)) { const m = ms[+e.key - 1]; if (m) open(m.name); }
       else if (key === "c" || key === "s") setCompact(x => !x);
+      else if (key === "f") foldMachines(e.shiftKey);   // F folds every machine, Shift+F opens them
       else if (key === "m") toggleMini();
       else if (key === "t") setPin(x => !x);
       else if (key === "e") (showEv ? closeEv() : openEv());

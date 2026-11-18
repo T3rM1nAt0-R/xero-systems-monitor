@@ -16,6 +16,7 @@ export const getJobs = since => call("get_jobs", { since });
 export const getForecast = machine => call("get_forecast", { machine });
 // Open a job on GitHub in the browser. Only https://github.com/ addresses go through.
 export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : Promise.resolve(null));
+export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });

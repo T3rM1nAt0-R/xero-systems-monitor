@@ -3,7 +3,7 @@
 use std::fs;
 use std::path::Path;
 use xsm_core::parse::parse_frame;
-use xsm_core::reading::{ContainerState, Reading};
+use xsm_core::reading::{ContainerState, Reading, UpdateInfo};
 
 const MIB: u64 = 1024 * 1024;
 
@@ -264,6 +264,28 @@ fn hardware_names() {
     assert_eq!(h.gpu, None); // an empty name is no name
     assert_eq!(h.os.as_deref(), Some("Example Linux 1.0"));
     assert_eq!(h.board.as_deref(), Some("Example Board"));
+}
+
+#[test]
+fn restart_and_updates() {
+    let u = read("updates.txt").updates;
+    assert_eq!(u.restart_needed, Some(true));
+    assert_eq!((u.restart_packages, u.pending), (Some(3), Some(12)));
+    let clear = read("updates_clear.txt").updates;
+    assert_eq!(
+        (clear.restart_needed, clear.restart_packages),
+        (Some(false), None)
+    );
+    assert_eq!(read("updates_no_count.txt").updates.restart_packages, None);
+    assert_eq!(read("updates_bad.txt").updates, UpdateInfo::default()); // not understood means not known
+    assert_eq!(read("full.txt").updates, UpdateInfo::default()); // not a dpkg machine: unknown
+}
+
+#[test]
+fn update_count_is_kept_between_frames() {
+    let kept = read_after("updates_clear.txt", "updates.txt").updates;
+    assert_eq!(kept.pending, Some(12)); // the count is read rarely, so the old one stays
+    assert_eq!(kept.restart_needed, Some(false)); // the restart flag is fresh every frame
 }
 
 #[test]

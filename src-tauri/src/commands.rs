@@ -10,8 +10,8 @@ use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
-    Backend, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList, SaveOutcome,
-    State as Readings,
+    Action, Backend, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList,
+    SaveOutcome, State as Readings,
 };
 
 /// The collector the commands talk to.
@@ -63,6 +63,16 @@ pub async fn save_machines(
     machines: Vec<MachineConfig>,
 ) -> Reply<SaveOutcome> {
     backend.0.save_machines(machines)
+}
+
+#[tauri::command]
+pub async fn container_action(
+    backend: State<'_, BackendState>,
+    machine: String,
+    action: Action,
+    name: String,
+) -> Reply<String> {
+    backend.0.container_action(&machine, action, &name)
 }
 
 #[tauri::command]

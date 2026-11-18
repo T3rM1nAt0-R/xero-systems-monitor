@@ -92,6 +92,7 @@ pub fn run() {
             commands::get_forecast,
             commands::get_machines,
             commands::save_machines,
+            commands::container_action,
             commands::get_prefs,
             commands::set_prefs,
             commands::set_window_mode,

@@ -14,23 +14,30 @@ import { DEFAULT_PREFS } from "./alerts.js";
 import { unseenFailures } from "./events.js";
 import { RANGES, snapRange, SHORT, KEYS } from "./consts.js";
 import { load, save, usePersisted } from "./store.js";
+import { foldAll, CARD } from "./fold.js";
 import useAlerts from "./useAlerts.js";
 import useCollectorData from "./useCollectorData.js";
 import useUpdates from "./useUpdates.js";
 import useWindowMode from "./useWindowMode.js";
 import useShortcuts from "./useShortcuts.js";
 import useLook from "./useLook.js";
+import { COMPARE } from "./graphTools.js";
+import { publishHistory, setCompare, useCompare } from "./graphView.js";
 
 export default function App() {
   const [range, setRange] = usePersisted("range", () => 300), [refresh, setRefresh] = usePersisted("refresh", 3), [auto, setAuto] = usePersisted("auto", true);
   const safeRange = snapRange(range);
-  const { state, err, stamp, now, hist, events, rows, fc, retry } = useCollectorData(safeRange, refresh);
+  const back = useCompare();
+  const { state, err, stamp, now, hist, hist2, events, rows, fc, retry } = useCollectorData(safeRange, refresh, back);
+  useEffect(() => publishHistory(hist), [hist]);
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
   const { upd, fail, busy, act, apply, checkNow, ready, ver, restart } = useUpdates(auto);
   const [menu, setMenu] = useState(false), [dlg, setDlg] = useState(false), [limDlg, setLimDlg] = useState(false), [help, setHelp] = useState(false), [showEv, setShowEv] = useState(false);
   const [expanded, setExpanded] = useState(() => new Set()), [evSeen, setEvSeen] = useState(() => load("evseen", 0));
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
+  const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
+  const foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
   const appRef = useRef(null), lastOk = useRef({}), hot = useRef({});
   useEffect(() => save("alerts", alertPrefs), [alertPrefs]);
   const [limits, setLimits] = usePersisted("limits", {}), [quiet, setQuiet] = usePersisted("quiet", DEFAULT_QUIET), [muted, setMuted] = usePersisted("muted", []);
@@ -58,9 +65,9 @@ export default function App() {
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
-  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin });
+  useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin, foldMachines });
 
-  const card = m => <Card key={m.name} m={m} h={hist[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} limits={limitsFor(limits, m.name)} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
+  const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} limits={limitsFor(limits, m.name)} auto={calmFold} flat={effCompact} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <div className="bar top">
@@ -68,6 +75,7 @@ export default function App() {
         <span className="live"><i className={"dot" + (err ? " off" : "")} /><Ago err={err} stamp={stamp} short={effCompact} /></span>
         <span className="grow" />
         {!effCompact && <span className="live hide-s clock"><Clock /></span>}
+        {!effCompact && !mini && <button onClick={() => foldMachines(folded)} data-tip="Fold every machine into one bar, or open them all (F, Shift+F)">{folded ? "Unfold all" : "Fold all"}</button>}
         {!mini && <button className={pin ? "on" : ""} onClick={() => setPin(!pin)} data-tip="Always on top (T)">{effCompact ? "Top" : "On top"}</button>}
         {!mini && <button className={compact ? "on" : ""} onClick={() => setCompact(!compact)} data-tip="Compact view: one row per machine (C)">Compact</button>}
         {!mini && <button onClick={toggleMini} data-tip="Small always-on-top corner view (M)">Mini</button>}
@@ -87,11 +95,12 @@ export default function App() {
         <button className={showEv ? "on" : ""} onClick={() => (showEv ? closeEv() : openEv())} data-tip="Activity drawer (E)">Activity{unseen > 0 && !showEv && <span className="badge">{unseen}</span>}</button>
         {!effCompact && <span className="lbl hide-s">Graphs show</span>}
         <div className="seg" role="group" aria-label="Time range">{RANGES.map(([l, s]) => <button key={s} className={safeRange === s ? "on" : ""} onClick={() => setRange(s)}>{effCompact ? SHORT(l) : l}</button>)}</div>
+        {!effCompact && <label className="lbl hide-s cmpsel" data-tip="Draw a faint dashed copy of every graph from an earlier time">Compare<select value={back} onChange={e => setCompare(+e.target.value)}>{COMPARE.map(([l, s]) => <option key={s} value={s}>{l}</option>)}</select></label>}
         <span className="grow" />
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
         {upd && !ready && <button className="cta" disabled={!!busy} onClick={apply}>{busy === "u" ? "Updating…" : "Update available"}</button>}
         <MoreMenu open={menu} setOpen={setMenu} prefs={prefs} setPrefs={setPrefs} refresh={refresh} setRefresh={setRefresh} alertPrefs={alertPrefs} setAlertPrefs={setAlertPrefs}
-          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCheck={checkNow}
+          auto={auto} setAuto={setAuto} upd={upd} fail={fail} busy={busy} ready={ready} ver={ver} look={look} calmFold={calmFold} setCalmFold={setCalmFold} snoozeUntil={snoozeUntil} setSnoozeUntil={setSnoozeUntil} quiet={quiet} setQuiet={setQuiet} muted={muted} onMute={onMute} onLimits={() => setLimDlg(true)} onCheck={checkNow}
           onMachines={() => setDlg(true)} onHelp={() => setHelp(true)} onMini={toggleMini} onRestart={() => act("r", () => api.restartCollector())}
           onStop={() => window.confirm("Stop everything? The monitor and its collector will close until you open it again.") && act("s", () => api.stopEverything())} />
       </div>
