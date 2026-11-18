@@ -3,7 +3,7 @@
 
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Backend, HistoryReply, State};
+use crate::{Action, Backend, HistoryReply, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
@@ -294,6 +294,17 @@ impl Backend for DemoBackend {
             per_day: known_server.then_some(FORECAST_PER_DAY),
             days: known_server.then_some(FORECAST_DAYS),
         })
+    }
+
+    fn container_action(
+        &self,
+        _machine: &str,
+        action: Action,
+        name: &str,
+    ) -> Result<String, String> {
+        Ok(format!(
+            "Demo: {action:?} {name} did nothing, there is no real docker here."
+        ))
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

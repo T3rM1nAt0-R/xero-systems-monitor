@@ -402,3 +402,8 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .mrow .mmove{display:inline-flex;flex:none;flex-direction:column;gap:0}.mmove button{padding:0 6px;font-size:9px;line-height:1.2;border-radius:4px}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
+
+/* container actions (Restart / Stop / Start / Logs on a container row) */
+.cacts{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;margin-left:auto}.cacts button{padding:1px 8px;font-size:11px}
+.cask{color:var(--mid);font-size:11.5px}.cnote{color:var(--dim);font-size:11.5px}.cnote.bad{color:var(--crit)}
+.logdlg{width:min(720px,100%)}.logtext{margin:0;max-height:55vh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font:11.5px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;color:var(--fg)}

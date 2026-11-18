@@ -37,7 +37,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 - This PC: CPU, memory, disk, network, ping, top programs, GPU (NVIDIA), CPU temperature
 - Remote Linux machines over your own SSH config, no agent to install on them
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)
-- Docker containers and failed systemd services on remote machines
+- Docker containers and failed systemd services on remote machines, with Restart, Stop, Start and Logs buttons (the ssh user needs the docker group)
 - History from 5 minutes to 1 year, stored locally in SQLite
 - Alerts when a limit is crossed, a disk is about to fill, or a job fails
 - Tray icon, autostart

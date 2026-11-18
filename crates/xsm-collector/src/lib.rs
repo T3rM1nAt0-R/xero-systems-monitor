@@ -15,6 +15,7 @@ pub use history::{History, HistoryReply};
 pub use live::LiveBackend;
 pub use machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
+pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
@@ -70,6 +71,13 @@ pub trait Backend: Send + Sync {
     /// # Errors
     /// Text for the window when saving fails.
     fn save_machines(&self, machines: Vec<MachineConfig>) -> Result<SaveOutcome, String>;
+
+    /// Run `restart`, `stop`, `start` or `logs` on one container of an ssh machine; returns the text to show.
+    ///
+    /// # Errors
+    /// Plain text for the window: not an ssh machine, a bad name, docker or ssh failing, or a timeout.
+    fn container_action(&self, machine: &str, action: Action, name: &str)
+        -> Result<String, String>;
 
     /// Restart polling.
     ///
