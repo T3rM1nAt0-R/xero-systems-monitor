@@ -13,6 +13,7 @@ export const getHistory = (machine, range) => call("get_history", { machine, ran
 export const getEvents = (since, n = 60) => call("get_events", { since, n });
 export const getJobs = since => call("get_jobs", { since });
 export const getForecast = machine => call("get_forecast", { machine });
+export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });

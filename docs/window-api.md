@@ -20,6 +20,7 @@ Rules for every command:
 | `get_forecast` | `machine: string` | `{ per_day: number or null, days: number or null }` |
 | `get_machines` | none | `{ machines: MachineConfig[] }` |
 | `save_machines` | `machines: MachineConfig[]` | `{}` when saved (the collector restarts), or `{ error: string }` and nothing saved |
+| `container_action` | `machine: string, action: "restart" or "stop" or "start" or "logs", name: string` (an ssh machine; the name must match `[a-zA-Z0-9][a-zA-Z0-9_.-]*`) | text: the last 50 log lines for `logs`, else a short sentence. Runs one `docker <action> <name>` over its own `ssh` (20 second limit); a failure is a plain-words error (for example the ssh user needs the docker group) |
 | `get_prefs` | none | `Prefs` |
 | `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray` and `login` can change) | the new `Prefs` |
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
