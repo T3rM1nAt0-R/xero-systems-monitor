@@ -102,6 +102,11 @@ impl Store {
                     put.execute(params![machine, key, t, v])?;
                 }
             }
+            for (key, v) in xsm_core::series::extra_series(reading) {
+                if v.is_finite() {
+                    put.execute(params![machine, key, t, v])?;
+                }
+            }
         }
         tx.commit()
     }

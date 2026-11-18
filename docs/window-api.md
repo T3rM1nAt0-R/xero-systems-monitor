@@ -24,6 +24,10 @@ Rules for every command:
 | `get_machines` | none | `{ machines: MachineConfig[] }` |
 | `save_machines` | `machines: MachineConfig[]` | `{}` when saved (the collector restarts), or `{ error: string }` and nothing saved |
 | `container_action` | `machine: string, action: "restart" or "stop" or "start" or "logs", name: string` (an ssh machine; the name must match `[a-zA-Z0-9][a-zA-Z0-9_.-]*`) | text: the last 50 log lines for `logs`, else a short sentence. Runs one `docker <action> <name>` over its own `ssh` (20 second limit); a failure is a plain-words error (for example the ssh user needs the docker group) |
+| `find_big_folders` | `machine: string`, `path: string` (a drive or folder; no empty text, no leading `-`) | a job number. Starts a background search for the biggest folders under `path`: a directory walk on This PC, `du -x -d 2` over its own `ssh` on a Linux machine (90 second limit). It only reads; nothing is deleted |
+| `get_big_folders` | `job: number` | `{ state: "running", seen: number }` (files looked at so far), `{ state: "done", folders: { path, bytes }[] }` (biggest first, at most 15), `{ state: "cancelled" }` or `{ state: "failed", error: string }`; an error when the job is no longer there (the last 8 are kept) |
+| `cancel_big_folders` | `job: number` | `null`; the search stops soon after |
+| `set_internet_host` | `url: string` (a plain `https://` address with no spaces; anything else, or empty, means `https://www.gstatic.com/generate_204`) | `null`. Sets what the internet check on This PC requests (a DNS lookup, then an HTTPS HEAD with `curl`, every minute) |
 | `get_prefs` | none | `Prefs` |
 | `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray` and `login` can change) | the new `Prefs` |
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |
@@ -78,6 +82,13 @@ Reading = {                       // every field optional; absent means "not mea
   gpuapps: [name, vram_mb, count][],   // programs using the NVIDIA card, biggest first; [] = none; absent = not asked yet (0 MB = driver does not say)
   ram_gb: [used, total], vram_gb: [used, total],
   storage: [name, used_gb, total_gb][],
+  io: [drive, read_bytes_per_s, write_bytes_per_s][],   // speed of each drive since the last reading
+  smart: [drive, model, ok, temp_c, power_on_hours, wear_percent][],   // drive health, read about every 10 minutes; a number the drive did not report is null; model has spaces shown as `_`
+  adapters: [name, up, speed_mbps, ip][],   // network adapters, read about every 30 s on This PC (PowerShell) and with the hardware names on Linux; speed and ip are null when unknown; ip is for the window only
+  wifi: [name, signal_percent],             // This PC only, when connected to Wi-Fi
+  inet: [up, dns_ms, total_ms],             // This PC only: the latest internet check (about every minute); times are null when there was no answer
+  pings: [machine, ms or null][],           // This PC only: the latest ping to every ssh machine (about every 30 s); null = no answer
+  smart_note: "missing" or "denied",   // why `smart` is absent: no smartctl on the machine, or it needs more rights (Linux only; This PC uses PowerShell)
   hw: { board?, os?, cpu?, gpu? },
   top: [name, cpu_percent, ram_mb, count][],
   procs: [pid, name, cpu_percent, ram_mb, user][],   // the 50 busiest single processes (user is "" when not known; This PC does not report it); refreshed every 3rd poll
@@ -93,7 +104,8 @@ Restart status: Debian and Ubuntu machines report it from `/var/run/reboot-requi
 update count from `apt-check` when that is installed (read about every 100th frame). This PC on Windows reads the two
 "restart pending" registry keys with `reg query`. Any other system leaves `restart` out: unknown, not "no".
 
-History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null }
+History = { cpu, ram, disk, temp, gpu, vram, gtemp, down, up, ping: [t, value][], loss: number or null, extra: { [key]: [t, value][] } }
+          // extra: series that depend on the machine. `dr:<drive>` and `dw:<drive>` are the read and write speed of a drive in bytes per second (the drive is named as in `storage` on This PC, as the device on Linux). `inet` is 1 (answered) or 0 (did not), `inet_ms` the time of the check, `pm:<machine>` the ping time to a machine (This PC only)
           // up to about 400 points per series, oldest first; a series the machine lacks is []; {} for an unknown machine
 
 BusyAt = { t: number, top: [name, cpu_percent, ram_mb, count][] }

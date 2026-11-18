@@ -32,6 +32,8 @@ pub struct History {
     pub ping: Points,
     /// Packet loss, percent; not measured yet, so always `None`.
     pub loss: Option<f64>,
+    /// Series that depend on the machine (a read and a write speed per drive), by key; see `xsm_core::series`.
+    pub extra: BTreeMap<String, Points>,
 }
 
 /// How rows of one key merge into one: the GPU series keep their PEAK so a short burst
@@ -74,5 +76,6 @@ pub(crate) fn read(conn: &Connection, machine: &str, range_s: i64, now_s: i64) -
         up: take("up"),
         ping: take("ping"),
         loss: None,
+        extra: by_key,
     })
 }

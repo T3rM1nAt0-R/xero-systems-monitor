@@ -1,9 +1,6 @@
 //! Made-up hardware extras for the demo PC: per-core temperatures, a battery and programs using the GPU.
 
 use crate::Ranking;
-use std::time::{SystemTime, UNIX_EPOCH};
-
-const GIB: f64 = 1_073_741_824.0;
 use xsm_core::reading::{BatteryReading, GpuApp, ProcessRow, Reading};
 
 const MIB: u64 = 1_048_576;
@@ -94,19 +91,4 @@ pub(crate) fn end_task(known: bool, name: &str) -> Result<String, String> {
     } else {
         Err("That machine is not in the list.".to_owned())
     }
-}
-
-/// Whole bytes in `gib` gibibytes.
-pub(crate) fn bytes(gib: f64) -> u64 {
-    // reason: whole bytes are enough for a demo and the input is never negative
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let n = (gib * GIB) as u64;
-    n
-}
-
-/// Now, unix seconds.
-pub(crate) fn now_s() -> f64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0.0, |d| d.as_secs_f64())
 }

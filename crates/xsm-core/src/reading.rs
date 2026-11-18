@@ -1,5 +1,7 @@
 //! The typed reading of one machine at one moment. Unit is in every field name.
 
+use crate::drives::{DiskIo, DriveHealth};
+use crate::netfacts::{Adapter, Internet, PingResult, Wifi};
 use serde::{Deserialize, Serialize};
 
 /// What one probe frame says about a machine. A fact the frame did not carry is `None` or empty.
@@ -15,6 +17,20 @@ pub struct Reading {
     pub disk_used_pct: Option<f64>,
     /// Real file systems (virtual and system mounts are left out).
     pub disks: Vec<DiskReading>,
+    /// Read and write speed of each physical drive.
+    pub disk_io: Vec<DiskIo>,
+    /// What each drive says about its health (read every few minutes, kept between frames).
+    pub drive_health: Vec<DriveHealth>,
+    /// Why there is no drive health: `missing` (no `smartctl`) or `denied` (it needs more rights).
+    pub health_note: Option<String>,
+    /// Every network adapter (read rarely, kept between frames).
+    pub adapters: Vec<Adapter>,
+    /// The Wi-Fi network (This PC only).
+    pub wifi: Option<Wifi>,
+    /// The latest internet check (This PC only).
+    pub internet: Option<Internet>,
+    /// The latest pings to the other machines (This PC only).
+    pub pings: Vec<PingResult>,
     /// Network counters and speed of the default route.
     pub net: Option<NetReading>,
     /// First NVIDIA GPU, when there is one.

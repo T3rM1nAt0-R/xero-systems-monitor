@@ -23,6 +23,10 @@ export function checkMachines(list) {
   return "";
 }
 
+// The biggest-folders demo: a search "runs" for a couple of seconds, then lists made-up folders. Mirrors the real backend's replies.
+const SCAN_MS = 2500, scans = new Map();
+const DEMO_FOLDERS = [["media", 92], ["games", 61], ["projects", 34], ["downloads", 18], ["backups", 15], ["cache", 9], ["photos", 7], ["music", 5]];
+const scanState = (s, now) => s.stopped ? { state: "cancelled" } : now - s.at < SCAN_MS ? { state: "running", seen: Math.round((now - s.at) * 42) } : { state: "done", folders: DEMO_FOLDERS.map(([n, g]) => ({ path: `${s.path.replace(/[\\/]+$/, "")}/${n}`, bytes: g * 2 ** 30 })) };
 // Pushed events (the real shell sends these through Tauri): api.js listens here when there is no Tauri.
 const listeners = new Map(), shells = new Map();
 export const onFakeEvent = (name, fn) => { const set = listeners.get(name) || listeners.set(name, new Set()).get(name); set.add(fn); return () => set.delete(fn); };
@@ -65,6 +69,14 @@ const commands = {
     if (action !== "logs") return `${{ restart: "Restarted", stop: "Stopped", start: "Started" }[action]} ${name}. (demo)`;
     return Array.from({ length: 50 }, (_, i) => `2026-11-18T09:${String(i).padStart(2, "0")}:00Z ${name} demo log line ${i + 1}`).join("\n") + "\n";
   },
+  find_big_folders: ({ machine, path }) => {
+    if (!named(machine)) throw new Error("That machine is not in the list.");
+    if (!String(path || "").trim() || String(path).startsWith("-")) throw new Error("Type a folder path, like / or D:\\.");
+    const id = scans.size + 1; scans.set(id, { path: String(path).trim(), at: Date.now(), stopped: false }); return id;
+  },
+  get_big_folders: ({ job }) => { const s = scans.get(job); if (!s) throw new Error("That search is no longer there."); return scanState(s, Date.now()); },
+  cancel_big_folders: ({ job }) => { const s = scans.get(job); if (s && Date.now() - s.at < SCAN_MS) s.stopped = true; return null; },
+  set_internet_host: ({ url }) => { store.internetHost = /^https:\/\/[^\s"]+$/.test(String(url || "").trim()) ? String(url).trim() : ""; return null; },
   get_prefs: () => ({ ...store.prefs }),
   set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },
   set_window_mode: ({ mode }) => (store.mode = mode),

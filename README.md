@@ -57,6 +57,12 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td valign="top">The Runners tab: runner chips, running jobs, timeline, last 7 days, slowest jobs, the busy heatmap and job history. Click the pin on any section header to pin that section to Overview.</td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/disks.png" alt="The Disks tab with drive speed graphs, drive health and the biggest folders"></td>
+<td width="50%" valign="top">The Disks tab: read and write speed per drive, drive health (temperature, hours, SSD wear), and "Find biggest folders", a search you start yourself that shows a loading bar, can be stopped and never deletes anything.</td>
+</tr>
+<tr>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/hardware.png" alt="The Hardware tab"></td>
 <td valign="top">The Hardware tab: each CPU core with its load and temperature, fans, clock and power, the battery (charge, charging, time left) on laptops, and the programs using the graphics card (NVIDIA) with the memory each holds. Linux machines show the per-core numbers too.</td>
 <td width="50%"><img src="docs/screenshots/terminal.png" alt="The Terminal tab with two demo shells"></td>
@@ -65,11 +71,15 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <tr>
 <td width="50%"><img src="docs/screenshots/processes.png" alt="The Processes tab"></td>
 <td valign="top">The Processes tab: the busiest processes, sortable and filterable. <b>End task</b> needs a press-and-hold, so it cannot happen by accident (Linux machines get a plain <code>kill</code> over ssh, never sudo). Below it, "What was busy" ranks the programs of the last hour, 6 hours or 24 hours by CPU or memory.</td>
+<td width="50%"><img src="docs/screenshots/network.png" alt="The Network tab with adapters, the internet check and the ping map"></td>
+<td width="50%" valign="top">The Network tab: adapters and Wi-Fi, an internet check every minute with a 24-hour up/down strip (you can change the address it checks), and a ping map of your other machines with a latency graph.</td>
 </tr>
 </table>
 
 - Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
+- Network tab: adapters, Wi-Fi name and signal, an internet check with a 24-hour up/down strip, and a ping map of your other machines
+- Disks tab: read and write speed of every drive over time, drive health (OK or needs a look, temperature, hours, SSD wear; on Linux it needs smartmontools), and a "Find biggest folders" search you start yourself, with a loading bar and a Stop button, that only reads and never deletes
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature
 - This PC with LibreHardwareMonitor running: fan speeds, CPU clock, CPU and GPU power, per-core load
 - Smooth folds, tab changes and menus, a thin loading bar and graph placeholders while data arrives (all off with the system "reduce motion" setting)

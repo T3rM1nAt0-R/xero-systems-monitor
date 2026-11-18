@@ -142,13 +142,18 @@ pub fn parse_ping_ms(text: &str) -> Option<f64> {
 
 /// Run the system `ping` once; `None` when it is missing, fails or says nothing readable.
 pub(crate) fn ping_once() -> Option<f64> {
+    ping_host_ms(PING_TARGET)
+}
+
+/// Run the system `ping` once against `host`; `None` when it is missing, fails or says nothing readable.
+pub(crate) fn ping_host_ms(host: &str) -> Option<f64> {
     let mut cmd = Command::new("ping");
     if cfg!(windows) {
         cmd.args(["-n", "1", "-w", "1000"]);
     } else {
         cmd.args(["-c", "1", "-W", "1"]);
     }
-    cmd.arg(PING_TARGET);
+    cmd.arg(host);
     crate::hide_window(&mut cmd);
     let out = cmd.output().ok()?;
     parse_ping_ms(&String::from_utf8_lossy(&out.stdout))

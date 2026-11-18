@@ -3,11 +3,13 @@
 
 mod connections;
 pub mod container;
+pub mod folders;
 mod gpu_apps;
 pub mod local;
 pub mod process_list;
 pub mod runners;
 pub mod sensors;
+pub mod slow;
 pub mod ssh;
 
 use std::process::Command;

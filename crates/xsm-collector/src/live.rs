@@ -4,15 +4,19 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
+use crate::scan::{ScanReply, Scans};
 use crate::{Action, Backend, BusyReply, HistoryReply, MachineKind, Ranking, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
+use xsm_core::drives::path_ok;
 use xsm_core::forecast::{forecast, Forecast};
 use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
+use xsm_sources::folders::{scan_local, scan_ssh};
 use xsm_sources::process_list::{end_local, end_remote};
+use xsm_sources::slow::NetConfig;
 use xsm_sources::ssh::ssh_command;
 use xsm_store::Store;
 
@@ -35,6 +39,8 @@ pub struct LiveBackend {
     snapshots: Arc<Mutex<Vec<Snapshot>>>,
     machines: Mutex<Vec<MachineConfig>>,
     engine: Mutex<Option<Engine>>,
+    scans: Scans,
+    net: Arc<NetConfig>,
 }
 
 fn text(e: impl std::fmt::Display) -> String {
@@ -77,6 +83,8 @@ impl LiveBackend {
             snapshots: Arc::new(Mutex::new(Vec::new())),
             machines: Mutex::new(machines),
             engine: Mutex::new(None),
+            scans: Scans::default(),
+            net: Arc::default(),
         };
         live.begin();
         Ok(live)
@@ -93,6 +101,7 @@ impl LiveBackend {
             store: Arc::clone(&self.store),
             snapshots: Arc::clone(&self.snapshots),
             db_path: self.db_path.clone(),
+            net: Arc::clone(&self.net),
         }));
     }
 }
@@ -181,6 +190,36 @@ impl Backend for LiveBackend {
             .and_then(|m| m.host.clone())
             .ok_or_else(|| "Container actions work only on remote machines.".to_owned())?;
         run_container_action(&host, action, name)
+    }
+
+    fn find_big_folders(&self, machine: &str, path: &str) -> Result<u64, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .cloned();
+        let m = found.ok_or_else(|| "That machine is not in the list.".to_owned())?;
+        if !path_ok(path) {
+            return Err("Type a folder path, like / or D:\\.".to_owned());
+        }
+        let path = path.trim().to_owned();
+        Ok(match (m.kind, m.host) {
+            (MachineKind::Ssh, Some(host)) => self.scans.start(move |c| scan_ssh(&host, &path, c)),
+            _ => self.scans.start(move |c| scan_local(&path, c)),
+        })
+    }
+
+    fn get_big_folders(&self, job: u64) -> Result<ScanReply, String> {
+        self.scans.status(job)
+    }
+
+    fn cancel_big_folders(&self, job: u64) -> Result<(), String> {
+        self.scans.cancel(job);
+        Ok(())
+    }
+
+    fn set_internet_host(&self, url: &str) -> Result<(), String> {
+        self.net.set_url(url);
+        Ok(())
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

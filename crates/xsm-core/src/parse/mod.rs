@@ -4,6 +4,7 @@ mod battery;
 mod cpu;
 mod disk;
 mod docker;
+mod drives;
 mod extras;
 mod gpu;
 mod hardware;
@@ -63,6 +64,7 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
             "GPU" => gpu::line(&mut r, rest),
             "RUNNER" | "JOB" | "JOBRES" | "JRES" => runners::line(tag, &mut r, rest),
             "DOCK" | "DOCKON" | "DOCKERR" => docker::line(tag, &mut r, rest),
+            "ADAPTER" | "DISKIO" | "SMART" | "SMARTNOTE" => drives::line(tag, &mut r, rest),
             "SVCF" => services::line(&mut r, rest),
             "PROC" => processes::line(&mut r, rest),
             "TOP" => top::line(&mut r, rest),
@@ -83,6 +85,13 @@ pub fn parse_frame(text: &str, previous: Option<&Reading>) -> Reading {
         }
         if let (Some(now), Some(before)) = (r.net.as_mut(), p.net.as_ref()) {
             net::rate(now, before);
+        }
+        if r.drive_health.is_empty() && r.health_note.is_none() {
+            r.drive_health.clone_from(&p.drive_health);
+            r.health_note.clone_from(&p.health_note);
+        }
+        if r.adapters.is_empty() {
+            r.adapters.clone_from(&p.adapters);
         }
         if r.top.is_empty() {
             r.top.clone_from(&p.top);
