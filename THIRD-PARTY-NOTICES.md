@@ -21,3 +21,5 @@ Parts of other projects that ship inside Xero Systems Monitor, with their licenc
 The fonts come from the Fontsource packages, which carry each font's own licence file (`LICENSE` in the package); the SIL Open Font Licence 1.1 allows bundling and use in software. Reserved font names are not used for any renamed or modified font, since the files are shipped unmodified.
 
 The full licence texts sit next to each bundled component in the release. This list grows as dependencies are added.
+| xterm.js (`@xterm/xterm` 6.0.0 and `@xterm/addon-fit` 0.11.0) | The Terminal tab | MIT | In the app window, loaded when the Terminal tab opens |
+| portable-pty 0.9.0 | Pseudo-terminals for the Terminal tab | MIT | In the app |

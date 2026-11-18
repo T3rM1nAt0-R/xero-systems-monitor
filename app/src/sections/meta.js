@@ -1,7 +1,7 @@
 import { rateStr } from "../format.js";
 import { containerBad } from "../alerts.js";
 import { batteryFacts } from "../hwStrip.js";
-// The one list of sections a machine card can show (CPU, GPU, Network, Disk, Runners, Containers & services), and of the tabs they belong to.
+// The one list of sections a machine card can show (CPU, GPU, Network, Disk, Runners, Containers & services, Terminal), and of the tabs they belong to.
 // This file is pure (no React): the group order and "hide a section" choices (order.js), the Groups menu, the Ctrl+K palette and the tests all read it.
 // The drawing of each section is in the file next to it (Cpu.jsx, Gpu.jsx, ...); sections/index.js joins the two.
 //
@@ -51,6 +51,8 @@ export const SECTION_META = [
     accent: m => (svcFacts(m).bad || m.d?.docker_err ? "--bad" : "--c-svc"),
     sub: m => { const { cs, cgone, bad, up } = svcFacts(m); return m.d?.docker_err ? "Docker blocked" : `${up} running${cs.length > up ? ` · ${cs.length - up} stopped` : ""}${bad ? ` · ${bad} failing` : ""}${cgone.length ? ` · ${cgone.length} gone` : ""}`; },
     summary: m => { const { bad, up } = svcFacts(m); return bad ? `${bad} failing` : `${up} running`; } },
+  { id: "term", title: "Terminal", spark: null, def: true, cls: "full", accent: () => "--acc", available: () => true,
+    sub: () => "a shell on this machine", summary: () => "Shell" },
 ];
 export const SECTION_IDS = SECTION_META.map(s => s.id);
 export const sectionTitle = id => SECTION_META.find(s => s.id === id)?.title || id;

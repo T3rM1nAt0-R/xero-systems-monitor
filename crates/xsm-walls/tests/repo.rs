@@ -46,7 +46,7 @@ fn block_map() {
     let manifests = collect(&root(), |p| {
         p.starts_with("crates/") && p.ends_with("/Cargo.toml")
     });
-    assert_eq!(manifests.len(), 6, "expected six crate manifests");
+    assert_eq!(manifests.len(), 7, "expected seven crate manifests");
     let allow = read_text(&root(), "walls/block-map.toml").unwrap();
     assert_clean("block_map", &block_map::check(&allow, &manifests));
 }

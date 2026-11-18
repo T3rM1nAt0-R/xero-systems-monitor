@@ -14,7 +14,7 @@ export const TAB_PARTS = {
   services: [["svc", FULL]],
   runners: [["run", FULL]],
   logs: [],
-  terminal: [],
+  terminal: [["term", FULL]],
 };
 // Does this view of a section have anything to show for this machine? (Parts not listed here always do, once the section itself is there.)
 const HAS = {

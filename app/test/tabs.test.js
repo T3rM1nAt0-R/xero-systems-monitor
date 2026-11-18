@@ -11,14 +11,14 @@ const rich = { d: { cpu: 5, top: [["node", 4, 100, 1]], runners: { r1: true }, j
 
 test("tab parts only name known tabs and known sections", () => {
   assert.deepEqual(Object.keys(TAB_PARTS), TAB_IDS);
-  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "net", "disk", "run", "svc"].includes(id) && v);
+  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "net", "disk", "run", "svc", "term"].includes(id) && v);
 });
 
-test("a bare machine shows Overview, Network and Disks only; Logs and Terminal have no content yet", () => {
-  assert.deepEqual(availableTabs(bare).map(t => t[0]), ["overview", "disks", "network"]);
+test("a bare machine shows Overview, Network and Disks only; Terminal always shows, Logs has no content yet", () => {
+  assert.deepEqual(availableTabs(bare).map(t => t[0]), ["overview", "disks", "network", "terminal"]);
   const all = availableTabs(rich).map(t => t[0]);
-  assert.deepEqual(all, ["overview", "hardware", "processes", "disks", "network", "services", "runners"]);
-  assert.ok(!all.includes("logs") && !all.includes("terminal"));
+  assert.deepEqual(all, ["overview", "hardware", "processes", "disks", "network", "services", "runners", "terminal"]);
+  assert.ok(!all.includes("logs"));
   assert.equal(TABS.length, TAB_IDS.length);
 });
 
@@ -49,10 +49,10 @@ test("the remembered tab falls back to Overview when the machine no longer has i
 test("arrow keys move along the tabs, wrap round, and Home / End jump", () => {
   const tabs = availableTabs(rich);
   assert.equal(stepTab(tabs, "overview", "ArrowRight"), "hardware");
-  assert.equal(stepTab(tabs, "overview", "ArrowLeft"), "runners");
-  assert.equal(stepTab(tabs, "runners", "ArrowRight"), "overview");
+  assert.equal(stepTab(tabs, "overview", "ArrowLeft"), "terminal");
+  assert.equal(stepTab(tabs, "terminal", "ArrowRight"), "overview");
   assert.equal(stepTab(tabs, "disks", "Home"), "overview");
-  assert.equal(stepTab(tabs, "disks", "End"), "runners");
+  assert.equal(stepTab(tabs, "disks", "End"), "terminal");
   assert.equal(stepTab(tabs, "disks", "a"), "disks");
   assert.equal(stepTab([], "disks", "ArrowRight"), "disks");
   assert.equal(stepTab(tabs, "gone", "ArrowRight"), "overview");

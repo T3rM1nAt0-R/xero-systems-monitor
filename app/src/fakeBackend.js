@@ -1,4 +1,6 @@
 // The stand-in for the Tauri shell when the window runs in a plain browser. `handle(command, args)` answers every command in docs/window-api.md with demo data of the documented shape.
+import { createShell } from "./fakeShell.js";
+import { validSessionId } from "./terminal.js";
 import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
@@ -21,7 +23,22 @@ export function checkMachines(list) {
   return "";
 }
 
+// Pushed events (the real shell sends these through Tauri): api.js listens here when there is no Tauri.
+const listeners = new Map(), shells = new Map();
+export const onFakeEvent = (name, fn) => { const set = listeners.get(name) || listeners.set(name, new Set()).get(name); set.add(fn); return () => set.delete(fn); };
+const push = (name, payload) => { for (const fn of listeners.get(name) || []) fn(payload); };
+
 const commands = {
+  terminal_open: ({ id, machine }) => {
+    if (!validSessionId(id) || !named(machine) || shells.has(id)) throw new Error("Cannot open that terminal.");
+    const sh = createShell(machine, data => push("terminal-output", { id, data }));
+    shells.set(id, sh);
+    setTimeout(() => sh.start(), 700);   // a real shell or ssh takes a moment to answer
+    return null;
+  },
+  terminal_write: ({ id, data }) => { shells.get(id)?.input(String(data)); return null; },
+  terminal_resize: () => null,
+  terminal_close: ({ id }) => { shells.delete(id); return null; },
   get_state: () => ({ machines: store.machines.filter(m => !m.paused).map(m => demoMachine(m, clock())) }),
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
   get_busy_at: ({ machine, t }) => (named(machine) ? busyAt(named(machine), t) : {}),
