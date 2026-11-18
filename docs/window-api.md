@@ -22,6 +22,8 @@ Rules for every command:
 | `get_machines` | none | `{ machines: MachineConfig[] }` |
 | `save_machines` | `machines: MachineConfig[]` | `{}` when saved (the collector restarts), or `{ error: string }` and nothing saved |
 | `container_action` | `machine: string, action: "restart" or "stop" or "start" or "logs", name: string` (an ssh machine; the name must match `[a-zA-Z0-9][a-zA-Z0-9_.-]*`) | text: the last 50 log lines for `logs`, else a short sentence. Runs one `docker <action> <name>` over its own `ssh` (20 second limit); a failure is a plain-words error (for example the ssh user needs the docker group) |
+| `system_query` | `machine: string, query: "services" or "updates"` | text. `services`: systemd's `systemctl list-units --type=service --all --plain --no-legend` on a Linux machine, or PowerShell's `Get-Service` as JSON (`Name, DisplayName, Status, StartType`) on This PC. `updates`: `apt N` or `dnf N` (pending updates) or `none`; an error on This PC. 20 second limit |
+| `system_action` | `machine: string, act: "restart" or "stop" or "start" or "upgrade" or "reboot", name: string` (a service name matching `[A-Za-z0-9_.@:-]+`; empty for `upgrade` and `reboot`, which are Linux only) | a short sentence. Linux runs `sudo -n ...` only and never stores a password: if sudo needs one the error is `needs-password:` followed by the command to run by hand. This PC runs `Restart-Service`, `Stop-Service` or `Start-Service`. Installing updates may take 10 minutes |
 | `get_prefs` | none | `Prefs` |
 | `set_prefs` | `patch: Partial<Prefs>` (only `closeToTray` and `login` can change) | the new `Prefs` |
 | `set_window_mode` | `mode: "mini" or "full" or "compact"` | the mode now in effect |

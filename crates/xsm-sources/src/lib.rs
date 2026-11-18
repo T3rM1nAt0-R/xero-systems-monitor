@@ -7,6 +7,7 @@ pub mod local;
 pub mod runners;
 pub mod sensors;
 pub mod ssh;
+pub mod system;
 
 use std::process::Command;
 

@@ -66,6 +66,7 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 - Remote Linux machines over your own SSH config, no agent to install on them
 - Runner insights: a busy-hours heatmap for the week, a searchable job history, and a click on any job opens it on GitHub (its pull request, or the Actions page)
 - GitHub Actions self-hosted runner jobs on this PC and on remote machines: running, finished, failed, and how long they took (found on this PC by themselves; for a remote machine turn on "GitHub runners" when you add it)
+- Services tab: systemd services (Linux) and Windows services (This PC) with a filter and hold-to-confirm Restart, Stop and Start; pending updates, Install updates and Restart machine on Linux (`sudo -n`, or a command to copy if sudo needs a password)
 - Docker containers and failed systemd services on remote machines, with Restart, Stop, Start and Logs buttons (the ssh user needs the docker group)
 - History from 5 minutes to 1 year, stored locally in SQLite
 - "What was busy then?": click a point on a CPU or memory graph to see the busiest programs at that moment (kept once a minute for 3 days)

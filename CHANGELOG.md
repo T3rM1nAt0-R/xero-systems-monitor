@@ -4,6 +4,7 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: the Services tab now also lists the machine's own services (systemd on Linux, Windows services on This PC) with a Failed / Running / Stopped filter and Restart, Stop and Start buttons you hold for a moment to confirm. Linux machines show how many updates are waiting (looked up every 30 minutes), "Restart needed", Install updates and Restart machine. Linux actions use `sudo -n` only; if sudo needs a password the app shows the command to run yourself, with a Copy button, and never stores a password.
 - Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs and Terminal are ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
 - Added: a pin on every section header pins that section (whole) to Overview; click again to unpin.
 - Changed: the machine card header is one status line (name, status, uptime, restart needed); board, system and address moved to a hover tooltip on an (i) icon.

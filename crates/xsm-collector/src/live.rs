@@ -4,7 +4,7 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
-use crate::{Action, Backend, BusyReply, HistoryReply, MachineKind, State};
+use crate::{Act, Action, Backend, BusyReply, HistoryReply, MachineKind, Query, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -13,6 +13,7 @@ use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
 use xsm_sources::container::run_container_action;
 use xsm_sources::ssh::ssh_command;
+use xsm_sources::system::{run_action, run_query, Target};
 use xsm_store::Store;
 
 /// The history file in the data folder.
@@ -41,6 +42,23 @@ fn text(e: impl std::fmt::Display) -> String {
 }
 
 impl LiveBackend {
+    /// Run `f` against the named machine: over ssh for a remote one, in PowerShell for this PC.
+    fn with_target<T>(
+        &self,
+        machine: &str,
+        f: impl FnOnce(Target<'_>) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let found = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine)
+            .map(|m| (m.kind, m.host.clone()));
+        match found {
+            Some((MachineKind::Ssh, Some(host))) => f(Target::Ssh(&host)),
+            Some((MachineKind::Local, _)) => f(Target::Pc),
+            _ => Err("That machine is not in the list.".to_owned()),
+        }
+    }
+
     /// Open the data folder and start polling with the system `ssh`. Settings come from
     /// `settings_dir` (`collector.json`, `limits.json`; a missing file or `None` means the built-in defaults).
     ///
@@ -157,6 +175,14 @@ impl Backend for LiveBackend {
             .and_then(|m| m.host.clone())
             .ok_or_else(|| "Container actions work only on remote machines.".to_owned())?;
         run_container_action(&host, action, name)
+    }
+
+    fn system_query(&self, machine: &str, query: Query) -> Result<String, String> {
+        self.with_target(machine, |t| run_query(t, query))
+    }
+
+    fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String> {
+        self.with_target(machine, |t| run_action(t, act, name))
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

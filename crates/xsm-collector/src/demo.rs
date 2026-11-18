@@ -4,7 +4,7 @@
 use crate::demo_jobs::jobs;
 use crate::history::{History, Series};
 use crate::machines::{MachineConfig, MachineKind, MachineList, SaveOutcome};
-use crate::{Action, Backend, BusyReply, HistoryReply, State};
+use crate::{Act, Action, Backend, BusyReply, HistoryReply, Query, State};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use xsm_core::forecast::Forecast;
@@ -298,6 +298,14 @@ impl Backend for DemoBackend {
         Ok(format!(
             "Demo: {action:?} {name} did nothing, there is no real docker here."
         ))
+    }
+
+    fn system_query(&self, _machine: &str, _query: Query) -> Result<String, String> {
+        Err("Demo: there is no real machine to ask.".to_owned())
+    }
+
+    fn system_action(&self, _machine: &str, act: Act, name: &str) -> Result<String, String> {
+        Ok(format!("Demo: {act:?} {name} did nothing."))
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

@@ -95,6 +95,8 @@ pub fn run() {
             commands::get_machines,
             commands::save_machines,
             commands::container_action,
+            commands::system_query,
+            commands::system_action,
             commands::get_prefs,
             commands::set_prefs,
             commands::set_window_mode,

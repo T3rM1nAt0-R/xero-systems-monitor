@@ -1,4 +1,5 @@
 // The stand-in for the Tauri shell when the window runs in a plain browser. `handle(command, args)` answers every command in docs/window-api.md with demo data of the documented shape.
+import { systemQuery, systemAction } from "./fakeSystem.js";
 import { demoMachine, demoEvents, finishedJobs, forecast, history, busyAt } from "./fakeData.js";
 
 const FIRST = [{ name: "This PC", kind: "local" }, { name: "example-server", kind: "ssh", host: "192.0.2.10", runner: true }];
@@ -42,6 +43,8 @@ const commands = {
     if (action !== "logs") return `${{ restart: "Restarted", stop: "Stopped", start: "Started" }[action]} ${name}. (demo)`;
     return Array.from({ length: 50 }, (_, i) => `2026-11-18T09:${String(i).padStart(2, "0")}:00Z ${name} demo log line ${i + 1}`).join("\n") + "\n";
   },
+  system_query: ({ machine, query }) => systemQuery(named(machine), query),
+  system_action: ({ act, name }) => systemAction(act, name),
   get_prefs: () => ({ ...store.prefs }),
   set_prefs: ({ patch }) => Object.assign(store.prefs, patch, { updates: true }) && { ...store.prefs },
   set_window_mode: ({ mode }) => (store.mode = mode),

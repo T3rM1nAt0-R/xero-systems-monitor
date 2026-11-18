@@ -53,16 +53,21 @@ fn text_of(handle: Option<JoinHandle<String>>) -> String {
     handle.and_then(|h| h.join().ok()).unwrap_or_default()
 }
 
-/// Run `cmd`, wait up to `timeout`, and turn the result into window text.
+/// What a finished run left: whether it succeeded, and both output streams.
+pub struct Ran {
+    /// True when the command ended with success.
+    pub ok: bool,
+    /// What it printed on stdout.
+    pub stdout: String,
+    /// What it printed on stderr.
+    pub stderr: String,
+}
+
+/// Run `cmd`, wait up to `timeout`, and return what it printed.
 ///
 /// # Errors
-/// Plain text when the command cannot start, fails, or times out.
-pub fn run_command(
-    mut cmd: Command,
-    timeout: Duration,
-    action: Action,
-    name: &str,
-) -> Result<String, String> {
+/// Plain text when the command cannot start or times out.
+pub fn run_raw(mut cmd: Command, timeout: Duration) -> Result<Ran, String> {
     let mut child = cmd
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -73,10 +78,26 @@ pub fn run_command(
     let err = child.stderr.take().map(drain);
     let ended = wait(&mut child, timeout);
     let (stdout, stderr) = (text_of(out), text_of(err));
-    match ended {
-        None => Err(timeout_text()),
-        Some(true) => Ok(success_text(action, name, &stdout, &stderr)),
-        Some(false) => Err(failure_text(&stderr)),
+    ended
+        .map(|ok| Ran { ok, stdout, stderr })
+        .ok_or_else(timeout_text)
+}
+
+/// Run `cmd`, wait up to `timeout`, and turn the result into window text.
+///
+/// # Errors
+/// Plain text when the command cannot start, fails, or times out.
+pub fn run_command(
+    cmd: Command,
+    timeout: Duration,
+    action: Action,
+    name: &str,
+) -> Result<String, String> {
+    let r = run_raw(cmd, timeout)?;
+    if r.ok {
+        Ok(success_text(action, name, &r.stdout, &r.stderr))
+    } else {
+        Err(failure_text(&r.stderr))
     }
 }
 
