@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { get, set, subscribe, useSetting } from "./store.js";
+import { motionFull } from "./motion.js";
 // One folding mechanism for everything that opens and shuts: groups, small sections, whole machine cards.
 // The choice is kept per machine in the settings store under "col."+id (1 = open, 0 = folded). foldAll() reaches every fold on screen whose id starts with a prefix.
 export const CARD = "card.";   // prefix of every machine card's fold id
@@ -8,12 +9,17 @@ const mounted = new Map();     // id -> how many folds with that id are on scree
 let asks = 0;
 // `exact` reaches only the fold whose id is the prefix itself (so "srv" does not also reach "srv2").
 export const reaches = (id, { prefix, exact }) => exact ? id === prefix : id.startsWith(prefix);
+// Where a fold sits on screen (cards are "m-name", groups "g-id"), so fold all can ripple from the top down.
+const topOf = id => document.getElementById(id.startsWith(CARD) ? "m-" + id.slice(CARD.length) : "g-" + id)?.getBoundingClientRect().top ?? 0;
+const RIPPLE_STEP_MS = 70, RIPPLE_MAX_STEPS = 8;   // each fold starts a little after the one above it, for at most this many steps
 export function foldAll(open, prefix = "", exact = false) {
-  const ask = { open, prefix, exact };
-  for (const id of mounted.keys()) if (reaches(id, ask)) {
+  const ask = { open, prefix, exact }, hit = [...mounted.keys()].filter(id => reaches(id, ask));
+  const apply = id => {
     set(COL + id, open ? 1 : 0);
     set(ASKED + id, { open, n: ++asks }, { persist: false });   // lets a card tell "folded by fold all" from "folded by a click"
-  }
+  };
+  if (hit.length < 2 || typeof document === "undefined" || !motionFull()) { hit.forEach(apply); return; }
+  hit.sort((a, b) => topOf(a) - topOf(b)).forEach((id, i) => (i ? setTimeout(() => apply(id), Math.min(i, RIPPLE_MAX_STEPS) * RIPPLE_STEP_MS) : apply(id)));
 }
 // Runs `fn(open)` when foldAll() reaches this id.
 export function useFoldEvent(id, fn) {

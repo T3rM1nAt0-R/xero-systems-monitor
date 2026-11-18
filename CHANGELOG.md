@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: window motion (Full only): at startup the cards and machine tiles cascade in one after another and their big numbers count up from zero; switching between Full, Compact and Mini fades and settles the content; "Fold all" (F) ripples from the top card to the bottom instead of folding everything at once.
+
 - Added: card, status and feedback motion (all obey the Motion setting): folds open with a tiny spring; cards glide when reordered, hidden or shown; the tab underline slides between tabs; cards and tiles lift a little on hover; a green ripple spreads from a machine's status dot when it comes online and the dot fades slowly to a grey ring when it goes offline; status dots breathe (faster and amber when a machine needs a look); big numbers ease from normal to amber to red as they near their limit; the Services and Runners tabs show a count badge that pops when it grows; the CPU line on each machine tile scrolls with every new reading; a pinned section flies to the Overview tab; buttons press in; "Saved picture", "Saved numbers" and "Copied" appear as small toasts at the bottom; loading shows shimmering placeholders (first start, logs, container logs).
 - Changed: container Stop and Restart, and "Stop everything" in the More menu, use hold-to-confirm buttons (like End task) instead of Yes / No or a pop-up question.
 - Added: the tray icon's red dot pulses for a few seconds when something goes red (Full motion). `set_tray_status` takes an optional `pulse`.

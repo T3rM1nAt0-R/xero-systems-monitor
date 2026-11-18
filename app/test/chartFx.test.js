@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fxKind, heatStops, peakOf, newest, rollDir, nearStyle } from "../src/chartFx.js";
+import { countText, startupBegin, isStartup, STARTUP_MS } from "../src/startup.js";
 import { motionLevel, motionFull, motionMs, MOTION_MS } from "../src/motion.js";
 
 test("graph motion: first draw, slide, stretch on a range change, nothing otherwise", () => {
@@ -56,4 +57,17 @@ test("a big number turns amber from 70% of its limit and red from the limit", ()
   assert.deepEqual(nearStyle(150, 100), { "--amber": "100%", "--red": "100%" });
   assert.equal(nearStyle(NaN, 100), null);
   assert.equal(nearStyle(5, 0), null);
+});
+
+test("startup: numbers count up from zero and the startup moment ends", () => {
+  assert.equal(countText("80", 0), "0");
+  assert.equal(countText("80", 1), "80");
+  assert.equal(countText("4.1 GB", 1), "4.1 GB");
+  assert.equal(countText("4.0 GB", 0), "0.0 GB");
+  assert.equal(countText("n/a", 0.5), "n/a");
+  assert.equal(countText(null, 0.5), null);
+  assert.ok(countText("100", 0.5) > 50 && countText("100", 0.5) < 100, "eases out: past halfway at half time");
+  startupBegin(1000);
+  assert.equal(isStartup(1000 + STARTUP_MS - 1), true);
+  assert.equal(isStartup(1000 + STARTUP_MS), false);
 });
