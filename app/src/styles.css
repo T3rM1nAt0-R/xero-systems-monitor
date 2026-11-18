@@ -495,3 +495,19 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .hwstrip .cores{display:inline-flex;align-items:flex-end;gap:2px;height:18px}
 .hwstrip .cores i{display:block;width:3px;min-height:1px;background:var(--acc);opacity:.75;border-radius:1px}
 .hwstrip .cores i.hot{background:var(--warn);opacity:1}
+
+/* polish 0.2: machines strip row, sub headers, folded summaries, save buttons */
+.strip{flex-direction:row;flex-wrap:wrap;gap:6px}
+.tile{flex:0 0 auto;width:276px;min-width:0;max-width:100%;height:56px;box-sizing:border-box;justify-content:center;gap:3px;padding:5px 10px}
+.tile .tl2{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}
+.tile .tn{flex-wrap:nowrap;gap:0 6px;font-size:11.5px;white-space:nowrap;min-width:0}
+.tile .tn small{font-size:9.5px}
+.fsub>h4{display:flex;align-items:baseline;gap:6px;margin:8px 0 4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);font-weight:600;cursor:pointer;user-select:none}
+.fsub>h4:hover{color:var(--fg)}
+.fsub>h4 .chev{font-weight:400;color:var(--dim);width:10px;display:inline-block;font-size:11px}
+.fsub>h4 em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:12px;color:var(--dim)}
+.grp h5 em{font-size:13px;font-weight:500;color:var(--fg)}
+.cnums.bar{border-bottom:0}
+.panel{position:relative}
+.gsave{position:absolute;top:2px;right:6px;order:0;margin:0;z-index:2;background:var(--s1);border-radius:6px}
+.gsave button{padding:0 6px;line-height:16px}

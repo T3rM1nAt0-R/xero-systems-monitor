@@ -104,7 +104,7 @@ export default function App() {
       {!state && <div className="empty">{err ? <>Waiting for the collector…<small>{err}</small></> : "Loading…"}</div>}
 
 
-      {state && !effCompact && <Strip ms={stripOrder(ms, localName)} hist={hist} lastOk={lastOk.current} onOpen={n => { foldAll(true, CARD + n); goMachine(n); }} />}
+      {state && !effCompact && <Strip ms={stripOrder(ms, localName)} hist={hist} lastOk={lastOk.current} onOpen={n => { foldAll(true, CARD + n, true); goMachine(n); }} />}
       {state && effCompact && <Compact limits={limits} ms={ms} now={now} lastOk={lastOk.current} hot={hot.current} expanded={expanded} onToggle={toggleOpen} renderCard={card} />}
       {state && !effCompact && <main className="grid" onPointerDown={dragProps}>{ms.map(card)}</main>}
 

@@ -7,7 +7,11 @@ const groups = new Map();
 const get = g => { let v = groups.get(g); if (!v) groups.set(g, v = { members: new Map(), jobsAt: null }); return v; };
 export function join(group, id, member) { const g = get(group); g.members.set(id, member); return () => { g.members.delete(id); }; }
 export function setJobsAt(group, fn) { get(group).jobsAt = fn; return () => { const g = get(group); if (g.jobsAt === fn) g.jobsAt = null; }; }
+let paused = false;
+// While the "What was busy then?" box is open the shared hover readout stays quiet, so the two never overlap.
+export function pauseHover(p) { paused = p; if (p) { for (const g of groups.values()) for (const m of g.members.values()) m.mark(null); hideTip(); } }
 export function hoverAt(group, t, x, y, range) {
+  if (paused) return;
   const g = get(group), lines = [{ t: (range > 86400 ? when(t, range) + " " : "") + hms(t), dim: true }];
   const order = [...g.members.values()].sort((a, b) => { const x = a.el(), y = b.el(); return !x || !y ? 0 : x.compareDocumentPosition(y) & 4 ? -1 : 1; });   // top to bottom, as on screen
   for (const m of order) {
