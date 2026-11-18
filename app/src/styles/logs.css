@@ -5,12 +5,12 @@
 .logfind{min-width:160px;flex:1 1 160px;max-width:280px}
 .logauto{display:inline-flex;gap:var(--sp-4);align-items:center;font-size:var(--fs-12);color:var(--mid)}
 .logrows{max-height:min(60vh,520px);overflow:auto;font-size:var(--fs-11-5);font-family:var(--font-mono)}
-.logrow{display:grid;grid-template-columns:11.5em minmax(70px,150px) 1fr;gap:var(--sp-10);padding:var(--sp-2) var(--sp-6);border-radius:var(--r-6)}
+.logrow{display:grid;grid-template-columns:11.5em minmax(70px,150px) 1fr;gap:var(--sp-12);padding:var(--sp-2) var(--sp-6);border-radius:var(--r-6)}
 .logrow:hover{background:var(--s2)}
 .logrow time{color:var(--dim);white-space:nowrap}
 .logrow b{font-weight:600;color:var(--mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .logrow span{color:var(--fg);overflow-wrap:anywhere}
 .logrow.error,.logrow.critical{box-shadow:inset 2px 0 var(--bad)}
 .logrow.warning{box-shadow:inset 2px 0 var(--warn)}
-.logcont{display:flex;flex-wrap:wrap;gap:var(--sp-5);align-items:center;margin-top:var(--sp-8)}
+.logcont{display:flex;flex-wrap:wrap;gap:var(--sp-4);align-items:center;margin-top:var(--sp-8)}
 @media (max-width:560px){.logrow{grid-template-columns:1fr}}

@@ -1,9 +1,9 @@
 /* Processes tab: the process list, End task hold button, the result toast and the "What was busy" history. */
-.procbar{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-4) var(--sp-2)}
+.procbar{display:flex;align-items:center;gap:var(--sp-12);padding:var(--sp-4) var(--sp-2)}
 .procfilter{flex:1 1 var(--sz-150);max-width:var(--sz-270);padding:var(--sp-4) var(--sp-8);border-radius:var(--r-5);border:1px solid var(--line);background:var(--s2);color:var(--fg);font-size:var(--fs-12)}
 .proctable{--cols:minmax(100px,2fr) 60px 70px 70px 96px;display:flex;flex-direction:column;font-size:var(--fs-12);color:var(--mid)}
 .proctable.hasuser{--cols:minmax(100px,2fr) 60px minmax(60px,1fr) 70px 70px 96px}
-.prochead,.procrow{display:grid;grid-template-columns:var(--cols);gap:var(--sp-10);align-items:center;padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
+.prochead,.procrow{display:grid;grid-template-columns:var(--cols);gap:var(--sp-12);align-items:center;padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
 .prochead button{background:none;border:0;padding:0;font:inherit;font-size:var(--fs-10-5);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:left;cursor:pointer}
 .prochead button.on{color:var(--fg)}
 .procrow:hover{background:var(--s2)}
@@ -14,12 +14,12 @@
 .holdbtn:hover{color:var(--fg)}
 .holdbtn i{position:absolute;inset:0 auto 0 0;background:var(--crit);opacity:.45;pointer-events:none}
 .holdbtn span{position:relative}
-.ptoast{margin:var(--sp-8) 0;padding:var(--sp-6) var(--sp-10);border-radius:var(--r-6);background:var(--s2);color:var(--fg);font-size:var(--fs-12);opacity:0;transform:translateY(var(--sp-4));transition:opacity .18s ease-out,transform .18s ease-out;pointer-events:none;min-height:var(--sz-20)}
+.ptoast{margin:var(--sp-8) 0;padding:var(--sp-6) var(--sp-12);border-radius:var(--r-6);background:var(--s2);color:var(--fg);font-size:var(--fs-12);opacity:0;transform:translateY(var(--sp-4));transition:opacity .18s ease-out,transform .18s ease-out;pointer-events:none;min-height:var(--sz-20)}
 .ptoast.show{opacity:1;transform:none}
 .ptoast.bad{border-left:3px solid var(--crit)}
 .histbar{display:flex;flex-wrap:wrap;gap:var(--sp-8) var(--sp-16);padding:var(--sp-2) 0 var(--sp-6)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-6);overflow:hidden}
-.seg button{background:none;border:0;padding:var(--sp-3) var(--sp-10);font-size:var(--fs-11);color:var(--mid);cursor:pointer}
+.seg button{background:none;border:0;padding:var(--sp-4) var(--sp-12);font-size:var(--fs-11);color:var(--mid);cursor:pointer}
 .seg button.on{background:var(--s2);color:var(--fg)}
 .prow.histrow{grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) 60px 60px}
 .skelrows{display:flex;flex-direction:column;gap:var(--sp-6);padding:var(--sp-4)}

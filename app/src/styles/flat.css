@@ -3,7 +3,7 @@
    wins over their older boxed rules. Blur, opacity and sheen are tokens (see "glass" in tokens.css and the Glass setting in Customize). */
 body{background:radial-gradient(60vw 50vh at 8% -5%,var(--blob-a),transparent 70%) fixed,radial-gradient(50vw 45vh at 100% 20%,var(--blob-b),transparent 70%) fixed,radial-gradient(55vw 50vh at 40% 110%,var(--blob-c),transparent 70%) fixed,var(--bg)}
 .glass,.card,.top,.dock,.menu,.dlg,.gpop,.busypop,.xmtip,.drawer,.pal{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat))}
-.card{border:1px solid var(--glass-line);border-left:var(--edge,1px) solid var(--mc,var(--glass-line));border-radius:var(--glass-radius);box-shadow:var(--glass-sheen),var(--glass-shadow);padding:var(--sp-14) var(--sp-16);gap:var(--sp-10)}
+.card{border:1px solid var(--glass-line);border-left:var(--edge,1px) solid var(--mc,var(--glass-line));border-radius:var(--glass-radius);box-shadow:var(--glass-sheen),var(--glass-shadow);padding:var(--sp-12) var(--sp-16);gap:var(--sp-12)}
 .card.full{padding:var(--sp-12) var(--sp-16);gap:var(--sp-8)}
 .card.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--glass-line))}
 .card.off{background:var(--glass-bg-solid)}
@@ -13,7 +13,7 @@ body{background:radial-gradient(60vw 50vh at 8% -5%,var(--blob-a),transparent 70
 /* flat inside the card: no boxes in boxes */
 .card .panel,.detail .panel{background:none;border:0;border-radius:0;padding:0;box-shadow:none}
 .card .job,.card .offbox .last,.card .logtext,.card .termbody,.card .mrow,.card .crow,.card .ptile{background:none;box-shadow:none}
-.card .svcnote,.card .sysnote{background:none;border:0;border-left:2px solid color-mix(in srgb,var(--busy) 70%,transparent);border-radius:0;padding:var(--sp-4) var(--sp-10)}
+.card .svcnote,.card .sysnote{background:none;border:0;border-left:2px solid color-mix(in srgb,var(--busy) 70%,transparent);border-radius:0;padding:var(--sp-4) var(--sp-12)}
 .card .chip,.card .fchip{background:none}
 .job{border:0;border-bottom:1px solid var(--hair);border-radius:0;padding:var(--sp-6) 0}
 .ptile{border:0;border-radius:0}
@@ -24,8 +24,8 @@ body{background:radial-gradient(60vw 50vh at 8% -5%,var(--blob-a),transparent 70
 .grp.shut h5{border-bottom-color:transparent}
 .grp h5::before{display:none}
 .grp h5 span{font-size:var(--size-small)}
-.detail .dgrid{gap:var(--sp-14) var(--sp-18);grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.detail .dgrid,.detail .dgrid.two{column-gap:var(--sp-18)}
+.detail .dgrid{gap:var(--sp-12) var(--sp-16);grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.detail .dgrid,.detail .dgrid.two{column-gap:var(--sp-16)}
 /* graphs sit open: label above, big value below, light grid, no box */
 .detail .ph{gap:0 var(--sp-6);margin-bottom:var(--sp-4);align-items:baseline}
 .detail .ph h4{flex:1 0 100%;font-size:var(--size-small);letter-spacing:.09em;color:var(--dim)}
