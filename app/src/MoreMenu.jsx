@@ -14,7 +14,7 @@ const Row = ({ on, hint, danger, onClick, disabled, children }) => (
 const Head = ({ children }) => <div className="mlabel">{children}</div>;
 
 // The More menu, in groups: Monitor, Alerts, Window, Updates, then Help and Stop.
-export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, snoozeUntil, setSnoozeUntil, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
+export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setRefresh, alertPrefs, setAlertPrefs, auto, setAuto, upd, fail, busy, ready, ver, look, calmFold, setCalmFold, snoozeUntil, setSnoozeUntil, onCheck, onMachines, onHelp, onMini, onRestart, onStop }) {
   const [alerts, setAlerts] = useState(false);
   const close = fn => () => { setOpen(false); fn(); };
   const onCount = ALERTS.filter(([k]) => alertPrefs[k]).length;
@@ -44,6 +44,7 @@ export default function MoreMenu({ open, setOpen, prefs, setPrefs, refresh, setR
         {prefs && <><hr /><Head>Window</Head>
           <Row on={prefs.closeToTray} onClick={() => api.setPrefs({ closeToTray: !prefs.closeToTray }).then(setPrefs)}>Close button hides to the tray</Row>
           <Row on={prefs.login} onClick={() => api.setPrefs({ login: !prefs.login }).then(setPrefs)}>Start with Windows, hidden</Row></>}
+        <Row on={calmFold} onClick={() => setCalmFold(!calmFold)}>Fold calm machines</Row>
         <Row hint="M" onClick={close(onMini)}>Mini corner view</Row>
 
         {prefs?.updates && <><hr /><Head>Updates</Head>

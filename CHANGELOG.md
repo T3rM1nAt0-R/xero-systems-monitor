@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: everything folds. Each machine card folds into one bar (status, CPU, temperature, memory, GPU, disk, runners busy, failing containers, and a tiny CPU line); the small sections (Timeline, Last 7 days, Slowest jobs, Busy per day, Busiest programs, Drives) fold on their own and are remembered. "Fold all" / "Unfold all" button, keys F and Shift+F, and a More menu switch "Fold calm machines". Busy per day starts folded.
+
 ## [0.1.2] - 2026-11-17
 
 - Fixed: the installed app now shows Updates (Check for updates, Update by itself) in the More menu; it was hidden in installed builds and shown only in development runs. The portable copy still hides it.

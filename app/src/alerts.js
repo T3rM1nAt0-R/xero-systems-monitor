@@ -10,7 +10,7 @@ export const ALERTS = [
 export const HOT_MIN = 10;
 // Same rule as the collector's container_bad(): restarting, dead, a non-zero exit, or a failing health check. A clean exit is not a failure.
 export const containerBad = ([, state, status]) => state === "restarting" || state === "dead" || /\(unhealthy\)/.test(status) || (state === "exited" && /^Exited \((?!0\))\d+\)/.test(status));
-const badNow = d => [...(d?.docker || []).filter(containerBad).map(c => "c:" + c[0]), ...(d?.failed || []).map(u => "f:" + u)];
+export const badNow = d => [...(d?.docker || []).filter(containerBad).map(c => "c:" + c[0]), ...(d?.failed || []).map(u => "f:" + u)];
 export const DEFAULT_PREFS = { offline: true, failed: true, runner: true, hot: true, svc: true, disk: true };
 
 // Compare the last state with this one. `prev` is what this returned last time (null the first time: nothing alerts).
