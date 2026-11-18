@@ -402,3 +402,18 @@ button.danger{color:#f2637acc;border-color:#f2637a55}
 .mrow .mmove{display:inline-flex;flex:none;flex-direction:column;gap:0}.mmove button{padding:0 6px;font-size:9px;line-height:1.2;border-radius:4px}
 :root[data-theme="light"] button.cta{color:#fff}
 :root[data-theme="light"] .drawer,:root[data-theme="light"] .menu,:root[data-theme="light"] .dlg{box-shadow:0 8px 28px #0003}
+
+/* graph tools: compare, zoom, save, full-window graph */
+.chart path.cmp{stroke-dasharray:5 4;opacity:.45;stroke-width:1.5}
+.chart .sel{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--c,#60a5fa) 22%,transparent);border-left:1px solid var(--c,#60a5fa);border-right:1px solid var(--c,#60a5fa);pointer-events:none;opacity:0}
+.chart{user-select:none}
+.ph .ttl{all:unset;cursor:pointer;font-size:13px;font-weight:600}.ph .ttl:hover,.ph .ttl:focus-visible{text-decoration:underline}
+.gsave{order:9;display:inline-flex;gap:4px;margin-left:auto;opacity:0;transition:opacity .15s}.panel:hover .gsave,.gsave:focus-within{opacity:1}
+.gsave button{padding:1px 7px;font-size:11px}.gsave em{color:var(--warn);font-size:11px;font-style:normal}
+.zchip{align-self:flex-start;margin:0 0 8px;padding:2px 10px;font-size:12px;border-radius:999px}
+.cmpsel select{margin-left:6px;font:inherit;background:var(--s2);color:var(--fg);border:1px solid var(--line2);border-radius:7px;padding:2px 4px}
+.dlg.fullgraph{width:min(1100px,100%);max-height:100%;overflow:auto}
+.fullgraph .chart{height:min(420px,52vh)}
+.fghead{display:flex;align-items:center;justify-content:space-between;gap:8px}.fghead h3{margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px;font-size:12.5px}
+.legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.legend i{width:14px;height:3px;border-radius:2px;background:var(--c)}

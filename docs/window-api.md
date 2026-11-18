@@ -79,3 +79,9 @@ MachineConfig = { name: string, kind: "local" or "ssh", host?: string, runner?: 
 
 Prefs = { closeToTray: boolean, login: boolean, updates: boolean }  // updates: the More menu shows Check for updates (installed, not portable)
 ```
+
+## Looking further back (graph compare)
+
+`get_history` always ends now, and it has no "end" argument. The window's "Compare: yesterday / last week" asks for `range + 86400` (or `+ 604800`) seconds and then cuts out the older part itself (`app/src/graphTools.js`, `shiftSeries`), sliding it forward onto today's clock. No backend change was needed. The cost: the roughly 400 points are spread over the longer span, so the dashed copy is coarser than the live line, most visibly on the 5 minute and 1 hour ranges.
+
+Saving a graph uses a plain browser download (a link with the `download` attribute); the shell needs no dialog plugin or extra permission for it.

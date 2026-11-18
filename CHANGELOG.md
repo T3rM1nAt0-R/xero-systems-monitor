@@ -4,6 +4,11 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Added: drag across a graph to zoom all of that machine's graphs; double-click or "Reset zoom" returns.
+- Added: a "Compare" choice in the bottom bar (off / yesterday / last week) draws a faint dashed copy of each graph from the earlier time.
+- Added: click a graph title to open it full-window and overlay the same metric from other machines (Esc closes).
+- Added: each graph can be saved as a picture (PNG) or its numbers as a CSV file (local 12-hour times).
+
 ## [0.1.2] - 2026-11-17
 
 - Fixed: the installed app now shows Updates (Check for updates, Update by itself) in the More menu; it was hidden in installed builds and shown only in development runs. The portable copy still hides it.

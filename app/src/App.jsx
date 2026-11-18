@@ -17,11 +17,15 @@ import useUpdates from "./useUpdates.js";
 import useWindowMode from "./useWindowMode.js";
 import useShortcuts from "./useShortcuts.js";
 import useLook from "./useLook.js";
+import { COMPARE } from "./graphTools.js";
+import { publishHistory, setCompare, useCompare } from "./graphView.js";
 
 export default function App() {
   const [range, setRange] = usePersisted("range", () => 300), [refresh, setRefresh] = usePersisted("refresh", 3), [auto, setAuto] = usePersisted("auto", true);
   const safeRange = snapRange(range);
-  const { state, err, stamp, now, hist, events, rows, fc, retry } = useCollectorData(safeRange, refresh);
+  const back = useCompare();
+  const { state, err, stamp, now, hist, hist2, events, rows, fc, retry } = useCollectorData(safeRange, refresh, back);
+  useEffect(() => publishHistory(hist), [hist]);
   const { pin, setPin, compact, setCompact, mini, toggleMini, prefs, setPrefs, effCompact } = useWindowMode();
   const look = useLook();
   const { upd, fail, busy, act, apply, checkNow, ready, ver, restart } = useUpdates(auto);
@@ -55,7 +59,7 @@ export default function App() {
   const openEv = () => { setShowEv(true); markSeen(); }, closeEv = () => { setShowEv(false); markSeen(); };
   useShortcuts({ dlg, setDlg, help, setHelp, menu, setMenu, showEv, closeEv, openEv, ms, open, ranges: RANGES, range: safeRange, setRange, setCompact, toggleMini, setPin });
 
-  const card = m => <Card key={m.name} m={m} h={hist[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
+  const card = m => <Card key={m.name} m={m} h={hist[m.name]} h2={hist2[m.name]} rows={rows} fc={fc[m.name]} range={safeRange} now={now / 1000} lastOk={lastOk.current[m.name]} hot={hot.current[m.name] || {}} gone={m.gone || []} onOpen={open} onTry={retry} />;   // `open` toggles the row in compact view and scrolls to the card otherwise
   return (
     <div className={"app" + (err && state ? " stale" : "")} ref={appRef} onClick={() => menu && setMenu(false)}>
       <div className="bar top">
@@ -82,6 +86,7 @@ export default function App() {
         <button className={showEv ? "on" : ""} onClick={() => (showEv ? closeEv() : openEv())} data-tip="Activity drawer (E)">Activity{unseen > 0 && !showEv && <span className="badge">{unseen}</span>}</button>
         {!effCompact && <span className="lbl hide-s">Graphs show</span>}
         <div className="seg" role="group" aria-label="Time range">{RANGES.map(([l, s]) => <button key={s} className={safeRange === s ? "on" : ""} onClick={() => setRange(s)}>{effCompact ? SHORT(l) : l}</button>)}</div>
+        {!effCompact && <label className="lbl hide-s cmpsel" data-tip="Draw a faint dashed copy of every graph from an earlier time">Compare<select value={back} onChange={e => setCompare(+e.target.value)}>{COMPARE.map(([l, s]) => <option key={s} value={s}>{l}</option>)}</select></label>}
         <span className="grow" />
         {ready && <button className="cta" onClick={restart} data-tip="The new version is installed. Restart to use it.">Restart to finish updating</button>}
         {upd && !ready && <button className="cta" disabled={!!busy} onClick={apply}>{busy === "u" ? "Updating…" : "Update available"}</button>}

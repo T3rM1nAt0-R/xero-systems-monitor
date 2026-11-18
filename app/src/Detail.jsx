@@ -1,4 +1,7 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useState, useEffect, memo, useMemo, useRef } from "react";
+import { SaveButtons, ZoomChip, FullGraph } from "./GraphTools.jsx";
+import { shiftSeries } from "./graphTools.js";
+import { useCompare, useZoom } from "./graphView.js";
 import { setJobsAt } from "./hoverGroup.js";
 import Chart from "./Chart.jsx";
 import Timeline from "./Timeline.jsx";
@@ -25,17 +28,20 @@ function Grp({ id, color, title, sub, summary, def = true, cls = "", children })
     </section>);
 }
 // One graph card. Module-level and memoised so charts keep their state between polls.
-const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group }) {
+const Panel = memo(function Panel({ title, now: nv, warn, sm, k, name, pts, max, unit, fmt, thr, thrLabel, mk, t0, t1, range, group, old, live }) {
   const series = useMemo(() => [{ name: name || title, pts, color: C[k] }], [name, title, pts, k]);
+  const card = useRef(null), [big, setBig] = useState(false), off = useCompare();
+  const cmp = useMemo(() => (off && old ? shiftSeries(old, off, t0, t1) : null), [off, old, t0, t1]);   // yesterday / last week, moved onto today's clock
   return (
-    <div className="panel" style={{ "--c": C[k] }}>
-      <div className="ph"><h4>{title}</h4>{nv != null && <span className={"now" + (warn ? " warn" : "")}>{nv}</span>}{sm && <span className="sum">{sm}</span>}</div>
-      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} />
+    <div className="panel" style={{ "--c": C[k] }} ref={card}>
+      <div className="ph"><h4><button className="ttl" onClick={() => setBig(true)} data-tip="Open this graph full window">{title}</button></h4><SaveButtons title={title} series={series} card={card} />{nv != null && <span className={"now" + (warn ? " warn" : "")}>{nv}</span>}{sm && <span className="sum">{sm}</span>}</div>
+      <Chart series={series} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} group={group} title={title} cmp={cmp} cmpLabel={off === 86400 ? "yesterday" : "last week"} live={live} />
+      {big && <FullGraph title={title} k={k} color={C[k]} machine={group} pts={pts} t0={t0} t1={t1} max={max} unit={unit} fmt={fmt} thr={thr} thrLabel={thrLabel} range={range} marks={mk} live={live} onClose={() => setBig(false)} />}
     </div>);
 });
 // One machine's stack of groups: CPU, GPU, Network, Disk, Runners. Each group is a row of graphs.
-export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
-  const d = m.d || {}, t1 = now, t0 = t1 - range, P = k => h?.[k] || [];
+export default function MachineBody({ m, h, h2, rows, fc, range, now, gone }) {
+  const zoom = useZoom(m.name), off = useCompare(), d = m.d || {}, t1 = zoom ? zoom[1] : now, t0 = zoom ? zoom[0] : now - range, span = t1 - t0, live = !zoom, diskCard = useRef(null), [diskBig, setDiskBig] = useState(false), P = k => h?.[k] || [];
   const hasGpu = d.gpu != null || P("gpu").some(p => p[1] > 0);
   const hw = d.hw || {}, drives = d.storage || [], sum = drives.reduce((a, x) => [a[0] + x[1], a[1] + x[2]], [0, 0]);
   const day = useMemo(() => d.runners ? jobStats(rows, m.name, t1 - 86400) : null, [rows, m.name, d.runners, Math.floor(t1 / 60)]);   // last 24 h, refreshed each minute
@@ -46,10 +52,12 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
   }), [rows, m.name, m.started, d.jobs]);
   const full = fc?.days ? `full in ~${fc.days < 60 ? fc.days + " days" : Math.round(fc.days / 30) + " months"}` : "";
   const marks = useMemo(() => rows.filter(r => r[0] === m.name && r[2] >= t0).map(r => ({ t: r[2], text: `${r[1]} started: ${r[5]}` })), [rows, m.name, Math.floor(t0 / 60)]);
-  const Pn = p => <Panel {...p} pts={P(p.k)} t0={t0} t1={t1} range={range} group={m.name} />;
+  const Pn = p => <Panel {...p} pts={P(p.k)} old={h2?.[p.k]} t0={t0} t1={t1} range={span} live={live} group={m.name} />;
+  const diskSeries = useMemo(() => [{ name: "Disk use", pts: P("disk"), color: C.disk }], [h?.disk]);
   const big = (v, u) => v == null ? null : <>{v}<small>{u}</small></>;
   return (
     <div className="detail inline">
+      <ZoomChip machine={m.name} span={zoom} />
       <Grp id={m.name + ".cpu"} color="#4ade80" title="CPU" sub={hw.cpu && `${hw.cpu}${d.ram_gb ? ` · ${d.ram_gb[1].toFixed(0)} GB RAM` : ""}`} summary={`${d.cpu != null ? d.cpu.toFixed(0) + "%" : "–"} · ${d.temp != null ? d.temp.toFixed(0) + "°C" : "–"}`}><div className="dgrid">
         <Pn title="CPU" k="cpu" now={big(d.cpu?.toFixed(0), "%")} warn={isWarn("cpu", d.cpu)} sm={stat(P("cpu"), v => v.toFixed(0) + "%")} max={100} unit="%" thr={LIM.cpu} thrLabel="High above 90%" mk={marks} />
         <Pn title="CPU temp" k="temp" now={big(d.temp?.toFixed(0), "°C")} warn={isWarn("temp", d.temp)} max={100} unit="°C" thr={LIM.temp} thrLabel="Warm above 80°C" />
@@ -66,9 +74,10 @@ export default function MachineBody({ m, h, rows, fc, range, now, gone }) {
         <Pn title="Upload" k="up" now={d.up != null ? rateStr(d.up) : null} fmt={rateStr} />
         <Pn title="Ping" k="ping" now={big(d.ping != null ? Number(d.ping).toFixed(0) : null, "ms")} sm={h?.loss != null ? `${h.loss.toFixed(1)}% lost` : ""} unit=" ms" />
       </div></Grp>
-      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }}>
-          <div className="ph"><h4>Disk use</h4>{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days < 30 ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
-          <Chart series={[{ name: "Disk use", pts: P("disk"), color: C.disk }]} t0={t0} t1={t1} max={100} unit="%" range={range} group={m.name} title="Disk use" />
+      <Grp id={m.name + ".disk"} cls="full" color="#fbbf24" title="Disk" sub={drives.length > 0 && `${drives.length} drive${drives.length === 1 ? "" : "s"}`} summary={`${d.disk != null ? d.disk.toFixed(0) + "% used" : ""}${full ? " · " + full : ""}`}><div className="panel diskcard" style={{ "--c": C.disk }} ref={diskCard}>
+          <div className="ph"><h4><button className="ttl" onClick={() => setDiskBig(true)} data-tip="Open this graph full window">Disk use</button></h4><SaveButtons title="Disk use" series={diskSeries} card={diskCard} />{d.disk != null && <span className="now">{d.disk.toFixed(0)}<small>%</small></span>}{drives.length > 0 && <span className="sum">{gb(sum[0])} of {sum[1].toFixed(0)} GB used</span>}{full && <span className={"sum fc" + (fc.days < 30 ? " warn" : "")} data-tip={`A straight line through the last 30 days: +${fc.per_day}% of the disk per day`}>{full}</span>}</div>
+          <Chart series={diskSeries} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} group={m.name} title="Disk use" cmp={off && h2?.disk ? shiftSeries(h2.disk, off, t0, t1) : null} cmpLabel={off === 86400 ? "yesterday" : "last week"} />
+          {diskBig && <FullGraph title="Disk use" k="disk" color={C.disk} machine={m.name} pts={P("disk")} t0={t0} t1={t1} max={100} unit="%" range={span} live={live} onClose={() => setDiskBig(false)} />}
           <div className="drives">
             {drives.length ? drives.map(([n, u, t]) => <div className="drive" key={n}><span data-tip={n}>{n}</span><span className={"meter" + (u / t > .9 ? " crit" : u / t > .75 ? " warn" : "")}><i style={{ width: Math.min(100, 100 * u / t) + "%" }} /></span><em>{gb(u)} / {t.toFixed(0)} GB</em></div>) : <div className="quiet">No drive information yet.</div>}
           </div>
