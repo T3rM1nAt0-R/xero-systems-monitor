@@ -98,8 +98,8 @@ test("lookToCss gives variables, derived colours, text levels, graph, layout and
   assert.equal(vars["--line-w"], "3"); assert.equal(vars["--area-op"], "0.3"); assert.equal(vars["--graph-k"], "1.4"); assert.equal(vars["--dens"], "0.85"); assert.equal(vars["--scale"], "1.1");
   assert.equal(vars["--rk"], "0"); assert.equal(vars["--bw"], "2px"); assert.equal(vars["--glass-tint"], "#334455"); assert.equal(vars["--grain"], "0.5");
   assert.equal(attrs["data-grid"], "off"); assert.equal(attrs["data-limits"], "off"); assert.equal(attrs["data-cols"], "2"); assert.equal(attrs["data-family"], "sharp"); assert.equal(attrs["data-border"], "bold");
-  const plain = lookToCss({}), large = lookToCss({}, { large: true }), both = lookToCss({ scale: 1.5 }, { large: true });
-  assert.equal(plain.vars["--scale"], undefined); assert.equal(large.vars["--scale"], undefined); assert.equal(both.vars["--scale"], "1.74");
+  const plain = lookToCss({}), big = lookToCss({ scale: 1.5 });
+  assert.equal(plain.vars["--scale"], undefined); assert.equal(big.vars["--scale"], "1.5");
   assert.equal(plain.vars["--area-op"], "0.08"); assert.equal(lookToCss({ graph: { gradient: true } }).vars["--area-op"], "0.3"); assert.equal(lookToCss({ graph: { gradient: true, style: "bars" } }).vars["--area-op"], "0"); assert.equal(plain.attrs["data-glass"], "subtle"); assert.equal(plain.attrs["data-motion"], "full"); assert.equal(plain.attrs["data-tabs"], "underline"); assert.equal(plain.attrs["data-heading"], "caps");
   assert.equal(lookToCss({ colors: { acc: "#0a0a0a" } }).vars["--on-acc"], "#ffffff");
   assert.equal(lookToCss({ motion: "off" }).attrs["data-motion"], "off"); assert.equal(lookToCss({ surface: { glass: "off" } }).attrs["data-glass"], "off");
@@ -126,8 +126,8 @@ test("contrast follows WCAG and the warning shows under 4.5", () => {
   }
 });
 
-test("presets: six built-in themes and eight popular palettes with the published colours; resolveTheme merges edits on top", () => {
-  assert.deepEqual(PRESETS.map(p => p.id), ["dark", "light", "midnight", "contrast", "neon", "terminal", "dracula", "nord", "catppuccin-mocha", "gruvbox", "tokyo-night", "solarized-dark", "solarized-light", "catppuccin-latte"]);
+test("presets: seven built-in themes and eight popular palettes with the published colours; resolveTheme merges edits on top", () => {
+  assert.deepEqual(PRESETS.map(p => p.id), ["dark", "light", "midnight", "contrast", "neon", "terminal", "blueprint", "dracula", "nord", "catppuccin-mocha", "gruvbox", "tokyo-night", "solarized-dark", "solarized-light", "catppuccin-latte"]);
   const by = id => PRESETS.find(p => p.id === id);
   assert.equal(by("dracula").look.colors.bg, "#282a36"); assert.equal(by("nord").look.colors.bg, "#2e3440"); assert.equal(by("catppuccin-mocha").look.colors.bg, "#1e1e2e"); assert.equal(by("catppuccin-latte").look.colors.fg, "#4c4f69");
   assert.equal(by("tokyo-night").look.colors.bg, "#1a1b26"); assert.equal(by("solarized-dark").look.colors.bg, "#002b36"); assert.equal(by("gruvbox").look.colors.fg, "#ebdbb2");
@@ -202,7 +202,7 @@ test("style families start with their own corners, borders and shadow; the perso
   assert.equal(valueOf({}, "shape.radius"), 35); assert.equal(valueOf({ shape: { family: "sharp" } }, "shape.radius"), 0); assert.equal(valueOf({ shape: { family: "soft" } }, "shape.border"), "none");
   assert.equal(valueOf({ shape: { family: "soft", radius: 90 } }, "shape.radius"), 90); assert.equal(valueOf({ shape: { family: "terminal" } }, "shape.scan"), false); assert.equal(valueOf({ shape: { family: "terminal" } }, "shape.family"), "terminal");
   const sharp = lookToCss({ shape: { family: "sharp" } }); assert.equal(sharp.vars["--rk"], "0"); assert.equal(sharp.vars["--shadow-k"], "0"); assert.equal(sharp.attrs["data-family"], "sharp");
-  assert.deepEqual(familyEdits("rounded"), [["shape.family", undefined]]); assert.equal(familyEdits("terminal").length, 5); assert.deepEqual(familyEdits("blueprint")[1], ["colors.bg", "#0b2e63"]);
+  assert.deepEqual(familyEdits("rounded"), [["shape.family", "rounded"], ["shape.scan", false]]); assert.deepEqual(familyEdits("terminal"), [["shape.family", "terminal"], ["shape.scan", true]]);
 });
 
 test("surfaces: grain switches its overlay on, a picture becomes a CSS variable, system colours and pictures are read safely", () => {

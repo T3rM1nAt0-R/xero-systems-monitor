@@ -26,6 +26,12 @@ export function set(k, v, { persist = true } = {}) {
   if (persist) writeStored(k, v);
   notify(k);
 }
+// Remove `k` for good (a setting an older version kept that is gone now).
+export function forget(k) {
+  mem.delete(k);
+  try { localStorage.removeItem(PREFIX + k); } catch { /* nothing to remove */ }
+  notify(k);
+}
 // `fn` runs after `k` changes. Returns the way to stop listening.
 export function subscribe(k, fn) {
   let s = subs.get(k); if (!s) subs.set(k, s = new Set());

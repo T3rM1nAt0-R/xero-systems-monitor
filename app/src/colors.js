@@ -21,7 +21,7 @@ export const metricColors = () => (cache ||= readColors());
 export function subscribe(f) {
   if (!watching && typeof MutationObserver !== "undefined") {
     watching = true;
-    new MutationObserver(bump).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-size", "style", "class"] });
+    new MutationObserver(bump).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "style", "class"] });
   }
   subs.add(f);
   return () => subs.delete(f);

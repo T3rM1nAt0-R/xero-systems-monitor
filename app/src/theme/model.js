@@ -1,5 +1,5 @@
 import { FONT_IDS } from "./fonts.js";
-import { isHex, longHex } from "./colors.js";
+import { isHex, longHex, isLight } from "./colors.js";
 import { migrateLook } from "./migrate.js";
 // The pure part of Customize: what a "look" is and how it is cleaned, merged and read. A look holds only what differs from the built-in dark or light tokens (tokens.css).
 //   { colors:  { bg, fg, acc (the three base colours), cpu, ram, good, warn, bad, ... (fine-tuning) }, cb,
@@ -19,7 +19,7 @@ export const SIZE_MIN = 8, SIZE_MAX = 32, LINE_MIN = 1, LINE_MAX = 4, SCALE_MIN 
 export const GRAPH_STYLES = [["line", "Line"], ["area", "Area"], ["bars", "Bars"], ["step", "Step"]];
 export const GRID_DENSITIES = [["sparse", "Few"], ["normal", "Normal"], ["dense", "Many"]];
 export const CARD_SIZES = [["small", "Small"], ["medium", "Medium"], ["large", "Large"]];
-export const DENSITIES = [["compact", "Compact"], ["comfortable", "Comfortable"], ["spacious", "Spacious"]];
+export const DENSITIES = [["compact", "Tight"], ["comfortable", "Comfortable"], ["spacious", "Roomy"]];
 export const COLUMNS = [[1, "1"], [2, "2"], [3, "3"]];
 export const TAB_STYLES = [["underline", "Underline"], ["pill", "Pill"], ["segmented", "Segmented"]];
 export const HEADINGS = [["caps", "CAPS"], ["normal", "Normal"]];
@@ -36,7 +36,7 @@ const C = (id, label, vars, dark, light = dark) => ({ id, label, vars, dark, lig
 export const BASE_ITEMS = [C("bg", "Background", ["--bg"], "#07080b", "#f3f4f7"), C("fg", "Text", ["--fg"], "#e7e9ee", "#14171c"), C("acc", "Accent", ["--acc"], "#4cc9f0", "#066486")];
 export const STATUS_ITEMS = [C("good", "Good", ["--ok"], "#4ade80", "#0e7434"), C("warn", "Warning", ["--warn"], "#f5b544", "#8a5200"), C("bad", "Bad", ["--crit", "--bad"], "#f2637a", "#b3243e")];
 export const DERIVED_ITEMS = [C("card", "Card", ["--s1"], "#0d0f14", "#ffffff"), C("s2", "Raised card", ["--s2"], "#13161d", "#eceff4"), C("line", "Border", ["--line"], "#1b1f28", "#e0e4ea"),
-  C("line2", "Strong border", ["--line2"], "#282e39", "#c9cfda"), C("dim", "Dim text", ["--dim"], "#9099a8", "#555d6b"), C("mid", "Mid text", ["--mid"], "#aab1bd", "#454d5b"), C("dim2", "Faint text", ["--dim2"], "#4d5462", "#98a0ad")];
+  C("line2", "Strong border", ["--line2"], "#282e39", "#c9cfda"), C("dim", "Dim text", ["--dim"], "#9099a8", "#555d6b"), C("mid", "Mid text", ["--mid"], "#aab1bd", "#454d5b"), C("dim2", "Faint text", ["--dim2"], "#646a77", "#7e8590")];
 export const METRIC_ITEMS = [["cpu", "CPU", "#4ade80"], ["temp", "CPU temperature", "#fb923c"], ["ram", "Memory", "#60a5fa"], ["gpu", "GPU", "#a78bfa"], ["gtemp", "GPU temperature", "#fb5a72"],
   ["vram", "GPU memory", "#38bdf8"], ["down", "Download", "#60a5fa"], ["up", "Upload", "#f472b6"], ["ping", "Ping", "#4cc9f0"], ["disk", "Disk", "#fbbf24"]]
   .map(([id, label, hex]) => C(id, label, ["--c-" + id], hex));
@@ -59,6 +59,8 @@ export const FIELDS = {
   "layout.cols": [oneOf(COLUMNS), 1], "layout.tabs": [oneOf(TAB_STYLES), "underline"], "layout.heading": [oneOf(HEADINGS), "caps"], "layout.density": [oneOf(DENSITIES), "comfortable"], "layout.card": [oneOf(CARD_SIZES), "medium"],
 };
 const nonEmpty = o => Object.keys(o).length > 0;
+// Light or dark, worked out from the look itself: the background colour it sets says which; with no background set, `plain` (the plain Dark or Light tokens the theme is based on). Never stored.
+export const baseOf = (look, plain = "dark") => (isHex(look?.colors?.bg) ? (isLight(look.colors.bg) ? "light" : "dark") : plain);
 export const getPath = (look, path) => path.reduce((o, k) => (o == null ? undefined : o[k]), look);
 // A copy of `look` with the value at `path` set; undefined removes it and tidies empty parents away.
 export function setPath(look, path, value) {

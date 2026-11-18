@@ -25,7 +25,7 @@ export default function ColoursSection({ c }) {
         <h5 className="chd">Status</h5>{STATUS_ITEMS.map(fine)}
       </Collapse>
       <Row id="cb" label="Colour-blind safe" keys="color blind accessibility shapes status deuteranopia protanopia" hint="Status colours that are easier to tell apart, and status also by shape: ● ok, ▲ warning, ■ bad.">
-        <Toggle on={valueOf(c.look, "cb")} onChange={v => c.edit(["cb"], v || undefined)} label="Colour-blind safe" /><span className="cshapes" aria-hidden="true">● ▲ ■</span></Row>
+        <Toggle on={valueOf(c.look, "cb")} onChange={v => c.edit(["cb"], v)} label="Colour-blind safe" /><span className="cshapes" aria-hidden="true">● ▲ ■</span></Row>
       <Block id="colors.machine" label="Machine colours" keys="machine colour color menu moved" className="cnote"><b>Machine colours moved</b><p>Each machine now has its own colour in its <b>⋯</b> menu.</p></Block>
     </>);
 }

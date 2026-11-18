@@ -11,13 +11,13 @@ export default function TextSection({ c }) {
         const t = c.look.text?.[id] || {}, path = ["text", id];
         return (
           <Row key={id} id={"text." + id} label={label} keys={"font size weight type text typeface " + (id === "number" ? "digits number font" : "")} c={c}>
-            <select className="cfont" value={t.font || "system"} aria-label={label + " font"} onChange={e => c.edit([...path, "font"], e.target.value === "system" ? undefined : e.target.value)}>
+            <select className="cfont" value={t.font || "system"} aria-label={label + " font"} onChange={e => c.edit([...path, "font"], e.target.value)}>
               {FONTS.map(f => <option key={f.id} value={f.id} style={f.stack ? { fontFamily: f.stack } : undefined}>{f.id === "system" ? "System" : f.label}</option>)}</select>
             <input type="number" min={SIZE_MIN} max={SIZE_MAX} step="1" value={t.size || def} aria-label={label + " size"} onChange={e => c.edit([...path, "size"], e.target.value === "" ? undefined : +e.target.value)} />
-            <select value={t.weight || 0} aria-label={label + " weight"} onChange={e => c.edit([...path, "weight"], +e.target.value || undefined)}>{WEIGHTS.map(([w, l]) => <option key={w} value={w}>{l}</option>)}</select>
+            <select value={t.weight || 0} aria-label={label + " weight"} onChange={e => c.edit([...path, "weight"], +e.target.value)}>{WEIGHTS.map(([w, l]) => <option key={w} value={w}>{l}</option>)}</select>
           </Row>);
       })}
-      <Row id="scale" label="Text size overall" keys="zoom scale bigger smaller large" c={c}>
-        <Range value={valueOf(c.look, "scale")} min={SCALE_MIN} max={SCALE_MAX} step={0.05} label="Text size overall" ends={["Small", "Large"]} show={v => Math.round(v * 100) + "%"} onChange={v => c.edit(["scale"], v === 1 ? undefined : v)} /></Row>
+      <Row id="scale" label="Text size overall" keys="zoom scale bigger smaller large text size" c={c}>
+        <Range value={valueOf(c.look, "scale")} min={SCALE_MIN} max={SCALE_MAX} step={0.05} label="Text size overall" ends={["Small", "Large"]} show={v => Math.round(v * 100) + "%"} onChange={v => c.edit(["scale"], v)} /></Row>
     </>);
 }
