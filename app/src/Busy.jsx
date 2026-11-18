@@ -7,7 +7,7 @@ export default function Busy({ rows, machine, count, running, now }) {
   const days = useMemo(() => busyHeat(rows, machine, count, running, now, 7), [rows, machine, count, runs, slot]);   // eslint-disable-line react-hooks/exhaustive-deps -- `running` and `now` are read through their narrowed forms `runs` and `slot`
   if (!count) return null;
   return (
-    <Sub id={machine + ".busy"} def={false} title="Busy this week"><div className="heat">
+    <Sub id={machine + ".busy"} title="Busy this week"><div className="heat">
       <div className="hgrid">
         {days.map(d => <div className="hrow" key={d.date}><span className="hd">{d.today ? "Today" : d.day}</span>
           <div className="hcells">{d.cells.map(c => <i key={c.h} className={c.pct == null ? "future" : c.failed ? "fail" : ""} style={c.pct == null ? undefined : { "--p": Math.round(c.pct) }} data-tip={heatTip(d, c)} />)}</div></div>)}

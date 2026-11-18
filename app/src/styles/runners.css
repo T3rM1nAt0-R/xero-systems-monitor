@@ -16,3 +16,38 @@
 .mini .compact .crow{break-inside:avoid}
 @media (min-width:480px){.mini .compact{column-count:2}}
 @media (min-width:720px){.mini .compact{column-count:3}}
+/* Runners, flat: three big numbers, one row per runner, a swimlane timeline with a now line, a slim week heatmap and a zebra history table. */
+.rstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-16);padding:var(--sp-6) 0 var(--sp-10)}
+.rstats .lbl{display:block}
+.rstats b{display:block;font-size:calc(var(--size-number) * 2.4);font-family:var(--font-number);font-weight:var(--weight-number,500);line-height:1.1;color:var(--fg)}
+.rstats b small{font-size:.45em;margin-left:var(--sp-3);font-weight:400;color:var(--dim)}
+.rstats b.bad{color:var(--bad)}
+.rrow{padding:var(--sp-8) 0;border-top:1px solid var(--hair)}
+.rrow:first-child{border-top:0}
+.rname{font-weight:600}
+.rname.busy i{box-shadow:0 0 6px var(--c-run)}
+.rname.gone i{background:var(--bad)}
+.rrow .rst{font-size:var(--fs-12)}
+.rrow .rjob{color:var(--fg)}
+.rfoot{border-top:1px solid var(--hair)}
+.jobs .rrow{grid-template-columns:minmax(90px,1.2fr) 90px minmax(0,3fr) 80px}
+@media (max-width:620px){.jobs .rrow{grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto}}
+.tl{gap:0}
+.lane{padding:var(--sp-4) 0}
+.track{height:var(--sz-20);background:none;border:0;border-bottom:1px solid var(--hair);border-right:1px solid var(--acc);border-radius:0}
+.detail .track{height:var(--sz-18)}
+.jb{background:color-mix(in srgb,var(--ok) 85%,transparent);color:var(--on-acc);border-radius:var(--r-3)}
+.jb.run{background:var(--c-run)}
+.jb.bad{background:var(--bad);color:var(--on-acc)}
+.jb.stop{background:var(--busy)}
+.hcells{gap:var(--sp-1)}
+.hcells i,.hcells i.future{height:var(--sz-8);border:0;border-radius:var(--r-2);background:color-mix(in srgb,var(--c-run) calc(var(--p, 0) * 1%),color-mix(in srgb,var(--fg) 6%,transparent))}
+.hcells i.future{background:none;opacity:.25;outline:1px dotted var(--hair)}
+.hcells i.fail{box-shadow:inset 0 -2px var(--bad)}
+.hrow{margin-bottom:var(--sp-1)}
+.hlist{max-height:calc(var(--sz-34) * 8)}
+.hitem{padding:var(--sp-4) var(--sp-8);border-radius:0}
+.hitem:nth-child(even){background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.hitem.head{background:none;color:var(--dim);font-size:var(--fs-10-5);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--hair)}
+.hitem.link:hover{background:color-mix(in srgb,var(--fg) 8%,transparent)}
+.hfilters input,.hfilters select{background:none;border-color:var(--hair)}

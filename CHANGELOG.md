@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: the Runners tab and the Overview runners block use the flat look: three big numbers (jobs today, succeeded, median time), one row per runner, a swimlane timeline with a now line (failed jobs red), a slim week heatmap and a plain striped job history table. The heatmap and history are open by default.
+
 - Changed: a flatter, calmer look. Each machine card is one frosted-glass surface; groups are plain headings with a hairline, graphs sit open with the label and big number above, and colour is used only for data. A soft colourful backdrop shows through the glass. New Customize > Size > Glass setting (Off, Subtle, Full); it also turns off when Windows asks for less transparency.
 
 - Added: the Runners tab is the full runners view: one row per runner (name, status, current job, time in the job), the queue of jobs waiting for this machine's runners, and a "Check work folder sizes" button (over ssh with `du` and a time limit on Linux, walked on This PC); the timeline, last 7 days, busy heatmap and job history sit below. Overview keeps the compact runners block with the timeline. New command `get_work_size`.
