@@ -5,8 +5,8 @@ use crate::ssh::ssh_command_with;
 use std::process::Command;
 use std::time::Duration;
 use xsm_core::system::{
-    failure_text, linux_action, linux_query, needs_password, password_reply, success_text,
-    windows_action, windows_query, Act, Query, QUICK_SECONDS,
+    failure_text, linux_action, linux_logs, linux_query, needs_password, password_reply,
+    success_text, windows_action, windows_logs, windows_query, Act, Priority, Query, QUICK_SECONDS,
 };
 
 /// Where a command runs.
@@ -49,6 +49,30 @@ pub fn run_query(target: Target<'_>, q: Query) -> Result<String, String> {
     }
 }
 
+/// Read the recent log lines (Linux: `journalctl`, optionally one unit; This PC: System and Application events as JSON).
+///
+/// # Errors
+/// Plain text when the unit is not a service name, or the read cannot start, fails or times out.
+pub fn run_logs(
+    target: Target<'_>,
+    priority: Priority,
+    unit: Option<&str>,
+) -> Result<String, String> {
+    let (linux, win) = match target {
+        Target::Ssh(_) => (linux_logs(priority, unit)?, String::new()),
+        Target::Pc => (String::new(), windows_logs(priority)),
+    };
+    let r = run_raw(
+        command(target, &linux, &win),
+        Duration::from_secs(QUICK_SECONDS),
+    )?;
+    if r.ok {
+        Ok(r.stdout)
+    } else {
+        Err(failure_text(&r.stderr))
+    }
+}
+
 /// Do one action; returns the sentence for the window. On Linux it uses `sudo -n` only: when sudo needs a password
 /// the error starts with `needs-password:` followed by the command for the person to run themselves.
 ///
@@ -82,6 +106,7 @@ mod tests {
         assert!(run_action(Target::Pc, Act::Stop, "a b").is_err());
         assert!(run_action(Target::Pc, Act::Reboot, "").is_err());
         assert!(run_query(Target::Pc, Query::Updates).is_err());
+        assert!(run_logs(Target::Ssh("example-server"), Priority::All, Some("a b")).is_err());
     }
 
     #[test]

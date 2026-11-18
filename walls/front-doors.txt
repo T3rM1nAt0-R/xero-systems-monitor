@@ -481,6 +481,15 @@ xsm_sources::process_list::end_remote fn
 xsm_store::Store::busiest_between fn
 xsm_store::top::RangeBusy use
 xsm_store::top::Ranked use
+xsm_collector::xsm_core::system::Priority use
+xsm_core::system::LOG_LINES const
+xsm_core::system::Priority enum
+xsm_core::system::Priority::All variant
+xsm_core::system::Priority::Errors variant
+xsm_core::system::Priority::Warnings variant
+xsm_core::system::linux_logs fn
+xsm_core::system::windows_logs fn
+xsm_sources::system::run_logs fn
 xsm_sources::workdir mod
 xsm_sources::workdir::Size type
 xsm_sources::workdir::local_sizes fn

@@ -11,14 +11,15 @@ const rich = { d: { cpu: 5, top: [["node", 4, 100, 1]], procs: [[7, "node", 4, 1
 
 test("tab parts only name known tabs and known sections", () => {
   assert.deepEqual(Object.keys(TAB_PARTS), TAB_IDS);
-  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "term"].includes(id) && v);
+  for (const parts of Object.values(TAB_PARTS)) for (const [id, v] of parts) assert.ok(["cpu", "gpu", "bat", "proc", "net", "disk", "run", "svc", "logs", "term"].includes(id) && v);
 });
 
-test("a bare machine shows Overview, Network and Disks only; Terminal always shows, Logs has no content yet", () => {
+test("a bare machine shows Overview, Network and Disks only; Terminal always shows, Logs needs a machine that reports an uptime", () => {
   assert.deepEqual(availableTabs(bare).map(t => t[0]), ["overview", "disks", "network", "terminal"]);
   const all = availableTabs(rich).map(t => t[0]);
   assert.deepEqual(all, ["overview", "hardware", "processes", "disks", "network", "services", "runners", "terminal"]);
   assert.ok(!all.includes("logs"));
+  assert.ok(availableTabs({ d: { cpu: 5, uptime: 9 } }).some(t => t[0] === "logs"));
   assert.equal(TABS.length, TAB_IDS.length);
 });
 

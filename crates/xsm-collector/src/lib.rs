@@ -24,10 +24,13 @@ pub use scan::ScanReply;
 // The shell may not depend on xsm-core, so the core types in the answers come through this door.
 pub use xsm_core::container::Action;
 pub use xsm_core::forecast::Forecast;
-pub use xsm_core::system::{Act, Query};
+pub use xsm_core::system::{Act, Priority, Query};
 pub use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 
 use serde::Serialize;
+
+/// What the demo backend (which has no real machine) answers to the system calls.
+const NO_SYSTEM: &str = "Demo: there is no real machine to ask.";
 
 /// The size of one runner's `_work` folder (`get_work_size`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -150,14 +153,31 @@ pub trait Backend: Send + Sync {
     ///
     /// # Errors
     /// Plain text for the window: no such machine, ssh or PowerShell failing, or a timeout.
-    fn system_query(&self, machine: &str, query: Query) -> Result<String, String>;
+    fn system_query(&self, _machine: &str, _query: Query) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
+
+    /// Read the recent system log lines of a machine at this priority (Linux: optionally one unit); returns text for the window to read.
+    ///
+    /// # Errors
+    /// Plain text for the window: no such machine, a bad unit name, ssh or PowerShell failing, or a timeout.
+    fn system_logs(
+        &self,
+        _machine: &str,
+        _priority: Priority,
+        _unit: Option<String>,
+    ) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
 
     /// Restart, stop or start a service, install updates or restart a Linux machine. Linux uses `sudo -n` only: when it needs
     /// a password the error starts with `needs-password:` and then the command for the person to run themselves.
     ///
     /// # Errors
     /// Plain text for the window, or the password reply above.
-    fn system_action(&self, machine: &str, act: Act, name: &str) -> Result<String, String>;
+    fn system_action(&self, _machine: &str, _act: Act, _name: &str) -> Result<String, String> {
+        Err(NO_SYSTEM.to_owned())
+    }
 
     /// Restart polling.
     ///

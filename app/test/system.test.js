@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { parseJournal, parseEvents, parseLog, searchLog, logTime } from "../src/logs.js";
 import { handle } from "../src/fakeBackend.js";
 import { parseUnits, parseWinServices, parseServices, parseUpdates, countStates, filterServices, passwordCommand, UPDATES_EVERY_MS } from "../src/system.js";
 
@@ -58,4 +59,31 @@ test("demo backend: services and updates for both machines, actions, bad input",
   assert.match(await handle("system_action", { machine: "example-server", act: "reboot" }), /^Restarting/);
   await assert.rejects(async () => handle("system_action", { act: "stop", name: "a; rm" }), /service name/);
   await assert.rejects(async () => handle("system_action", { act: "nuke" }), /Not an action/);
+});
+
+test("logs: journalctl lines and Windows events parse, newest first, 12-hour times", async () => {
+  const j = parseJournal("-- Boot abc --\n2026-11-18T09:12:01+0000 example-server ssh[812]: Accepted key\n2026-11-18T21:30:00+00:00 example-server cron: ran\n");
+  assert.deepEqual(j.map(r => [r.unit, r.msg]), [["cron", "ran"], ["ssh", "Accepted key"]]);
+  assert.equal(j[1].t, Date.parse("2026-11-18T09:12:01Z"));
+  const w = parseEvents('[{"Time":"2026-11-18T09:00:00.0000000+00:00","ProviderName":"Disk","Level":"Error","Message":"bad block"},{"Time":"2026-11-18T10:00:00.0000000+00:00","LogName":"System","Level":"Warning","Message":"slow"},{"x":1}]');
+  assert.deepEqual(w.map(r => [r.unit, r.level]), [["System", "warning"], ["Disk", "error"]]);
+  assert.deepEqual(parseEvents("nope"), []);
+  assert.deepEqual(parseEvents("null"), []);
+  assert.equal(parseLog('[{"Time":"2026-11-18T09:00:00Z","Message":"m"}]').length, 1);
+  assert.equal(parseLog(null).length, 0);
+  assert.match(logTime(Date.UTC(2026, 10, 18, 21, 5, 7)), /(AM|PM)$/);
+  assert.equal(searchLog(j, "ssh key").length, 1);
+  assert.equal(searchLog(j, "").length, 2);
+  assert.equal(searchLog(j, "nothing here").length, 0);
+});
+test("demo backend: logs follow the priority and unit filters, for both machines", async () => {
+  const lines = async (machine, priority, unit) => parseLog(await handle("system_logs", { machine, priority, unit }));
+  const all = await lines("example-server", "all"), warn = await lines("example-server", "warnings"), err = await lines("example-server", "errors");
+  assert.ok(all.length > warn.length && warn.length > err.length && err.length > 0);
+  assert.ok((await lines("example-server", "all", "ssh.service")).every(r => r.unit === "ssh"));
+  assert.ok((await lines("This PC", "errors")).every(r => r.level === "error"));
+  assert.ok((await lines("This PC", "all")).length > 0);
+  await assert.rejects(async () => handle("system_logs", { machine: "nope", priority: "all" }), /not in the list/);
+  await assert.rejects(async () => handle("system_logs", { machine: "This PC", priority: "x" }), /Not a priority/);
+  await assert.rejects(async () => handle("system_logs", { machine: "This PC", priority: "all", unit: "a b" }), /service name/);
 });
