@@ -7,7 +7,7 @@ Rules for every command:
 - Command names are `snake_case`. Argument names are single lowercase words, so camelCase/snake_case conversion never matters.
 - Times are unix seconds (numbers, may have decimals). Percentages are 0 to 100.
 - A command that fails rejects with a plain text message; the window shows it.
-- Pushed by the shell (not commands): the events `window-mode` (payload `"mini"`, `"full"` or `"compact"`) and `pinned` (payload `true` or `false`), sent when the tray menu changes them.
+- Pushed by the shell (not commands): the events `window-mode` (payload `"mini"`, `"full"` or `"compact"`) and `pinned` (payload `true` or `false`), sent when the tray menu changes them. The Terminal tab's events: `terminal-output` (payload `{ id, data }`, text from the shell) and `terminal-exit` (payload `{ id }`, the shell or ssh ended).
 
 ## Commands
 
@@ -39,6 +39,10 @@ Rules for every command:
 | `stop_everything` | none | `null` (collector and window close) |
 | `quit` | none | `null` (the window closes, the app exits) |
 | `open_link` | `url: string` (must start with `https://github.com/` and hold only letters, digits and `. _ - /`; anything else is refused) | `null` (the address opens in the browser) |
+| `terminal_open` | `id: string` (letters, digits, `-`, `_`, up to 64), `machine: string`, `cols: number`, `rows: number` | `null`. Starts a shell on a pseudo-terminal: PowerShell (`pwsh`, else Windows PowerShell) for this PC, or the system `ssh -t` to the machine's configured host (your own ssh config and keys; no password is stored). Output arrives as `terminal-output` events |
+| `terminal_write` | `id: string`, `data: string` | `null`. The keystrokes go to the shell; nothing else is ever run from the window |
+| `terminal_resize` | `id: string`, `cols: number`, `rows: number` | `null` |
+| `terminal_close` | `id: string` | `null`. Ends that session's process. All sessions also end when the app quits |
 
 `set_window_mode`: `mini` is the small always-on-top corner window; `full` and `compact` are the normal window (compact is the one-row-per-machine layout, which the window draws itself; the shell may remember the size per mode). Leaving `mini` restores the earlier size and place.
 

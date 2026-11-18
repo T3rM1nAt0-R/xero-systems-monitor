@@ -7,7 +7,7 @@ import { normMachine, patchMachine, togglePinned, DEFAULT_MACHINE } from "../src
 
 test("registry: one entry per section, unique ids, every tab known, every function present", () => {
   assert.equal(new Set(SECTION_IDS).size, SECTION_META.length);
-  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "net", "disk", "run", "svc"]);
+  assert.deepEqual(SECTION_IDS, ["cpu", "gpu", "net", "disk", "run", "svc", "term"]);
   assert.equal(new Set(TAB_IDS).size, TABS.length);
   assert.deepEqual(TAB_IDS.slice(0, 2), ["overview", "hardware"]);
   for (const s of SECTION_META) {
@@ -22,9 +22,9 @@ test("order.js reads the registry: same titles, same availability, same default 
   const m = { d: { gpu: 3, runners: {}, docker: [] } };
   assert.deepEqual(groupsFor(m.d), availableIds(m));
   assert.deepEqual(normGroups(null).order, SECTION_IDS);
-  assert.deepEqual(groupsFor({ cpu: 1 }), ["cpu", "net", "disk"]);
+  assert.deepEqual(groupsFor({ cpu: 1 }), ["cpu", "net", "disk", "term"]);
   assert.ok(groupsFor({ cpu: 1, uptime: 5 }).includes("svc"), "every machine with readings has a Services section");
-  assert.deepEqual(groupsFor({ cpu: 1 }, { gpu: [[1, 0], [2, 5]] }), ["cpu", "gpu", "net", "disk"], "history with GPU use shows the GPU section too");
+  assert.deepEqual(groupsFor({ cpu: 1 }, { gpu: [[1, 0], [2, 5]] }), ["cpu", "gpu", "net", "disk", "term"], "history with GPU use shows the GPU section too");
 });
 
 test("golden: every section of the demo machines gives a title, a sub line and a summary", async () => {

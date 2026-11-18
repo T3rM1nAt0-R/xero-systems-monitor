@@ -30,8 +30,8 @@ test("group choices: defaults, hide, show again, reorder, what a machine has", (
   const h = toggleHidden(g, "net"); assert.deepEqual(h.hidden, ["net"]); assert.deepEqual(toggleHidden(h, "net").hidden, []);
   assert.equal(moveGroup(g, "gpu", -1).order[0], "gpu");
   assert.deepEqual(normGroups({ order: ["disk"], hidden: ["net", "net", "bogus"] }).hidden, ["net"]);
-  assert.deepEqual(groupsFor({ cpu: 1 }), ["cpu", "net", "disk"]);
-  assert.deepEqual(groupsFor({ gpu: 3, runners: {}, docker: [] }), ["cpu", "gpu", "net", "disk", "run", "svc"]);
+  assert.deepEqual(groupsFor({ cpu: 1 }), ["cpu", "net", "disk", "term"]);
+  assert.deepEqual(groupsFor({ gpu: 3, runners: {}, docker: [] }), ["cpu", "gpu", "net", "disk", "run", "svc", "term"]);
   assert.equal(groupLabel("net"), "Network"); assert.equal(groupLabel("x"), "x");
 });
 

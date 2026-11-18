@@ -6,6 +6,7 @@ members = [
     "crates/xsm-store",
     "crates/xsm-sources",
     "crates/xsm-collector",
+    "crates/xsm-terminal",
     "crates/xsm-walls",
     "src-tauri",
 ]
