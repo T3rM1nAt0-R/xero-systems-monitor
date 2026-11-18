@@ -5,8 +5,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 - Added: Disks tab: read and write speed of every drive as graphs (kept in the history), drive health (OK or needs a look, temperature, hours powered on, wear for SSDs; read every 10 minutes, with a hint to install smartmontools on Linux), and an on-demand "Find biggest folders" search for a drive or folder that shows a loading bar, can be stopped and never deletes anything.
-
-- Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs and Terminal are ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
+- Added: a real terminal on each machine's Terminal tab: PowerShell on this PC, `ssh -t` (your own ssh client and keys) on Linux machines, several sessions per machine as small sub-tabs, your Customize monospace font and colours, Ctrl+Shift+C / Ctrl+Shift+V to copy and paste. The terminal code loads only when the tab opens. `npm run dev` shows a demo shell (help, uptime, ls).
+- Added: tabs on every machine card (Overview, Hardware, Processes, Disks, Network, Services, Runners; Logs is ready in the registry for later). Only tabs with content show, each machine remembers its tab, arrow keys move between them. Overview keeps CPU, memory and GPU graphs, network and disk summary graphs, a compact runners block and failing containers only.
 - Added: a pin on every section header pins that section (whole) to Overview; click again to unpin.
 - Changed: the machine card header is one status line (name, status, uptime, restart needed); board, system and address moved to a hover tooltip on an (i) icon.
 - Added: smooth fold and unfold of machines and sections, tab cross-fade, menus and dialogs fading in, a thin loading bar for the first load and for history fetches, and shimmer placeholders on graphs before their first data. All of it stops when the system asks for reduced motion.

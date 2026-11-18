@@ -5,6 +5,7 @@ mod commands;
 mod frame;
 mod links;
 mod prefs;
+mod terminal;
 mod tray;
 mod tray_icon;
 mod updates;
@@ -74,6 +75,7 @@ pub fn run() {
         .manage(frame::Frame::default())
         .manage(tray::Checks::default())
         .manage(updates::Pending::default())
+        .manage(terminal::Terminals::default())
         .setup(|app| {
             let handle = app.handle();
             app.manage(commands::BackendState(backend_for(handle)?));
@@ -113,10 +115,19 @@ pub fn run() {
             commands::stop_everything,
             commands::quit,
             commands::open_link,
+            commands::terminal_open,
+            commands::terminal_write,
+            commands::terminal_resize,
+            commands::terminal_close,
         ])
         .build(tauri::generate_context!());
     match built {
-        Ok(app) => app.run(|_, _| {}),
+        Ok(app) => app.run(|handle, event| {
+            // Every shell and ssh the Terminal tab started ends with the app.
+            if matches!(event, tauri::RunEvent::Exit) {
+                handle.state::<terminal::Terminals>().0.close_all();
+            }
+        }),
         Err(e) => eprintln!("cannot start: {e}"),
     }
 }

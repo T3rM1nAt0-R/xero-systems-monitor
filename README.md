@@ -60,8 +60,13 @@ One window shows CPU, memory, disk, network, GPU and temperatures, plus GitHub A
 <td width="50%"><img src="docs/screenshots/disks.png" alt="The Disks tab with drive speed graphs, drive health and the biggest folders"></td>
 <td width="50%" valign="top">The Disks tab: read and write speed per drive, drive health (temperature, hours, SSD wear), and "Find biggest folders", a search you start yourself that shows a loading bar, can be stopped and never deletes anything.</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/terminal.png" alt="The Terminal tab with two demo shells"></td>
+<td valign="top">The Terminal tab: a real shell on every machine. PowerShell on this PC; on Linux machines it runs your own <code>ssh -t</code> (your ssh config and keys, nothing stored). Several sessions per machine as small tabs (+ and ×), your Customize colours and monospace font, <b>Ctrl+Shift+C</b> / <b>Ctrl+Shift+V</b> to copy and paste. In <code>npm run dev</code> it is a demo shell (help, uptime, ls).</td>
+</tr>
 </table>
 
+- Terminal tab on every machine: PowerShell on this PC, `ssh -t` on Linux machines, several sessions, copy and paste with Ctrl+Shift+C / V
 - Customize: built-in themes (Dark, Light, Midnight, Solarized-like, High contrast, Neon); save, rename, delete, export and import your own; a colour per machine tints its card edge and tile; a warning when text and background are hard to read together
 - Disks tab: read and write speed of every drive over time, drive health (OK or needs a look, temperature, hours, SSD wear; on Linux it needs smartmontools), and a "Find biggest folders" search you start yourself, with a loading bar and a Stop button, that only reads and never deletes
 - This PC: CPU, memory, disk, network, ping, top programs, network connections by program (Windows), GPU (NVIDIA), CPU temperature

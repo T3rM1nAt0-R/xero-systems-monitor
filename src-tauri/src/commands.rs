@@ -1,4 +1,4 @@
-//! The commands of `docs/window-api.md`, exactly 27. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 31. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
@@ -6,6 +6,7 @@
 use crate::frame::{self, Mode};
 use crate::links;
 use crate::prefs::{self, Prefs, PrefsPatch};
+use crate::terminal::{self, Terminals};
 use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
@@ -13,6 +14,7 @@ use xsm_collector::{
     Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
     MachineList, SaveOutcome, ScanReply, State as Readings,
 };
+use xsm_terminal::Size;
 
 /// The collector the commands talk to.
 pub struct BackendState(pub Arc<dyn Backend>);
@@ -196,4 +198,34 @@ pub fn quit(app: AppHandle) -> Reply<()> {
 #[tauri::command]
 pub fn open_link(url: String) -> Reply<()> {
     links::open(&url)
+}
+
+#[tauri::command]
+pub fn terminal_open(
+    app: AppHandle,
+    backend: State<'_, BackendState>,
+    terms: State<'_, Terminals>,
+    id: String,
+    machine: String,
+    cols: u16,
+    rows: u16,
+) -> Reply<()> {
+    let size = Size::new(cols, rows);
+    terminal::open(&app, &*backend.0, &terms, &id, &machine, size)
+}
+
+#[tauri::command]
+pub fn terminal_write(terms: State<'_, Terminals>, id: String, data: String) -> Reply<()> {
+    terms.0.write(&id, &data)
+}
+
+#[tauri::command]
+pub fn terminal_resize(terms: State<'_, Terminals>, id: String, cols: u16, rows: u16) -> Reply<()> {
+    terms.0.resize(&id, Size::new(cols, rows))
+}
+
+#[tauri::command]
+pub fn terminal_close(terms: State<'_, Terminals>, id: String) -> Reply<()> {
+    terms.0.close(&id);
+    Ok(())
 }
