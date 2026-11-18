@@ -1,9 +1,10 @@
-//! The commands of `docs/window-api.md`, exactly 19. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
 
 use crate::frame::{self, Mode};
+use crate::links;
 use crate::prefs::{self, Prefs, PrefsPatch};
 use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
@@ -131,4 +132,9 @@ pub async fn stop_everything(app: AppHandle, backend: State<'_, BackendState>) -
 pub fn quit(app: AppHandle) -> Reply<()> {
     frame::quit(&app);
     Ok(())
+}
+
+#[tauri::command]
+pub fn open_link(url: String) -> Reply<()> {
+    links::open(&url)
 }

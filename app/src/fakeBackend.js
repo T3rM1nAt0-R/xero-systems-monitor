@@ -26,6 +26,7 @@ const commands = {
   get_history: ({ machine, range }) => (named(machine) ? history(named(machine), range, clock()) : {}),
   get_events: ({ since, n }) => demoEvents(store.machines, since, clock(), n ?? 300),
   get_jobs: ({ since }) => finishedJobs(store.machines, since, clock()),
+  open_link: ({ url }) => { if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer"); return null; },
   get_forecast: ({ machine }) => (named(machine) ? forecast(named(machine)) : { per_day: null, days: null }),
   get_machines: () => ({ machines: store.machines.map(m => ({ ...m })) }),
   save_machines: ({ machines }) => {

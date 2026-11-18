@@ -101,7 +101,7 @@ fn runner_job_waits_for_its_result() {
     let ev = t.observe(runners(true, vec![running_job("r1")]), 160);
     assert_eq!(
         texts(&ev),
-        ["r1 started: PR #7 · fix-it · Build (example-repo)"]
+        ["r1 started: PR #7 · fix-it · Build (o/example-repo)"]
     );
     assert_eq!(t.snapshot().started["r1"], 160);
     let ev = t.observe(
@@ -110,7 +110,7 @@ fn runner_job_waits_for_its_result() {
     );
     assert_eq!(
         texts(&ev),
-        ["r1 finished (5 min, Succeeded): PR #7 · fix-it · Build (example-repo)"]
+        ["r1 finished (5 min, Succeeded): PR #7 · fix-it · Build (o/example-repo)"]
     );
     let done = t.take_finished();
     assert_eq!(
@@ -130,7 +130,7 @@ fn runner_job_waits_for_its_result() {
             160,
             460,
             "Succeeded",
-            "PR #7 · fix-it · Build (example-repo)"
+            "PR #7 · fix-it · Build (o/example-repo)"
         ])
     );
     assert!(t.take_finished().is_empty());
@@ -148,7 +148,7 @@ fn finish_without_a_result_is_logged_after_four_polls() {
     let ev = t.observe(runners(false, vec![]), 30);
     assert_eq!(
         texts(&ev),
-        ["r1 finished (0 min): PR #7 · fix-it · Build (example-repo)"]
+        ["r1 finished (0 min): PR #7 · fix-it · Build (o/example-repo)"]
     );
     assert_eq!(t.take_finished()[0].result, "");
 }
@@ -239,7 +239,7 @@ fn job_label_variants() {
     let long = JobLine {
         runner: "r1".into(),
         git_ref: "refs/heads/".to_owned() + &"b".repeat(50),
-        repo: "o/".into(),
+        repo: String::new(),
         ..JobLine::default()
     };
     let ev = t.observe(runners(true, vec![long]), 3);
@@ -252,7 +252,7 @@ fn job_label_variants() {
     };
     t.observe(runners(false, vec![]), 4);
     let ev = t.observe(runners(true, vec![plain]), 5);
-    assert_eq!(ev[0].text, "r1 started: refs/pull/x/merge (example-repo)");
+    assert_eq!(ev[0].text, "r1 started: refs/pull/x/merge (o/example-repo)");
     let main = JobLine {
         runner: "r1".into(),
         git_ref: "refs/heads/main".into(),

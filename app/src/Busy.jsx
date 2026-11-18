@@ -1,11 +1,16 @@
 import { useMemo } from "react";
-import { busyByDay } from "./busy.js";
-// Seven small columns: how busy this machine's runners were each day (all runners together).
+import { busyHeat, heatTip, dayLine, hour12, HEAT_AXIS } from "./busy.js";
+// "Busy this week": a heatmap, one row per day (today last) and one cell per hour. A darker cell means more of the runners' time was busy.
 export default function Busy({ rows, machine, count, running, now }) {
-  const days = useMemo(() => busyByDay(rows, machine, count, running, now, 7), [rows, machine, count, running.length, Math.floor(now / 300)]);
+  const days = useMemo(() => busyHeat(rows, machine, count, running, now, 7), [rows, machine, count, running.length, Math.floor(now / 300)]);
   if (!count) return null;
   return (
-    <div className="bpd"><span className="lbl">Busy per day</span>
-      {days.map(d => <div key={d.date} className="bcol" data-tip={`${d.day}, ${d.date}\n${d.pct.toFixed(0)}% of runner time busy${d.today ? " so far today" : ""}`}><i style={{ height: Math.max(2, d.pct) + "%" }} /><b>{d.day.slice(0, 2)}</b></div>)}
+    <div className="heat"><h4>Busy this week</h4>
+      <div className="hgrid">
+        {days.map(d => <div className="hrow" key={d.date}><span className="hd">{d.today ? "Today" : d.day}</span>
+          <div className="hcells">{d.cells.map(c => <i key={c.h} className={c.pct == null ? "future" : c.failed ? "fail" : ""} style={c.pct == null ? undefined : { "--p": Math.round(c.pct) }} data-tip={heatTip(d, c)} />)}</div></div>)}
+        <div className="hrow axis"><span className="hd" /><div className="hcells">{Array.from({ length: 24 }, (_, h) => <b key={h}>{HEAT_AXIS.includes(h) ? hour12(h) : ""}</b>)}</div></div>
+      </div>
+      <div className="hdays">{days.map(d => <div key={d.date}><b>{d.today ? "Today" : d.day}</b><span className={d.failed ? "bad" : "dim"}>{dayLine(d)}</span></div>)}</div>
     </div>);
 }

@@ -34,7 +34,7 @@ const jobsIn = (name, slot) => RUNNERS.flatMap((runner, i) => {
   if (h < 0.35) return [];
   const t0 = slot * SLOT + Math.floor(h * 3000), n = 100 + Math.floor(h * 900), flow = WORKFLOWS[Math.floor(h * 31) % WORKFLOWS.length];
   const res = h > 0.92 ? "Failed" : h > 0.88 ? "Canceled" : "Succeeded";
-  return [{ runner, t0, t1: t0 + 240 + Math.floor(h * 2000), res, n, flow, label: `PR #${n} · branch-${n} · ${flow} (example-repo)` }];
+  return [{ runner, t0, t1: t0 + 240 + Math.floor(h * 2000), res, n, flow, label: `PR #${n} · branch-${n} · ${flow} (example/example-repo)` }];
 });
 const allJobs = (name, since, now) => {
   const out = [];
@@ -67,7 +67,7 @@ export function demoMachine(m, now) {
   d.runners = {}; d.jobs = {}; d.jobres = {};
   for (const r of RUNNERS) d.runners[r] = false;
   for (const j of allJobs(m.name, now - SLOT, now).filter(x => x.t1 > now)) {
-    d.runners[j.runner] = true; d.jobs[j.runner] = [j.flow, "", `refs/pull/${j.n}/merge`, "example-repo"]; d.jobres[j.runner] = [40, 3000, null, null]; out.started[j.runner] = j.t0;
+    d.runners[j.runner] = true; d.jobs[j.runner] = [j.flow, "", `refs/pull/${j.n}/merge`, "example/example-repo"]; d.jobres[j.runner] = [40, 3000, null, null]; out.started[j.runner] = j.t0;
   }
   d.docker = [["web", "running", "Up 3 days", "example/web:1", "80/tcp", ""], ["db", "running", "Up 3 days", "example/db:1", "5432/tcp", ""]]; d.failed = [];
   return out;
