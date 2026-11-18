@@ -12,9 +12,9 @@ export function buildCommands(a) {
   for (const r of a.refreshOptions) add("Setting", `Refresh every ${r < 60 ? r + " s" : "1 min"}`, () => a.setRefresh(r), "refresh rate");
   const flip = (label, on, set, words) => add("Setting", `${label}: turn ${on ? "off" : "on"}`, () => set(!on), words);
   flip("Always on top", a.pin, a.setPin, "pin top");
-  flip("Compact view", a.compact, a.setCompact, "compact rows");
+  flip("Compact view", a.compact && !a.mini, () => a.toggleCompact(), "compact rows");
   add("Setting", "Mini corner view", a.toggleMini, "mini small corner");
-  if (a.foldAll) { add("Setting", "Fold all cards", () => a.foldAll(true), "collapse"); add("Setting", "Unfold all cards", () => a.foldAll(false), "expand"); }
+  if (a.foldAll) { if (a.allFolded) add("Setting", "Unfold all cards", () => a.foldAll(false), "expand"); else add("Setting", "Fold all cards", () => a.foldAll(true), "collapse"); }   // only in the Full view, and only the one that does something
   for (const [k, l] of ALERTS) flip(`Alert: ${l}`, !!a.alertPrefs[k], on => a.setAlert(k, on), "notify notification");
   add("Setting", "Snooze alerts for 1 hour", a.snooze1h, "mute notifications");
   if (a.setQuietOn) flip("Quiet hours", !!a.quietOn, a.setQuietOn, "night mute");

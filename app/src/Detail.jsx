@@ -32,6 +32,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
   }), [rows, m.name, m.started, d.jobs]);
   const full = fc?.days ? `full in ~${fc.days < 60 ? fc.days + " days" : Math.round(fc.days / 30) + " months"}` : "";
   const { week, events } = useWeek(m.name), nowMin = Math.floor(now / 60);
+  const stripPts = useMemo(() => [...(week?.cpu || NONE), ...(h?.cpu || NONE)], [week, h]);   // readings of the week and of the shown range, for "no data" gaps
   const marks = useMemo(() => autoMarks({ events, rows, machine: m.name, uptime: d.uptime, now, t0, t1 }), [events, rows, m.name, d.uptime != null, nowMin, t0Min]);   // eslint-disable-line react-hooks/exhaustive-deps -- the marks only move once a minute
   // Pn must keep one identity between renders (a new component type would remount every card on each poll and close the "What was busy then?" box); it reads the latest values from a ref.
   const pc = useRef(); pc.current = { P, h2, t0, t1, span, live, name: m.name, loading: !h, graphs: settings.graphs, onOverview: tab === "overview", marks, d, week, now };
@@ -44,7 +45,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
     <div className="detail">
       <ZoomChip machine={m.name} span={zoom} />
       <Tabs tabs={availableTabs(m, h, tab)} tab={tab} onTab={t => patch({ tab: t })} base={base} badges={{ services: svcFacts(m).bad, runners: gone.length }} />
-      {tab === "overview" && <OutageStrip machine={m.name} events={events} pts={week?.cpu || NONE} now={now} offNow={!!m.err} span={settings.strip} onSpan={strip => patch({ strip })} />}
+      {tab === "overview" && <OutageStrip machine={m.name} events={events} pts={stripPts} now={now} offNow={!!m.err} secs={span} />}
       <div className="tabpanel" key={tab} role="tabpanel" id={panelId(base)} aria-labelledby={tabId(base, tab)}>
         {tabParts(tab, m, h, settings.pinned).map(([id, view]) => { const s = SECTIONS.find(z => z.id === id); return (
           <Grp key={id} id={m.name + "." + id} color={`var(${s.accent(m)})`} title={s.title} sub={s.sub(m, x)} summary={s.summary(m, x)} spark={s.spark ? P(s.spark) : undefined} def={s.def} cls={s.cls} pinned={settings.pinned.includes(id)} onPin={() => { if (tab !== "overview" && !settings.pinned.includes(id)) flyTo(document.getElementById("g-" + m.name + "." + id), document.getElementById(tabId(base, "overview")), s.title); patch({ pinned: togglePinned(settings, id).pinned }); }}>

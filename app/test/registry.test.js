@@ -63,11 +63,11 @@ test("summaries say what the folded section shows", () => {
 test("machine settings: defaults are one frozen object, junk is cleaned, pins are known sections once", () => {
   assert.equal(normMachine(null), DEFAULT_MACHINE);
   assert.equal(normMachine("x"), DEFAULT_MACHINE);
-  assert.deepEqual(normMachine({ color: "#4ade80", tab: "disks", pinned: ["cpu", "cpu", "nope", "svc"] }), { color: "#4ade80", tab: "disks", pinned: ["cpu", "svc"], graphs: DEFAULT_GRAPHS, strip: "day" });
-  assert.deepEqual(normMachine({ color: "red; x", tab: "nope", pinned: "cpu" }), { color: "", tab: "overview", pinned: [], graphs: DEFAULT_GRAPHS, strip: "day" });
+  assert.deepEqual(normMachine({ color: "#4ade80", tab: "disks", pinned: ["cpu", "cpu", "nope", "svc"] }), { color: "#4ade80", tab: "disks", pinned: ["cpu", "svc"], graphs: DEFAULT_GRAPHS });
+  assert.deepEqual(normMachine({ color: "red; x", tab: "nope", pinned: "cpu" }), { color: "", tab: "overview", pinned: [], graphs: DEFAULT_GRAPHS });
   assert.equal(normMachine({ color: "hsl(120 50% 40%)" }).color, "hsl(120 50% 40%)");
   const p = patchMachine({ tab: "network" }, { color: "#fff" });
-  assert.deepEqual(p, { color: "#fff", tab: "network", pinned: [], graphs: DEFAULT_GRAPHS, strip: "day" });
+  assert.deepEqual(p, { color: "#fff", tab: "network", pinned: [], graphs: DEFAULT_GRAPHS });
   assert.deepEqual(togglePinned(p, "gpu").pinned, ["gpu"]);
   assert.deepEqual(togglePinned(togglePinned(p, "gpu"), "gpu").pinned, []);
 });

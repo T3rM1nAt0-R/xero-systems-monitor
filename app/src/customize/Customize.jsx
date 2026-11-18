@@ -20,7 +20,7 @@ const typing = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && ["t
 const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 // The Customize panel: docked on the right (the window shrinks, nothing is covered), one scroll with every section, a sticky header with search, jump chips,
 // undo / redo, hold-to-compare and close. Every change is applied to the whole window at once; `c` is useLook().custom.
-export default function Customize({ c, onClose, start = "" }) {
+export default function Customize({ c, onClose, start = "", full = true }) {
   const [q, setQ] = useState(""), [picking, setPicking] = useState(false), [active, setActive] = useState(SECTIONS[0][0]), body = useRef(null), raf = useRef(0);
   const { remember, undo, redo, setComparing } = c;
   useEffect(() => { remember(); document.documentElement.dataset.panel = "open"; return () => { delete document.documentElement.dataset.panel; }; }, []);   // eslint-disable-line react-hooks/exhaustive-deps -- once: what the panel opened with
@@ -68,7 +68,7 @@ export default function Customize({ c, onClose, start = "" }) {
       </header>
       <Find.Provider value={q}>
         <div className={"cscroll" + (q ? " searching" : "")} ref={body} onScroll={spy}>
-          {SECTIONS.map(([id, label]) => { const Body = BODY[id]; return <section key={id} id={"csec-" + id} className="csec"><h4 className="csh"><span>{label}</span><em>{NOTES[id]}</em></h4><Body c={c} /></section>; })}
+          {SECTIONS.map(([id, label]) => { const Body = BODY[id]; return <section key={id} id={"csec-" + id} className="csec"><h4 className="csh"><span>{label}</span><em>{NOTES[id]}</em></h4><Body c={c} full={full} /></section>; })}
           <p className="cnone">Nothing matches that. Try a shorter word.</p>
         </div>
       </Find.Provider>

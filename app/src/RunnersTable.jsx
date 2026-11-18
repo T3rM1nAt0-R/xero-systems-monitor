@@ -4,7 +4,7 @@ import Sub from "./Sub.jsx";
 import Axis from "./Axis.jsx";
 import { dur, hm } from "./format.js";
 import { runnerRows, STATUS_TEXT, bytesText } from "./runnerList.js";
-import { buildLanes, BAD, TL_RANGES, DEFAULT_TL_RANGE } from "./lanes.js";
+import { buildLanes, BAD } from "./lanes.js";
 import { labelUrl, refUrl } from "./github.js";
 import { linkProps, linkClass } from "./jobLink.js";
 const res = v => !v ? "" : [v[0] != null && `CPU ${v[0].toFixed(0)}%`, v[1] != null && `RAM ${(v[1] / 1024).toFixed(1)} GB`, (v[2] != null || v[3] != null) && "GPU " + [v[3] != null && v[3].toFixed(0) + "%", v[2] != null && v[2].toFixed(0) + " MB"].filter(Boolean).join(" ")].filter(Boolean).join(" · ");
@@ -18,8 +18,8 @@ function Lane({ name, bars, t0, t1 }) {
 }
 // The runners as one table: a row per runner (status dot, name, status, current job, time in the job) and that runner's own timeline lane
 // filling the rest of the row, with one shared time axis at the bottom. `compact` (Overview) drops the status and time columns.
-export default function RunnersTable({ machine, d, started, gone, now, finished, compact }) {
-  const [span, setSpan] = useState(DEFAULT_TL_RANGE), secs = TL_RANGES[span].secs, t0 = now - secs;
+export default function RunnersTable({ machine, d, started, gone, now, span: secs, finished, compact }) {
+  const t0 = now - secs;   // the timeline shows the same time as the graphs ("Graphs show" at the bottom)
   const [sizes, setSizes] = useState({}), [state, setState] = useState("");   // state: "", "loading" or an error text
   const ask = () => { setState("loading"); api.getWorkSize(machine).then(list => { setSizes(Object.fromEntries(list.map(x => [x.runner, x.bytes]))); setState(""); }, e => setState(String(e?.message || e))); };
   const rows = runnerRows(d, started, gone, now, sizes, finished, machine), jobs = d.jobs || {}, jr = d.jobres || {};
@@ -30,7 +30,7 @@ export default function RunnersTable({ machine, d, started, gone, now, finished,
       <div className={"rtable" + (compact ? " compact" : "") + (hasSize ? " hassz" : "")} role="table" aria-label="Runners">
         <div className="rtr rth" role="row">
           <span role="columnheader">Runner</span>{!compact && <span className="rst" role="columnheader">Status</span>}<span role="columnheader">Job</span>{!compact && <span className="rt" role="columnheader">Time</span>}{hasSize && <span className="rt" role="columnheader">Folder</span>}
-          <span className="rtl" role="columnheader"><span className="seg tlrange" role="group" aria-label="Timeline range">{Object.entries(TL_RANGES).map(([k, v]) => <button key={k} className={span === k ? "on" : ""} onClick={() => setSpan(k)}>{v.label}</button>)}</span></span>
+          <span className="rtl" role="columnheader">Timeline</span>
         </div>
         {rows.map(r => { const j = jobs[r.name], url = j && refUrl(j[3], j[2]);
           return (

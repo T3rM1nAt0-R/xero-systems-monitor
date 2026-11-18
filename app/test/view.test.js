@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { viewOf, viewChange, showStrip, fitsWindow, visibleMachines, hideName, showName } from "../src/view.js";
+import { viewOf, viewChange, nextCompact, showStrip, fitsWindow, visibleMachines, hideName, showName } from "../src/view.js";
 import { buildCommands } from "../src/commands.js";
 
 test("view: which of Full, Compact, Mini shows", () => {
@@ -34,4 +34,11 @@ test("palette offers Show hidden machine", () => {
   const items = buildCommands({ machines: [], hiddenNames: ["example-server"], showMachine: n => shown.push(n), ranges: [], refreshOptions: [], alertPrefs: {}, look: {}, setPin() {}, setCompact() {}, toggleMini() {}, setRange() {}, setRefresh() {}, snooze1h() {}, onMachines() {}, onCheck() {} });
   items.find(i => i.label === "Show hidden machine example-server").run();
   assert.deepEqual(shown, ["example-server"]);
+});
+
+test("C: Full goes to Compact, Compact to Full, and Mini leaves Mini for Compact", () => {
+  assert.deepEqual(nextCompact(false, false), { compact: true, mini: false });
+  assert.deepEqual(nextCompact(true, false), { compact: false, mini: false });
+  assert.deepEqual(nextCompact(false, true), { compact: true, mini: false });
+  assert.deepEqual(nextCompact(true, true), { compact: true, mini: false });
 });

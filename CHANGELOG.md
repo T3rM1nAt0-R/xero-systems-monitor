@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: the 24 h and 7 d chips are gone from the Overview outage strip and the Runners table; both now follow the "Graphs show" range at the bottom, like every graph.
+- Fixed: the C key and Ctrl+K "Compact view" now work from Mini (they leave Mini for Compact). Fold all and Unfold all are offered only in the Full view, and the label comes from the cards' real state (so it is right after a restart or after folding cards one by one). The "Graphs show" chips are hidden in Compact and Mini, and Customize says "Applies in Full view" on Layout and Graphs while you are in Compact or Mini.
 - Changed: Customize is the one place for the look. The Theme row (Dark, Light, Windows) and Large text are gone from the More menu and from Ctrl+K, which now offer one "Open Customize" command. Your old theme and Large text choice move into Customize once (Light becomes the Light theme, Windows becomes Match Windows, Large becomes a 116% text size), so nobody loses their look.
 - Fixed: the More menu's Dark and Light no longer wipe every Customize edit, "Large text" no longer stacks on the text size slider (116% x 130% was about 151% while the slider said 100%), and the menu no longer lights Dark or Light for Nord, Dracula, Terminal and the other themes.
 - Fixed: Rounded now works on a theme that has its own family (Terminal), and turning off colour-blind safe or Match Windows, or setting 100% text size, now works on themes that set them. A choice is kept whenever it differs from the theme, not from the global default.

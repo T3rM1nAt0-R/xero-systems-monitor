@@ -7,11 +7,11 @@ import RunnerStats from "../RunnerStats.jsx";
 import JobHistory from "../JobHistory.jsx";
 import { FULL } from "./tabs.js";
 // The Runners section: one table with a row and a timeline lane per runner. Compact view (Overview): just the compact table. Full view (Runners tab): the 3 big numbers, the queue, 7-day trends, the busy heatmap and the job history.
-export default function Runners({ m, d, rows, gone, t1, view }) {
+export default function Runners({ m, d, rows, gone, t1, span, view }) {
   return (
     <Smooth className="panel wide">
       {view === FULL && <RunnerStats rows={rows} machine={m.name} now={t1} />}
-      <RunnersTable machine={m.name} d={d} started={m.started} gone={gone} now={t1} finished={rows} compact={view !== FULL} />
+      <RunnersTable machine={m.name} d={d} started={m.started} gone={gone} now={t1} span={span} finished={rows} compact={view !== FULL} />
       {view === FULL && <>
         <Queue machine={m.name} d={d} now={t1} />
         <Trends rows={rows} machine={m.name} now={t1} />

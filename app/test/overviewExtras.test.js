@@ -47,12 +47,12 @@ test("outage strip: offline spans from events, no data where nothing was stored"
   assert.deepEqual(offlineSpans(ev, "b", now), [[now - 100, now]]);
   assert.deepEqual(offlineSpans([], "a", now, true), [[now, now]]);
   const pts = Array.from({ length: 48 }, (_, i) => [now - 86400 + i * 1800 + 10, 1]).filter((_, i) => i < 10 || i > 20);
-  const cells = stripCells({ events: ev, pts, machine: "a", now });
+  const cells = stripCells({ events: ev, pts, machine: "a", now, secs: 86400 });
   assert.equal(cells.reduce((s, c) => s + c.w, 0).toFixed(3), "100.000");
   assert.deepEqual([...new Set(cells.map(c => c.status))].sort(), ["none", "off", "on"]);
   assert.ok(cells.every((c, i) => i === 0 || c.status !== cells[i - 1].status), "neighbours merged");
   assert.match(cells[0].text, /^(Online|Offline|No data) · \d{1,2}:\d{2}\s?(AM|PM) to /);
-  assert.equal(stripCells({ events: [], pts: [], machine: "a", now, span: "week" }).length, 1);
+  assert.equal(stripCells({ events: [], pts: [], machine: "a", now, secs: 604800 }).length, 1);
 });
 
 test("demo backend: outage events, a gap in the week, and a busy PC that is unusual", async () => {
