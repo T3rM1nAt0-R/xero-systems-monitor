@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-18
+
 - Added: Customize pick mode (the crosshair button): hover anything in the window to see what it is and where its setting lives ("Section heading - Text > Section"), click it and the panel scrolls to that setting and flashes it.
 - Added: Customize Graphs: gradient fill, glow, dots on points (small dots along the line, not one per reading), axes on or off, grid density, a Step style. Layout: machines in 1, 2 or 3 columns, tab style (underline, pill, segmented) and heading style (CAPS or normal).
 
