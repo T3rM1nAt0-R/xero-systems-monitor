@@ -47,8 +47,8 @@ mod imp {
     }
 
     fn tcp(family: u32) -> Vec<u8> {
-        fetch(|buf, size| {
-            // reason: the call writes at most `*size` bytes into `buf`, which `fetch` sized and keeps alive for the call
+        fill_buffer(|buf, size| {
+            // reason: the call writes at most `*size` bytes into `buf`, which `fill_buffer` sized and keeps alive for the call
             #[allow(unsafe_code)]
             unsafe {
                 GetExtendedTcpTable(buf, size, false, family, TCP_TABLE_OWNER_PID_CONNECTIONS, 0)
@@ -57,8 +57,8 @@ mod imp {
     }
 
     fn udp(family: u32) -> Vec<u8> {
-        fetch(|buf, size| {
-            // reason: the call writes at most `*size` bytes into `buf`, which `fetch` sized and keeps alive for the call
+        fill_buffer(|buf, size| {
+            // reason: the call writes at most `*size` bytes into `buf`, which `fill_buffer` sized and keeps alive for the call
             #[allow(unsafe_code)]
             unsafe {
                 GetExtendedUdpTable(buf, size, false, family, UDP_TABLE_OWNER_PID, 0)
@@ -68,7 +68,7 @@ mod imp {
 
     /// Run `call` until it fills a buffer: the first call (no buffer) says how big, the next ones fill.
     /// The buffer is made of 4-byte words because the table is laid out in them.
-    fn fetch(call: impl Fn(Option<*mut c_void>, *mut u32) -> u32) -> Vec<u8> {
+    fn fill_buffer(call: impl Fn(Option<*mut c_void>, *mut u32) -> u32) -> Vec<u8> {
         let mut size = 0_u32;
         let mut words: Vec<u32> = Vec::new();
         for _ in 0..TRIES {
