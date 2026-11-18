@@ -9,7 +9,7 @@
 
 /* Tab row and the panel that cross-fades when the tab changes */
 .tabs{display:flex;gap:var(--sp-2);overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:var(--sp-4)}
-.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--dim);padding:var(--sp-5) var(--sp-10);font-size:var(--fs-12);white-space:nowrap;transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--dim);padding:var(--sp-4) var(--sp-12);font-size:var(--fs-12);white-space:nowrap;transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
 .tabs button:hover{color:var(--fg)}
 .tabs button.on{color:var(--fg);border-bottom-color:var(--acc)}
 .tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}

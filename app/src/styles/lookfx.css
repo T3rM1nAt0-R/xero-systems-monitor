@@ -20,6 +20,6 @@ html[data-tabs="pill"] .tabbar,html[data-tabs="segmented"] .tabbar{display:none}
 html[data-heading="normal"] .grp h5,html[data-heading="normal"] .lbl,html[data-heading="normal"] .fsub>h4,html[data-heading="normal"] .trends h4,html[data-heading="normal"] .procs h4{text-transform:none;letter-spacing:.02em}
 /* pick mode */
 .pickbox{position:fixed;z-index:60;pointer-events:none;outline:2px solid #ff2b8a;outline-offset:1px;background:#ff2b8a1f}
-.pickbox span{position:absolute;left:0;top:100%;margin-top:var(--sp-4);white-space:nowrap;background:#ff2b8a;color:#fff;border-radius:var(--r-6);padding:var(--sp-3) var(--sp-8);font-size:var(--fs-12);font-weight:600}
-.pickbanner{position:fixed;z-index:61;left:var(--sp-10);top:var(--sp-10);pointer-events:none;background:#ff2b8a;color:#fff;border-radius:var(--r-99);padding:var(--sp-5) var(--sp-12);font-size:var(--fs-12);font-weight:600}
+.pickbox span{position:absolute;left:0;top:100%;margin-top:var(--sp-4);white-space:nowrap;background:#ff2b8a;color:#fff;border-radius:var(--r-6);padding:var(--sp-4) var(--sp-8);font-size:var(--fs-12);font-weight:600}
+.pickbanner{position:fixed;z-index:61;left:var(--sp-10);top:var(--sp-10);pointer-events:none;background:#ff2b8a;color:#fff;border-radius:var(--r-99);padding:var(--sp-4) var(--sp-12);font-size:var(--fs-12);font-weight:600}
 html[data-picking="on"] body{cursor:crosshair}

@@ -1,6 +1,6 @@
 /* The Network tab: adapters, Wi-Fi, the internet check and the ping map. */
 .adapters{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-4)}
-.arow{display:grid;grid-template-columns:var(--sp-10) minmax(80px,1.2fr) 110px minmax(100px,2fr);gap:var(--sp-10);align-items:center;font-size:var(--fs-12);color:var(--mid);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
+.arow{display:grid;grid-template-columns:var(--sp-10) minmax(80px,1.2fr) 110px minmax(100px,2fr);gap:var(--sp-12);align-items:center;font-size:var(--fs-12);color:var(--mid);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-5)}
 .arow.wifi{grid-template-columns:var(--sp-10) minmax(80px,1.2fr) 110px 24px}
 .arow:hover{background:var(--s2)}
 .arow b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -13,7 +13,7 @@
 .bars i.on{background:var(--ok)}
 
 .inet{display:flex;flex-direction:column;gap:var(--sp-6);margin-top:var(--sp-4)}
-.inet-now{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-10);font-size:var(--fs-12);color:var(--mid)}
+.inet-now{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-12);font-size:var(--fs-12);color:var(--mid)}
 .inet-now b{color:var(--fg);font-weight:500}
 .inet-now em{font-style:normal;color:var(--dim)}
 .strip24{display:grid;grid-template-columns:repeat(96,minmax(0,1fr));gap:1px;height:var(--sz-13)}
@@ -27,7 +27,7 @@
 
 .pingmap{display:flex;flex-direction:column;gap:var(--sp-8);margin-top:var(--sp-4)}
 .ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-6)}
-.ptile{display:flex;justify-content:space-between;gap:var(--sp-8);padding:var(--sp-6) var(--sp-10);border-radius:var(--r-5);border:1px solid var(--line);font-size:var(--fs-12);border-left-width:3px;transition:border-color var(--dur) var(--ease)}
+.ptile{display:flex;justify-content:space-between;gap:var(--sp-8);padding:var(--sp-6) var(--sp-12);border-radius:var(--r-5);border:1px solid var(--line);font-size:var(--fs-12);border-left-width:3px;transition:border-color var(--dur) var(--ease)}
 .ptile b{font-weight:500;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ptile span{font-variant-numeric:tabular-nums;color:var(--mid)}
 .ptile.ok{border-left-color:var(--ok)}
