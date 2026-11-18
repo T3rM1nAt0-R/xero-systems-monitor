@@ -38,7 +38,8 @@ export const peak = a => a.reduce((m, p) => Math.max(m, p[1]), 0);
 // Limits that turn something amber: the only time colour means "look at this".
 export const LIM = { cpu: 90, temp: 80, gtemp: 80, ram: 90, vram: 95 };
 export const TAG = { cpu: "HIGH", temp: "WARM", gtemp: "WARM", ram: "HIGH", vram: "HIGH" };
-export const isWarn = (k, v) => v != null && LIM[k] != null && v >= LIM[k];
+// `limits` is one machine's own limits (see limits.js); without it the standard ones apply.
+export const isWarn = (k, v, limits) => v != null && (limits?.[k] ?? LIM[k]) != null && v >= (limits?.[k] ?? LIM[k]);
 
 // Minutes the CPU has been "working hard". hotSince and nowMs are both milliseconds.
 export const hotMin = (hotSince, nowMs) => Math.max(1, Math.round((nowMs - hotSince) / 60000));
