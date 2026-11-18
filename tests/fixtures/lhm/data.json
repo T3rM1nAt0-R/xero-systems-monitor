@@ -1,0 +1,21 @@
+{"id":0,"Text":"Sensor","Children":[{"id":1,"Text":"example-pc","ImageURL":"images_icon/computer.png","Children":[
+ {"id":2,"Text":"Example Board","ImageURL":"images_icon/mainboard.png","Children":[
+  {"id":3,"Text":"Example Super IO","ImageURL":"images_icon/chip.png","Children":[
+   {"id":4,"Text":"Fans","Children":[
+    {"id":5,"Text":"Fan #1","Value":"1200 RPM"},
+    {"id":6,"Text":"Fan #2","Value":"850 RPM"},
+    {"id":7,"Text":"Fan #3","Value":"broken"}]}]}]},
+ {"id":8,"Text":"Example CPU","ImageURL":"images_icon/cpu.png","Children":[
+  {"id":9,"Text":"Clocks","Children":[
+   {"id":10,"Text":"Bus Speed","Value":"100,0 MHz"},
+   {"id":11,"Text":"CPU Core #1","Value":"3600,0 MHz"},
+   {"id":12,"Text":"CPU Core #2","Value":"4000,5 MHz"}]},
+  {"id":13,"Text":"Powers","Children":[
+   {"id":14,"Text":"CPU Cores","Value":"20,0 W"},
+   {"id":15,"Text":"CPU Package","Value":"45,5 W"}]},
+  {"id":16,"Text":"Load","Children":[
+   {"id":17,"Text":"CPU Total","Value":"30,0 %"},
+   {"id":18,"Text":"CPU Core #1","Value":"10,0 %"},
+   {"id":19,"Text":"CPU Core #2","Value":"55,5 %"}]}]},
+ {"id":20,"Text":"Example GPU","ImageURL":"images_icon/nvidia.png","Children":[
+  {"id":21,"Text":"Powers","Children":[{"id":22,"Text":"GPU Package","Value":"120,0 W"}]}]}]}]}

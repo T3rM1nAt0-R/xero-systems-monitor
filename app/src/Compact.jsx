@@ -1,6 +1,6 @@
 import { limitsFor } from "./limits.js";
 import { isWarn, prOf, hm, hotMin, WATCH } from "./format.js";
-const N = ({ v, u = "", warn, label }) => <span className={"cn" + (warn ? " warn" : "")}>{label && <small>{label}</small>}{v == null ? "–" : Math.round(v)}{u}</span>;
+import N from "./Pill.jsx";
 // The compact view: one row per machine, one attention line on top. Click a row and its full card opens right under it.
 export default function Compact({ limits, ms, now, lastOk, hot, expanded, onToggle, renderCard }) {
   const attn = ms.filter(m => m.err || hot[m.name]?.cpu || WATCH.some(k => isWarn(k, m.d?.[k], limitsFor(limits, m.name))));

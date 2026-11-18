@@ -314,3 +314,27 @@ fn backup_is_made_once_a_day_and_is_a_usable_copy() {
     let copy = Store::open(&bak).unwrap();
     assert_eq!(copy.events(0, 5).unwrap()[0].text, "hello");
 }
+
+#[test]
+fn gpu_series_keep_the_peak_and_others_the_average() {
+    let s = Store::open_in_memory().unwrap();
+    for (k, gpu) in [(0, 0.0), (1, 95.0), (2, 0.0)] {
+        let mut r = reading(10.0 * (k + 1) as f64, 50.0);
+        r.gpu = Some(GpuReading {
+            util_pct: gpu,
+            vram_used_pct: gpu / 2.0,
+            ..GpuReading::default()
+        });
+        s.add_sample("a", NOW - 100 + k, &r).unwrap();
+    }
+    // One wide bucket holds all three samples.
+    let h = s.history("a", 30 * DAY, NOW).unwrap();
+    assert_eq!(h.gpu.len(), 1);
+    assert!((h.gpu[0].1 - 95.0).abs() < 1e-9);
+    assert!((h.vram[0].1 - 47.5).abs() < 1e-9);
+    assert!((h.cpu[0].1 - 20.0).abs() < 1e-9);
+    // Rolling raw rows into minute rows keeps the peak too.
+    s.prune(NOW + 2 * DAY, 365).unwrap();
+    let h = s.history("a", 30 * DAY, NOW + 2 * DAY).unwrap();
+    assert!((h.gpu[0].1 - 95.0).abs() < 1e-9);
+}

@@ -1,16 +1,17 @@
-//! The commands of `docs/window-api.md`, exactly 20. Each is one call into the backend or the shell; no logic here.
+//! The commands of `docs/window-api.md`, exactly 23. Each is one call into the backend or the shell; no logic here.
 //! This is the only file with command attributes.
 // reason: Tauri hands commands owned arguments and expects a Result back from each
 #![allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
 
 use crate::frame::{self, Mode};
+use crate::links;
 use crate::prefs::{self, Prefs, PrefsPatch};
 use crate::updates::{self, Build, Pending};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 use xsm_collector::{
-    Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig, MachineList,
-    SaveOutcome, State as Readings,
+    Action, Backend, BusyReply, Event, FinishedJob, Forecast, HistoryReply, MachineConfig,
+    MachineList, SaveOutcome, State as Readings,
 };
 
 /// The collector the commands talk to.
@@ -71,6 +72,16 @@ pub async fn save_machines(
     machines: Vec<MachineConfig>,
 ) -> Reply<SaveOutcome> {
     backend.0.save_machines(machines)
+}
+
+#[tauri::command]
+pub async fn container_action(
+    backend: State<'_, BackendState>,
+    machine: String,
+    action: Action,
+    name: String,
+) -> Reply<String> {
+    backend.0.container_action(&machine, action, &name)
 }
 
 #[tauri::command]
@@ -140,4 +151,9 @@ pub async fn stop_everything(app: AppHandle, backend: State<'_, BackendState>) -
 pub fn quit(app: AppHandle) -> Reply<()> {
     frame::quit(&app);
     Ok(())
+}
+
+#[tauri::command]
+pub fn open_link(url: String) -> Reply<()> {
+    links::open(&url)
 }

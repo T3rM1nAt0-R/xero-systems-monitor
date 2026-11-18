@@ -4,13 +4,14 @@ use crate::config::{self, MACHINES_FILE};
 use crate::history::History;
 use crate::machines::{MachineConfig, MachineList, SaveOutcome};
 use crate::poller::{lock, now_s, Engine, MakeSsh, Plan};
-use crate::{Backend, BusyReply, HistoryReply, State};
+use crate::{Action, Backend, BusyReply, HistoryReply, MachineKind, State};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 use xsm_core::forecast::{forecast, Forecast};
 use xsm_core::tracker::{Event, FinishedJob, Snapshot};
 use xsm_settings::Settings;
+use xsm_sources::container::run_container_action;
 use xsm_sources::ssh::ssh_command;
 use xsm_store::Store;
 
@@ -138,6 +139,20 @@ impl Backend for LiveBackend {
             .disk_points(machine, FORECAST_DAYS, now_s())
             .map_err(text)?;
         Ok(forecast(&points))
+    }
+
+    fn container_action(
+        &self,
+        machine: &str,
+        action: Action,
+        name: &str,
+    ) -> Result<String, String> {
+        let host = lock(&self.machines)
+            .iter()
+            .find(|m| m.name == machine && m.kind == MachineKind::Ssh)
+            .and_then(|m| m.host.clone())
+            .ok_or_else(|| "Container actions work only on remote machines.".to_owned())?;
+        run_container_action(&host, action, name)
     }
 
     fn get_machines(&self) -> Result<MachineList, String> {

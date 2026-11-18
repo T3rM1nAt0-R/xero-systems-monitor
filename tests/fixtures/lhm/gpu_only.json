@@ -1,0 +1,2 @@
+{"Text":"Sensor","Children":[{"Text":"Example GPU","ImageURL":"images_icon/ati.png","Children":[{"Text":"Powers","Children":[{"Text":"GPU Core","Value":"30.5 W"}]}]},
+{"Text":"Example CPU","ImageURL":"images_icon/cpu.png","Children":[{"Text":"Powers","Children":[{"Text":"Package","Value":"12 W"}]},{"Text":"Clocks","Children":[{"Text":"Bus Speed","Value":"100 MHz"}]}]}]}

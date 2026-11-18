@@ -3,6 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { handle } from "./fakeBackend.js";
+import { isGithubUrl } from "./github.js";
 
 const inTauri = () => typeof window !== "undefined" && !!window.__TAURI_INTERNALS__;
 const call = (command, args) => (inTauri() ? invoke(command, args) : handle(command, args));
@@ -14,6 +15,9 @@ export const getBusyAt = (machine, t) => call("get_busy_at", { machine, t });
 export const getEvents = (since, n = 60) => call("get_events", { since, n });
 export const getJobs = since => call("get_jobs", { since });
 export const getForecast = machine => call("get_forecast", { machine });
+// Open a job on GitHub in the browser. Only https://github.com/ addresses go through.
+export const openLink = url => (isGithubUrl(url) ? call("open_link", { url }) : Promise.resolve(null));
+export const containerAction = (machine, action, name) => call("container_action", { machine, action, name });   // action: "restart" | "stop" | "start" | "logs"; resolves to text, rejects with a plain message
 // Settings
 export const getMachines = () => call("get_machines");
 export const saveMachines = machines => call("save_machines", { machines });
