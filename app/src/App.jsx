@@ -149,7 +149,7 @@ export default function App() {
       <Toasts />
       {pal && <Palette items={cmds} onClose={() => setPal(false)} />}
       {limDlg && <Limits names={ms.map(m => m.name)} limits={limits} onSave={v => { setLimits(tidyLimits(v)); setLimDlg(false); }} onClose={() => setLimDlg(false)} />}
-      {custDlg && <Customize c={look.custom} names={ms.map(m => m.name)} onClose={() => setCustDlg(false)} />}
+      {custDlg && <Customize c={look.custom} onClose={() => setCustDlg(false)} />}
       {hidDlg && <HiddenMachines hidden={hidden} onShow={showMachine} onClose={() => setHidDlg(false)} />}
       {dlg && <Machines onClose={() => setDlg(false)} />}
       {help && <div className="modal" onClick={() => setHelp(false)}><div className="dlg" onClick={e => e.stopPropagation()}><h3>Keyboard shortcuts</h3>{KEYS.map(([k, t]) => <div className="mrow" key={k}><kbd>{k}</kbd><span>{t}</span></div>)}<div className="mfoot"><button className="cta" onClick={() => setHelp(false)}>Close</button></div></div></div>}

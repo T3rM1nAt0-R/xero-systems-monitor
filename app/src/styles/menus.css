@@ -80,3 +80,6 @@ button.danger{color:var(--danger-text);border-color:var(--danger-line)}
 .fghead h3{margin:0}
 .dlg{box-shadow:var(--shadow-dlg)}
 @keyframes drawerin{from{transform:translateY(12px);opacity:0}}
+.mcolor{display:flex;align-items:center;gap:var(--sp-8);padding:var(--sp-4) var(--sp-10);color:var(--mid);font-size:var(--fs-12)}
+.mcolor input{width:var(--sz-32);height:var(--sz-20);padding:0;border:1px solid var(--line2);border-radius:var(--r-5);background:none;cursor:pointer}
+.mcolor button{margin-left:auto;padding:var(--sp-2) var(--sp-7);font-size:var(--fs-11)}
