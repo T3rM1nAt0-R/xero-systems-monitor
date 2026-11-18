@@ -1,7 +1,9 @@
 import { useState } from "react";
+import useEscape from "./useEscape.js";
 import { LIMIT_FIELDS, DEFAULT_LIMITS, limitsFor, setLimit } from "./limits.js";
 // "Limits…": when each machine counts as "needs a look". Numbers left empty (or out of range) fall back to the standard limit.
 export default function Limits({ names, limits, onSave, onClose }) {
+  useEscape(onClose);
   const [all, setAll] = useState(limits);
   const val = (n, k) => { const v = all[n]?.[k]; return v === undefined ? DEFAULT_LIMITS[k] : v; };
   const same = k => names.length && names.every(n => String(limitsFor(all, n)[k]) === String(limitsFor(all, names[0])[k])) ? limitsFor(all, names[0])[k] : "";

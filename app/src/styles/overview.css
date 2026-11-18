@@ -1,8 +1,9 @@
 /* Overview extras: outage strip, auto marks on graphs, "Unusual for this time" chip, graph sizes and pins, the graph list in the machine menu. */
 .outage{display:flex;align-items:center;gap:var(--sp-8)}
-.ostrip{flex:1;display:flex;height:var(--sz-6);border-radius:var(--r-3);overflow:hidden;background:var(--line)}
+.ostrip{flex:1;display:flex;height:var(--sz-4);border-radius:var(--r-3);overflow:hidden;background:var(--line)}
 .ostrip i{display:block;height:100%}
 .ostrip i.on{background:color-mix(in srgb,var(--ok) 70%,transparent)}
+.ostrip.calm i.on{background:color-mix(in srgb,var(--ok) 38%,transparent)}
 .ostrip i.off{background:var(--bad)}
 .ostrip i.none{background:var(--line2)}
 .outage .seg button{padding:var(--sp-2) var(--sp-6);font-size:var(--fs-10-5)}

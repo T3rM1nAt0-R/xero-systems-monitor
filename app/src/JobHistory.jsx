@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { historyRows, filterHistory, workflowsOf, RESULT_FILTERS } from "./history.js";
+import { historyRows, filterHistory, workflowsOf, RESULT_FILTERS, HISTORY_FIRST, HISTORY_MORE } from "./history.js";
 import { dur, when } from "./format.js";
 import { linkProps, linkClass } from "./jobLink.js";
 import Sub from "./Sub.jsx";
 const THREE_DAYS = 86400 * 3;   // makes `when` show the date as well as the 12-hour time
-// "Job history": the last 100 jobs of this machine, newest first. Search, filter by result or workflow; a click opens the job on GitHub.
+// "Job history": the last 100 jobs of this machine, 15 at first, newest first. Search, filter by result or workflow; a click opens the job on GitHub.
 export default function JobHistory({ rows, machine }) {
-  const [q, setQ] = useState(""), [kind, setKind] = useState("all"), [flow, setFlow] = useState("");
+  const [q, setQ] = useState(""), [kind, setKind] = useState("all"), [flow, setFlow] = useState(""), [n, setN] = useState(HISTORY_FIRST);
   const all = useMemo(() => historyRows(rows, machine), [rows, machine]);
   const flows = useMemo(() => workflowsOf(all), [all]);
   const shown = useMemo(() => filterHistory(all, { q, kind, flow }), [all, q, kind, flow]);
@@ -20,9 +20,10 @@ export default function JobHistory({ rows, machine }) {
       </div>
       <div className="hlist" role="table" aria-label="Job history">
         <div className="hitem head" role="row"><span>Job</span><span className="rn">Runner</span><span>Result</span><span className="tk">Time</span><span>Finished</span></div>
-        {shown.map((j, i) => <div key={i} className={"hitem" + linkClass(j.url)} data-tip={[j.label, j.url && "Click to open on GitHub"].filter(Boolean).join("\n")} {...linkProps(j.url)}>
+        {shown.slice(0, n).map((j, i) => <div key={i} className={"hitem" + linkClass(j.url)} data-tip={[j.label, j.url && "Click to open on GitHub"].filter(Boolean).join("\n")} {...linkProps(j.url)}>
           <span>{j.label}</span><span className="rn">{j.runner}</span><span className={j.kind}>{j.res || "Unknown"}</span><span className="tk">{dur(j.t1 - j.t0)}</span><span>{when(j.t1, THREE_DAYS)}</span></div>)}
         {!shown.length && <div className="quiet">No jobs match.</div>}
+        {shown.length > n && <div className="rfoot"><button className="small" onClick={() => setN(x => x + HISTORY_MORE)}>Show more</button><span className="quiet">{n} of {shown.length}</span></div>}
       </div>
     </Sub></div>);
 }

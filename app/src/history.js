@@ -2,6 +2,8 @@ import { jobName } from "./trends.js";
 import { labelUrl } from "./github.js";
 // The job history list: finished-job rows [machine, runner, start, end, result, label] of one machine, newest first.
 export const HISTORY_MAX = 100;
+// The list first shows HISTORY_FIRST jobs; "Show more" adds HISTORY_MORE each time.
+export const HISTORY_FIRST = 15, HISTORY_MORE = 25;
 const KINDS = { Succeeded: "succeeded", Failed: "failed", Canceled: "stopped", Cancelled: "stopped", Abandoned: "stopped" };
 export const resultKind = res => KINDS[res] || "unknown";
 export const RESULT_FILTERS = [["all", "All results"], ["failed", "Failed"], ["succeeded", "Succeeded"], ["stopped", "Stopped"]];

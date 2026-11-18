@@ -12,6 +12,7 @@ button.on:hover:not(:disabled){color:var(--acc);background:color-mix(in srgb,var
 button.cta{color:var(--on-acc);background:var(--acc);border-color:var(--acc);font-weight:600}
 button.cta:hover:not(:disabled){color:var(--on-acc);background:color-mix(in srgb,var(--acc) 85%,var(--hover-mix));border-color:var(--acc)}
 button.ghost{background:none;border-color:transparent}
+button.small{font-size:var(--fs-11-5);padding:var(--sp-3) var(--sp-10);color:var(--fg);background:color-mix(in srgb,var(--s2) 70%,transparent);border-color:var(--line2)}
 kbd{font:var(--fs-11) var(--font-mono);color:var(--mid);background:var(--s2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:var(--r-5);padding:0 var(--sp-5)}
 [hidden]{display:none!important}   /* the one place !important is needed: hidden must beat every display rule */
 .bar{display:flex;flex-wrap:wrap;gap:var(--sp-8);align-items:center;padding:var(--sp-8) var(--sp-12);border-bottom:1px solid var(--line)}

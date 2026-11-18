@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import Switch from "./Switch.jsx";
 import * as api from "./api.js";
+import useEscape from "./useEscape.js";
 // The Hidden machines dialog: each hidden machine can be shown again, or paused (the collector stops polling it until you resume).
 export default function HiddenMachines({ hidden, onShow, onClose }) {
+  useEscape(onClose);
   const [cfg, setCfg] = useState(null), [bad, setBad] = useState(""), [busy, setBusy] = useState("");
   useEffect(() => { api.getMachines().then(setCfg, () => {}); }, []);
   const find = n => cfg?.machines?.find(m => m.name === n);

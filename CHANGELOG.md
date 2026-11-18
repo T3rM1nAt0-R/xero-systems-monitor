@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Fixed: polish after the redesign. The Runners timeline has its own range (24 h or 7 d, default 24 h) so it is no longer empty at the 5 min graph range; the Succeeded percent is green from 90, amber from 75, red below; runner rows show the last job result and when ("Idle · last job 22 min ago") with a coloured status dot; "Check work folder sizes" is a real button; job history shows 15 jobs and "Show more" adds 25; every dialog closes on Esc; the Terminal tab is hidden for offline machines; the Overview online strip is thinner and calmer when all is well; dim text, accent, warning and bad colours were darkened or lightened to reach contrast 4.5 on the glass in dark and light.
+
 - Changed: the Runners tab and the Overview runners block use the flat look: three big numbers (jobs today, succeeded, median time), one row per runner, a swimlane timeline with a now line (failed jobs red), a slim week heatmap and a plain striped job history table. The heatmap and history are open by default.
 
 - Changed: a flatter, calmer look. Each machine card is one frosted-glass surface; groups are plain headings with a hairline, graphs sit open with the label and big number above, and colour is used only for data. A soft colourful backdrop shows through the glass. New Customize > Size > Glass setting (Off, Subtle, Full); it also turns off when Windows asks for less transparency.

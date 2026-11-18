@@ -35,9 +35,10 @@ export function overviewParts(m, h, pinned = []) {
 // What a tab shows right now, as [section id, view] pairs.
 export const tabParts = (tab, m, h, pinned = []) => tab === "overview" ? overviewParts(m, h, pinned) : (TAB_PARTS[tab] || []).filter(([id, v]) => partShown(id, v, m, h));
 // The tabs worth showing for this machine now ([id, title] pairs): Overview always, the others only with content.
-export const availableTabs = (m, h) => TABS.filter(([id]) => id === "overview" || tabParts(id, m, h).length > 0);
+// A Terminal tab is hidden while the machine is offline, unless it is the tab that is open (it then says the machine is offline).
+export const availableTabs = (m, h, open) => TABS.filter(([id]) => id === "overview" || (tabParts(id, m, h).length > 0 && !(id === "terminal" && m.err && open !== "terminal")));
 // The tab to draw: the remembered one if this machine still has it, else Overview.
-export const effectiveTab = (tab, m, h) => availableTabs(m, h).some(t => t[0] === tab) ? tab : "overview";
+export const effectiveTab = (tab, m, h) => availableTabs(m, h, tab).some(t => t[0] === tab) ? tab : "overview";
 // The tab an arrow key moves to (Left/Right wrap round; Home and End go to the ends); any other key keeps `tab`.
 export function stepTab(tabs, tab, key) {
   const ids = tabs.map(t => t[0]), i = ids.indexOf(tab);

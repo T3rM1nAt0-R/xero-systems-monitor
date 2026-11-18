@@ -41,7 +41,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
   return (
     <div className="detail">
       <ZoomChip machine={m.name} span={zoom} />
-      <Tabs tabs={availableTabs(m, h)} tab={tab} onTab={t => patch({ tab: t })} base={base} />
+      <Tabs tabs={availableTabs(m, h, tab)} tab={tab} onTab={t => patch({ tab: t })} base={base} />
       {tab === "overview" && <OutageStrip machine={m.name} events={events} pts={week?.cpu || NONE} now={now} offNow={!!m.err} span={settings.strip} onSpan={strip => patch({ strip })} />}
       <div className="tabpanel" key={tab} role="tabpanel" id={panelId(base)} aria-labelledby={tabId(base, tab)}>
         {tabParts(tab, m, h, settings.pinned).map(([id, view]) => { const s = SECTIONS.find(z => z.id === id); return (

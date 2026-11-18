@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runnerStats } from "../src/runnerStats.js";
+import { runnerStats, successTone } from "../src/runnerStats.js";
 
 const noon = new Date(2026, 5, 10, 12, 0, 0).getTime() / 1000;
 test("runnerStats counts today's jobs, the success percent and the median time", () => {
@@ -15,4 +15,8 @@ test("runnerStats averages the two middle times and handles no jobs", () => {
   const rows = [["a", "r", noon - 500, noon - 400, "Succeeded", "x"], ["a", "r", noon - 300, noon - 100, "Succeeded", "x"]];
   assert.equal(runnerStats(rows, "a", noon).median, 150);
   assert.deepEqual(runnerStats([], "a", noon), { jobs: 0, success: null, median: null });
+});
+test("successTone: green from 90, amber from 75, red below", () => {
+  assert.deepEqual([100, 90, 89, 82, 75, 74, 0].map(successTone), ["good", "good", "warn", "warn", "warn", "bad", "bad"]);
+  assert.equal(successTone(null), "");
 });

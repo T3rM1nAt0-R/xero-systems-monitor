@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import * as api from "./api.js";
+import useEscape from "./useEscape.js";
 const VERB = { restart: "Restart", stop: "Stop", start: "Start" };
 // The Logs dialog: the last 50 lines, with Refresh and Copy.
 export function ContainerLogs({ machine, name, onClose }) {
+  useEscape(onClose);
   const [text, setText] = useState("Loading…"), [copied, setCopied] = useState(false);
   const load = useCallback(() => { setText("Loading…"); api.containerAction(machine, "logs", name).then(t => setText(t || "(no log lines)"), e => setText(String(e))); }, [machine, name]);
   useEffect(load, [load]);
