@@ -1,4 +1,4 @@
-import { dur, prOf } from "./format.js";
+import { runnerRows, STATUS_TEXT } from "./runnerList.js";
 import Ticker from "./Ticker.jsx";
 import { refUrl } from "./github.js";
 import { linkProps, linkClass } from "./jobLink.js";
@@ -7,16 +7,14 @@ const res = v => !v ? "" : [v[0] != null && `CPU ${v[0].toFixed(0)}%`, v[1] != n
 export default function Jobs({ d, now, started, gone = [] }) {
   const rn = d.runners, jobs = d.jobs || {}, jr = d.jobres || {};
   if (!rn) return null;
-  const run = Object.keys(jobs);
-  const names = [...Object.keys(rn), ...gone.filter(g => !(g in rn))].sort();
+  const rows = runnerRows(d, started, gone, now);
   return (
-    <div className="jobs">
-      <div className="chips">{names.map(n => { const st = !(n in rn) ? "gone" : (n in jobs || rn[n]) ? "busy" : "idle"; return <span key={n} className={"chip " + st} data-tip={st === "gone" ? n + " is not reporting" : st === "busy" ? n + " is working" : n + " is idle"}><i /><Ticker text={n} /></span>; })}</div>
-      {run.map(n => { const j = jobs[n], t = started?.[n], url = refUrl(j[3], j[2]);
+    <div className="rlist jobs" role="table" aria-label="Runners">
+      {rows.map(r => { const j = jobs[r.name], url = j && refUrl(j[3], j[2]);
         return (
-          <div key={n} className={"job" + linkClass(url)} data-tip={url ? "Open on GitHub" : undefined} {...linkProps(url)}>
-            <span><b>{j[0] || "Running"}</b> {prOf(j[2]) && <span className="pr">{prOf(j[2])}</span>}</span><span className="t">{t ? dur(now - t) : ""}</span>
-            <Ticker className="s" text={[n, j[3], res(jr[n])].filter(Boolean).join(" · ")} />
+          <div key={r.name} className={"rrow" + linkClass(url)} role="row" data-tip={url ? "Open on GitHub" : [r.name, j?.[3], res(jr[r.name])].filter(Boolean).join(" · ")} {...linkProps(url)}>
+            <span className={"rname " + r.status} role="cell"><i /><Ticker text={r.name} /></span><span className="rst" role="cell">{STATUS_TEXT[r.status]}</span>
+            <span className="rjob" role="cell">{r.job || "–"}</span><span className="rt" role="cell">{r.inJob}</span>
           </div>); })}
     </div>
   );
