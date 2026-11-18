@@ -4,6 +4,12 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Changed: Customize is now a side panel docked on the right (the window shrinks beside it and stays live) with one scroll of sections (Theme, Colours, Text, Surfaces, Graphs, Layout, Motion), a sticky header with search, jump chips that follow the scroll, Undo and Redo (Ctrl+Z / Ctrl+Y), hold-to-compare and Esc to close. It replaces the old Customize dialog.
+- Added: a theme now holds everything (colours, text, graphs, layout, glass, motion). The gallery has live thumbnails for Dark, Light, Midnight, Contrast, Neon, Terminal and the popular palettes Dracula, Nord, Catppuccin Mocha and Latte, Gruvbox, Tokyo Night and Solarized Dark and Light. Editing anything shows "Custom (based on ...)" with Save, Save as new and Revert; saved themes can be renamed and deleted; Copy code, Export and Import share a theme.
+- Added: three base colours (background, text, accent) now give the cards, borders, dimmed text and fills; per-metric and status colours are under Fine-tune. A Colour-blind safe switch changes the status colours and marks status by shape (circle ok, triangle warning, square bad).
+- Changed: machine colours moved from Customize to each machine's ⋯ menu (same saved setting). Graph style gained a Step line.
+- Changed: your saved themes, edits and the "Solarized-like" theme are carried over when you update (it is now Solarized Dark); older exported theme files still import.
+
 ## [0.3.0] - 2026-11-18
 
 - Added: window motion (Full only): at startup the cards and machine tiles cascade in one after another and their big numbers count up from zero; switching between Full, Compact and Mini fades and settles the content; "Fold all" (F) ripples from the top card to the bottom instead of folding everything at once.
