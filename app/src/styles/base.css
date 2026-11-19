@@ -1,6 +1,7 @@
 /* Shared look: reset, buttons, the top and bottom bars, status dots, banners. Colours, fonts, sizes, radii and spacing come from tokens.css. */
 *{box-sizing:border-box}
 html,body{margin:0}
+html,body{overflow-x:hidden}   /* safety net: the window never scrolls sideways; wide things scroll inside their own box */
 body{background:var(--bg);color:var(--fg);font:var(--fs-13)/1.45 var(--font-ui);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
 button{font:inherit;color:var(--mid);background:var(--s2);border:1px solid var(--line2);border-radius:var(--r-8);padding:var(--sp-4) var(--sp-12);cursor:pointer;transition:background .12s,color .12s,border-color .12s}
 button:hover:not(:disabled){color:var(--fg);border-color:var(--dim2);background:color-mix(in srgb,var(--s2) 82%,var(--hover-mix))}
