@@ -13,7 +13,7 @@ import { buildCommands } from "../src/commands.js";
 
 const text = f => readFileSync(new URL(f, import.meta.url), "utf8");
 const preset = id => PRESETS.find(p => p.id === id);
-const lk = id => lookFor(preset(id), {});
+const lk = id => lookFor(preset(id), {}, {});
 const applyPairs = (look, pairs) => pairs.reduce((l, [p, v]) => setPath(l, p.split("."), v), look);
 const colourVars = vars => Object.fromEntries(Object.entries(vars).filter(([k]) => /^--(bg|fg|acc|s1|s2|line|line2|dim|mid|dim2|ok|warn|crit|bad|c-|on-acc|tip-bg|blob-a|glass-tint)/.test(k)));
 
@@ -79,7 +79,7 @@ test("light or dark follows the background that is really shown, never a stored 
 
 test("the faintest text keeps a readable floor on every theme", () => {
   for (const p of PRESETS) {
-    const s = p.side, c = fullColors(lookFor(p, {}), s);
+    const s = p.side, c = fullColors(lookFor(p, {}, {}), s);
     for (const on of [c.bg, c.card]) assert.ok(contrast(c.dim2, on) >= MIN_FAINT - 0.01, p.id + " " + s + " faint text on " + on);
   }
   const d = deriveColors({ bg: "#000000", fg: "#39ff6a" });
@@ -91,10 +91,10 @@ test("older theme and text size settings become part of the one look, once", () 
   const light = migratePrefs({ ...none, theme: "light" });
   assert.equal(light.themeId, "default-light"); assert.equal(light.appearance, "one");
   const sys = migratePrefs({ ...none, theme: "system" });
-  assert.deepEqual(sys.editsBy.dark, { surface: { os: true } }); assert.equal(sys.appearance, "system");
-  assert.deepEqual(migratePrefs({ ...none, size: "large" }).editsBy.dark, { scale: LARGE_SCALE });
-  assert.deepEqual(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.2 }, size: "large" }).editsBy.nord, { scale: 1.39 });
-  assert.equal(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.5 }, size: "large" }).editsBy.nord.scale, 1.5);
+  assert.deepEqual(sys.shared, { surface: { os: true } }); assert.equal(sys.appearance, "system");
+  assert.deepEqual(migratePrefs({ ...none, size: "large" }).shared, { scale: LARGE_SCALE });
+  assert.deepEqual(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.2 }, size: "large" }).shared, { scale: 1.39 });
+  assert.equal(migratePrefs({ themes: [], themeId: "nord", edits: { scale: 1.5 }, size: "large" }).shared.scale, 1.5);
   const keep = migratePrefs({ themes: [], themeId: "dracula", edits: { graph: { style: "bars" } }, theme: "dark", size: "normal", mode: "dark" });
-  assert.equal(keep.themeId, "dracula"); assert.deepEqual(keep.editsBy, { dracula: { graph: { style: "bars" } } });
+  assert.equal(keep.themeId, "dracula"); assert.deepEqual(keep.shared, { graph: { style: "bars" } });
 });

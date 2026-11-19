@@ -35,8 +35,8 @@ export default function ThemeSection({ c }) {
         <p className="chint">{follow ? `Windows is set to ${c.sysLight ? "light" : "dark"} now, so ${c.theme?.name} is showing. Click a slot, then a tile below to change it.` : "One theme, always. Click any tile to use it."}</p></div>
       <div className="cnow" role="status"><b>{themeTitle(c.theme, c.dirty)}</b>
         <span className="cbtns"><button disabled={!c.dirty || !c.canSave} onClick={c.save} data-tip={c.canSave ? "Keep your changes in this theme" : "Built-in themes stay as they are: use Save as new"}>Save</button>
-          <button onClick={() => setNaming(n => !n)} aria-expanded={naming}>Save as new</button><button disabled={!c.dirty} onClick={c.resetAll}>Revert</button></span></div>
-      <p className="chint">Your edits are kept per theme.</p>
+          <button onClick={() => setNaming(n => !n)} aria-expanded={naming}>Save as new</button><button disabled={!c.dirtyColors} onClick={c.resetAll} data-tip="Put this theme's colours back. Text, shape and the rest stay">Revert</button><button disabled={!c.dirtyShared} onClick={c.resetShared} data-tip="Put text, shape, glass, graphs, layout and motion back for all themes">Reset all</button></span></div>
+      <p className="chint">Colours are kept per theme; everything else applies to all themes.</p>
       {naming && <div className="cwrite"><input autoFocus value={name} placeholder="Name for the new theme" aria-label="New theme name" onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && saveNew()} /><button className="cta" onClick={saveNew}>Save</button></div>}
       <h5 className="chd">Dark themes<i>{groups.dark.length}</i></h5>{tiles(groups.dark, "dark")}
       <h5 className="chd">Light themes<i>{groups.light.length}</i></h5><p className="chint">{DARK_ONLY}</p>{tiles(groups.light, "light")}

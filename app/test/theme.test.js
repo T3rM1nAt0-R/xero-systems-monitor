@@ -53,7 +53,7 @@ test("older looks are migrated: size and glass move to layout, scale and surface
   assert.equal(migrateThemeId("solarized"), "solarized"); assert.equal(migrateThemeId("my-x"), "my-x");
   assert.equal(resolveTheme([], "solarized-light", {}).theme.id, "solarized-light", "the light tiles are real themes now");
   const m = migratePrefs({ themes: [{ id: "my-a", name: "A", base: "dark", look: old }, 5], themeId: "solarized", edits: old });
-  assert.equal(m.themeId, "solarized"); assert.equal(m.themes.length, 1); assert.equal(m.themes[0].look.surface.glass, "off"); assert.equal(m.editsBy.solarized.layout.card, "large");
+  assert.equal(m.themeId, "solarized"); assert.equal(m.themes.length, 1); assert.equal(m.themes[0].look.surface.glass, "off"); assert.equal(m.shared.layout.card, "large");
   assert.equal(migratePrefs({ themes: undefined, themeId: 5, edits: undefined }).themeId, "dark");
   assert.equal(parseTheme(JSON.stringify({ "xsm-theme": 1, name: "Old", look: old })).ok, true);
 });
@@ -120,7 +120,7 @@ test("contrast follows WCAG and the warning shows under 4.5", () => {
   assert.equal(contrastWarning({}, "dark"), ""); assert.equal(contrastWarning({}, "light"), "");
   assert.match(contrastWarning({ colors: { fg: "#777777", bg: "#888888" } }, "dark"), /hard to read \(contrast 1\.\d/);
   for (const p of PRESETS) {   // every tile
-    const s = p.side, look = lookFor(p, {}), c = fullColors(look, s), id = p.id + " " + s;
+    const s = p.side, look = lookFor(p, {}, {}), c = fullColors(look, s), id = p.id + " " + s;
     assert.equal(contrastWarning(look, s), "", id + " text is readable");
     assert.equal(isLight(c.bg), s === "light", id + " is the " + s + " version");
     assert.ok(contrast(c.fg, c.bg) >= 4.5 && contrast(c.dim, c.card) >= 4.5, id + " contrast");

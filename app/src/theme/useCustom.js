@@ -5,7 +5,7 @@ import { sideOf, fillSlot, activeId, cleanAppearance, bake, hasEdits } from "./a
 import * as api from "../api.js";
 import { lookToCss } from "./css.js";
 import { normTheme, exportTheme, parseTheme, newId } from "./files.js";
-import { allThemes, cleanEditsBy, resolveTheme, makeTheme } from "./presets.js";
+import { allThemes, cleanEditsBy, pruneShared, resolveTheme, makeTheme } from "./presets.js";
 import useChosen from "./useChosen.js";
 import { startHistory, record, undo, redo, canUndo, canRedo } from "./history.js";
 // The custom look as the window uses it: what is chosen (useChosen: saved themes, One theme or Follow Windows, the Light and Dark slots) and each tile's own edits, all in the settings store.
@@ -22,14 +22,14 @@ function apply({ vars, attrs }) {
 }
 
 export default function useCustom() {
-  const ch = useChosen(), { themes, all, appearance, themeId, slots, editsBy, sysLight, id, theme, look: own } = ch, [slot, setSlot] = useState(null);
+  const ch = useChosen(), { themes, all, appearance, themeId, slots, editsBy, shared, sysLight, id, theme, look: own } = ch, [slot, setSlot] = useState(null);
   const hist = useRef(null), [, bump] = useReducer(n => n + 1, 0), [comparing, setComparing] = useState(false), opened = useRef(null);
-  if (!hist.current) hist.current = startHistory({ themeId, slots, editsBy });
+  if (!hist.current) hist.current = startHistory({ themeId, slots, editsBy, shared });
   const side = sideOf(theme), mine = editsBy[id] || NO_EDITS, picked = slot || side;   // the slot being filled: the one that is showing until another is clicked
   const was = useMemo(() => {
     if (!opened.current) return null;
     const o = opened.current;
-    return resolveTheme(themes, activeId({ appearance, themeId: o.themeId, slots: o.slots }, sysLight, all), o.editsBy);
+    return resolveTheme(themes, activeId({ appearance, themeId: o.themeId, slots: o.slots }, sysLight, all), o.editsBy, o.shared);
   }, [themes, all, comparing, appearance, sysLight]);   // eslint-disable-line react-hooks/exhaustive-deps -- the look from when the panel opened
   const shown = comparing && was ? was : { theme, look: own };   // holding the eye only shows the old look; nothing is saved
   const osOn = !!getPath(shown.look, ["surface", "os"]), accent = useOsAccent(osOn);   // "Use Windows accent colour"
@@ -40,11 +40,12 @@ export default function useCustom() {
   useEffect(() => { api.setTheme(base); }, [base]);
 
   const commit = useCallback(({ themes: made, ...patch }, key) => {
-    const n = { themeId, slots, editsBy, ...patch };
-    n.editsBy = cleanEditsBy(n.editsBy, made ? allThemes(made) : all);   // an edit stays only while it differs from its theme
-    hist.current = record(hist.current, n, key); ch.setThemeId(n.themeId); ch.setSlots(n.slots); ch.setEditsBy(n.editsBy); bump();
-  }, [themeId, slots, editsBy, all, ch]);
-  const jump = useCallback(h => { hist.current = h; ch.setThemeId(h.present.themeId); ch.setSlots(h.present.slots); ch.setEditsBy(h.present.editsBy); bump(); }, [ch]);
+    const n = { themeId, slots, editsBy, shared, ...patch };
+    n.editsBy = cleanEditsBy(n.editsBy, made ? allThemes(made) : all);   // a colour edit stays only while it differs from its theme
+    n.shared = pruneShared(theme, n.shared);   // a shared edit stays only while it changes something on the theme showing
+    hist.current = record(hist.current, n, key); ch.setThemeId(n.themeId); ch.setSlots(n.slots); ch.setEditsBy(n.editsBy); ch.setShared(n.shared); bump();
+  }, [themeId, slots, editsBy, shared, theme, all, ch]);
+  const jump = useCallback(h => { hist.current = h; ch.setThemeId(h.present.themeId); ch.setSlots(h.present.slots); ch.setEditsBy(h.present.editsBy); ch.setShared(h.present.shared); bump(); }, [ch]);
   const mineWith = useCallback(e => ({ ...editsBy, [id]: e }), [editsBy, id]);
   // Put `tile` to use: as the one theme, or in the slot being filled (only a light tile fits Light and a dark one Dark). False when it does not fit.
   const place = useCallback((tile, into) => {
@@ -59,8 +60,12 @@ export default function useCustom() {
     if (next === "one") commit({ themeId: id }); else commit({ slots: fillSlot(slots, side, theme) });
     ch.setAppearance(next); setSlot(null);
   }, [appearance, id, slots, side, theme, commit, ch]);
-  const editMany = useCallback((pairs, key) => commit({ editsBy: mineWith(pairs.reduce((e, [p, v]) => setPath(e, p.split("."), v), mine)) }, key), [commit, mineWith, mine]);
-  const edit = useCallback((path, value) => commit({ editsBy: mineWith(setPath(mine, path, value)) }, path.join(".")), [commit, mineWith, mine]);
+  // A colour edit belongs to the tile showing; every other edit is shared by all tiles.
+  const editMany = useCallback((pairs, key) => {
+    const set = (e, [p, v]) => setPath(e, p.split("."), v), colours = pairs.filter(([p]) => p.startsWith("colors.")), rest = pairs.filter(([p]) => !p.startsWith("colors."));
+    commit({ editsBy: colours.length ? mineWith(colours.reduce(set, mine)) : editsBy, shared: rest.reduce(set, shared) }, key);
+  }, [commit, mineWith, mine, editsBy, shared]);
+  const edit = useCallback((path, value) => editMany([[path.join("."), value]], path.join(".")), [editMany]);
   const without = useCallback(tid => Object.fromEntries(Object.entries(editsBy).filter(([k]) => k !== tid)), [editsBy]);
   const add = useCallback((list, tiles, cleared) => {   // new tiles saved; the first one is put to use
     const all2 = [...themes, ...list];
@@ -69,8 +74,8 @@ export default function useCustom() {
     if (appearance === "one") commit({ themeId: first.id, editsBy: withNew, themes: all2 }); else commit({ slots: fillSlot(slots, into, first), editsBy: withNew, themes: all2 });
     setSlot(into);
   }, [themes, appearance, slots, ch, commit]);
-  const saveAs = useCallback(name => { const t = makeTheme(themes, name, bake(theme, mine)); add([t], [t], without(id)); }, [add, themes, theme, mine, without, id]);
-  const save = useCallback(() => { if (theme && !theme.builtIn) { ch.setSaved(themes.map(t => (t.id === id ? { ...t, ...bake(t, mine) } : t))); commit({ editsBy: without(id) }); } }, [theme, themes, id, mine, ch, commit, without]);
+  const saveAs = useCallback(name => { const t = makeTheme(themes, name, bake(theme, mine, shared)); add([t], [t], without(id)); }, [add, themes, theme, mine, shared, without, id]);
+  const save = useCallback(() => { if (theme && !theme.builtIn) { ch.setSaved(themes.map(t => (t.id === id ? { ...t, ...bake(t, mine, shared) } : t))); commit({ editsBy: without(id) }); } }, [theme, themes, id, mine, shared, ch, commit, without]);
   const rename = useCallback((tid, name) => ch.setSaved(themes.map(t => (t.id === tid ? normTheme({ ...t, name }) : t))), [themes, ch]);
   const remove = useCallback(tid => { ch.setSaved(themes.filter(t => t.id !== tid)); commit({ themeId: themeId === tid ? "dark" : themeId, editsBy: without(tid) }); }, [themes, themeId, ch, commit, without]);
   const importText = useCallback(text => {
@@ -78,11 +83,11 @@ export default function useCustom() {
     const taken = allThemes(themes).map(t => t.id), made = r.themes.map(t => { const n = { ...t, id: newId(t.name, taken) }; taken.push(n.id); return n; });
     add(made, made, editsBy); return r;
   }, [add, themes, editsBy]);
-  const exportText = useCallback(() => exportTheme({ name: theme?.name || "My look", ...bake(theme, mine) }), [theme, mine]);
+  const exportText = useCallback(() => exportTheme({ name: theme?.name || "My look", ...bake(theme, mine, shared) }), [theme, mine, shared]);
   // Called when the panel opens: what you see now is what the eye button shows again.
-  const remember = useCallback(() => { opened.current = { themeId, slots, editsBy }; }, [themeId, slots, editsBy]);
-  return { themes, all, id, theme, look: shown.look, own, base, dirty: hasEdits(mine), appearance, setAppearance, slots, slot: picked, setSlot, sysLight, side, canSave: !!theme && !theme.builtIn, edits: mine, pick, edit, editMany,
-    reset: path => edit(path, undefined), resetAll: () => commit({ editsBy: without(id) }), has: path => getPath(mine, path) !== undefined,
+  const remember = useCallback(() => { opened.current = { themeId, slots, editsBy, shared }; }, [themeId, slots, editsBy, shared]);
+  return { themes, all, id, theme, look: shown.look, own, base, dirty: hasEdits(mine) || hasEdits(shared), dirtyColors: hasEdits(mine), dirtyShared: hasEdits(shared), appearance, setAppearance, slots, slot: picked, setSlot, sysLight, side, canSave: !!theme && !theme.builtIn, edits: mine, pick, edit, editMany,
+    reset: path => edit(path, undefined), resetAll: () => commit({ editsBy: without(id) }), resetShared: () => commit({ shared: NO_EDITS }), has: path => getPath(path[0] === "colors" ? mine : shared, path) !== undefined,
     save, saveAs, rename, remove, importText, exportText, remember, setComparing, comparing,
     undo: () => jump(undo(hist.current)), redo: () => jump(redo(hist.current)), canUndo: canUndo(hist.current), canRedo: canRedo(hist.current) };
 }
