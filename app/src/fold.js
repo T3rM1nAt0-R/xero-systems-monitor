@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { get, set, subscribe, useSetting } from "./store.js";
 import { motionFull } from "./motion.js";
 // One folding mechanism for everything that opens and shuts: groups, small sections, whole machine cards.
@@ -22,7 +22,15 @@ export function foldAll(open, prefix = "", exact = false) {
   hit.sort((a, b) => topOf(a) - topOf(b)).forEach((id, i) => (i ? setTimeout(() => apply(id), Math.min(i, RIPPLE_MAX_STEPS) * RIPPLE_STEP_MS) : apply(id)));
 }
 // Is any machine card on screen open right now? (The real state, whatever folded it: a click, fold all, a restart or the calm rule.) Fold all is offered when it is true, Unfold all when not.
-export const anyCardOpen = () => typeof document !== "undefined" && document.querySelector('.card .chead.fold[aria-expanded="true"]') !== null;
+export const anyCardOpen = () => typeof document !== "undefined" && document.querySelector('article.card > .chead.fold[aria-expanded="true"]') !== null;
+// Live version of anyCardOpen: re-reads whenever any fold on screen changes, so a label built from it never goes stale.
+const watchFolds = cb => {
+  if (typeof MutationObserver === "undefined" || typeof document === "undefined") return () => {};
+  const mo = new MutationObserver(cb);
+  mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-expanded"] });
+  return () => mo.disconnect();
+};
+export const useAnyCardOpen = () => useSyncExternalStore(watchFolds, anyCardOpen, () => true);
 // Runs `fn(open)` when foldAll() reaches this id.
 export function useFoldEvent(id, fn) {
   const f = useRef(fn); f.current = fn;

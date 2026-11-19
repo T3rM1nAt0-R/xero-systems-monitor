@@ -1,4 +1,4 @@
-/* Card, status and feedback motion: spring folds, card hover lift, the sliding tab underline, tab badges, breathing status dots with ripple and fade,
+/* Card, status and feedback motion: spring folds, card hover glow, the sliding tab underline, tab badges, breathing status dots with ripple and fade,
    the near-limit number colour, button press, toasts, the pinned-section ghost and the loading card. Only transform, opacity and colour change.
    Subtle drops the decorative ones; Off and reduced motion stop everything (see the end of motion.css). */
 
@@ -6,9 +6,9 @@
 html[data-motion="full"] .collapse.open.busy>.collapse-in{animation:springin calc(var(--dur) * 2) cubic-bezier(.3,1.5,.5,1) both}
 @keyframes springin{from{transform:translateY(-8px);opacity:.4}}
 
-/* Hover lift: the individual `translate` property, so it never fights a glide (transform) */
-.card,.tile{transition:translate var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease),background-color var(--dur) var(--ease)}
-html[data-motion="full"] .card:hover:not(.dragging),html[data-motion="full"] .tile:hover{translate:0 -2px;box-shadow:var(--glass-sheen),var(--glass-shadow),0 14px 34px #0003}
+/* Card hover: only the border and shadow change; the card and its contents never move */
+.card,.tile{transition:box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease),background-color var(--dur) var(--ease)}
+html[data-motion="full"] .card:hover:not(.dragging),html[data-motion="full"] .tile:hover{box-shadow:var(--glass-sheen),var(--glass-shadow);border-color:color-mix(in srgb,var(--fg) 18%,var(--line))}
 
 /* Sliding tab underline */
 .tabs{position:relative}

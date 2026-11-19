@@ -34,8 +34,8 @@ function Card({ m, h, h2, rows, fc, range, now, lastOk, hot, gone, limits, auto,
   return (
     <article data-look="shape.radius" className={"card full" + (bad ? " warn" : "") + (isOpen ? "" : " folded")} id={"m-" + m.name} style={tint(settings.color)}>
       <div className="chead" {...head}>{chev}<StatusDot warn={!!bad} /><h3 data-look="text.machine">{m.name}</h3><span className={"state" + (bad ? " warn" : "")}>{bad ? "▲ " : ""}{state}</span>
-        {isOpen && d.uptime != null && <span className="up">up {uptime(d.uptime)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed</span>}
         {isOpen && <span className="info" tabIndex={0} role="img" aria-label="Machine details" data-tip={infoTip(d, now)} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>i</span>}
+        {isOpen && d.uptime != null && <span className="up">up {uptime(d.uptime)}</span>}{isOpen && d.restart && <span className="restart" title={restartWhy(d)}>Restart needed</span>}
         {isOpen ? <span className="grow" /> : <CardBar d={d} h={h} bad={bad} limits={limits} />}{isOpen && <GroupsMenu name={m.name} g={groups} set={setGroups} avail={groupsFor(d, h)} />}{onHide && <MachineMenu name={m.name} onHide={onHide} m={m} h={h} settings={settings} patch={patch} />}</div>
       <Collapse open={isOpen}><GroupLayout.Provider value={groups}><MachineBody limits={limits} m={m} h={h} h2={h2} rows={rows} fc={fc} range={range} now={now} gone={gone} /></GroupLayout.Provider></Collapse>
     </article>

@@ -31,6 +31,7 @@ import "./styles/stylefx.css";
 import "./styles/mini.css";
 import "./styles/scrollbars.css";
 import "./styles/titlebar.css";
+import "./styles/steady.css";
 import { installTips } from "./tooltip.js";
 installTips();
 createRoot(document.getElementById("root")).render(<App />);
