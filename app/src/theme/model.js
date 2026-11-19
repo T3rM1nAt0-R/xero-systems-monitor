@@ -58,6 +58,11 @@ export const FIELDS = {
   "graph.limits": [bool, true], "graph.gradient": [bool, false], "graph.glow": [bool, false], "graph.dots": [bool, false], "graph.axes": [bool, true],
   "layout.cols": [oneOf(COLUMNS), 1], "layout.tabs": [oneOf(TAB_STYLES), "underline"], "layout.heading": [oneOf(HEADINGS), "caps"], "layout.density": [oneOf(DENSITIES), "comfortable"], "layout.card": [oneOf(CARD_SIZES), "medium"],
 };
+// The two sides of a theme, and the colours of a raw look as a clean { id: "#hex" } (used to read older files that kept both versions in one theme).
+export const SIDES = ["dark", "light"];
+export const colorsOf = raw => normLook({ colors: raw }).colors || {};
+export const noColors = look => Object.fromEntries(Object.entries(look || {}).filter(([k]) => k !== "colors"));
+export const cleanColors = raw => ({ dark: colorsOf(raw?.dark), light: colorsOf(raw?.light) });
 const nonEmpty = o => Object.keys(o).length > 0;
 // Light or dark, worked out from the look itself: the background colour it sets says which; with no background set, `plain` (the plain Dark or Light tokens the theme is based on). Never stored.
 export const baseOf = (look, plain = "dark") => (isHex(look?.colors?.bg) ? (isLight(look.colors.bg) ? "light" : "dark") : plain);

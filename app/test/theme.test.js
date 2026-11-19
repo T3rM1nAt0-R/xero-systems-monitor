@@ -8,8 +8,9 @@ import { parseTheme, exportTheme, normTheme, newId } from "../src/theme/files.js
 import { migrateLook, migrateThemeId } from "../src/theme/migrate.js";
 import { startHistory, record, undo, redo, canUndo, canRedo, HISTORY_LIMIT } from "../src/theme/history.js";
 import { matches, activeSection, SECTIONS } from "../src/customize/find.js";
-import { PRESETS, resolveTheme, makeTheme, cleanSaved, themeTitle, isCustom, migrateStored, bake } from "../src/theme/presets.js";
-import { lookFor } from "../src/theme/modes.js";
+import { PRESETS, resolveTheme, makeTheme, cleanSaved, themeTitle, isCustom, bake } from "../src/theme/presets.js";
+import { lookFor, sideOf } from "../src/theme/appearance.js";
+import { migratePrefs } from "../src/theme/legacy.js";
 import { familyEdits } from "../src/customize/family.js";
 import { rgbToHex, fitSize } from "../src/theme/os.js";
 import { FONTS, fontStack } from "../src/theme/fonts.js";
@@ -50,11 +51,10 @@ test("older looks are migrated: size and glass move to layout, scale and surface
   assert.deepEqual(migrateLook(null), {}); assert.deepEqual(migrateLook({ size: {} }).layout, {});
   assert.equal(migrateLook({ size: { scale: 1.1 }, scale: 1.3 }).scale, 1.3);
   assert.equal(migrateThemeId("solarized"), "solarized"); assert.equal(migrateThemeId("my-x"), "my-x");
-  assert.equal(resolveTheme([], "solarized-light", {}).theme.id, "solarized");
-  const m = migrateStored({ themes: [{ id: "my-a", name: "A", base: "dark", look: old }, 5], themeId: "solarized", edits: old });
-  assert.equal(m.changed, true); assert.equal(m.themeId, "solarized"); assert.equal(m.themes.length, 1); assert.equal(m.themes[0].look.surface.glass, "off"); assert.equal(m.edits.layout.card, "large");
-  assert.equal(migrateStored(m).changed, false);
-  assert.equal(migrateStored({ themes: undefined, themeId: 5, edits: undefined }).themeId, "");
+  assert.equal(resolveTheme([], "solarized-light", {}).theme.id, "solarized-light", "the light tiles are real themes now");
+  const m = migratePrefs({ themes: [{ id: "my-a", name: "A", base: "dark", look: old }, 5], themeId: "solarized", edits: old });
+  assert.equal(m.themeId, "solarized"); assert.equal(m.themes.length, 1); assert.equal(m.themes[0].look.surface.glass, "off"); assert.equal(m.editsBy.solarized.layout.card, "large");
+  assert.equal(migratePrefs({ themes: undefined, themeId: 5, edits: undefined }).themeId, "dark");
   assert.equal(parseTheme(JSON.stringify({ "xsm-theme": 1, name: "Old", look: old })).ok, true);
 });
 
@@ -119,8 +119,8 @@ test("contrast follows WCAG and the warning shows under 4.5", () => {
   assert.equal(contrast("#000000", "#ffffff").toFixed(1), "21.0"); assert.equal(contrast("#fff", "#fff"), 1);
   assert.equal(contrastWarning({}, "dark"), ""); assert.equal(contrastWarning({}, "light"), "");
   assert.match(contrastWarning({ colors: { fg: "#777777", bg: "#888888" } }, "dark"), /hard to read \(contrast 1\.\d/);
-  for (const p of PRESETS) for (const s of ["dark", "light"]) {   // every theme, both versions
-    const look = lookFor(p, {}, s), c = fullColors(look, s), id = p.id + " " + s;
+  for (const p of PRESETS) {   // every tile
+    const s = p.side, look = lookFor(p, {}), c = fullColors(look, s), id = p.id + " " + s;
     assert.equal(contrastWarning(look, s), "", id + " text is readable");
     assert.equal(isLight(c.bg), s === "light", id + " is the " + s + " version");
     assert.ok(contrast(c.fg, c.bg) >= 4.5 && contrast(c.dim, c.card) >= 4.5, id + " contrast");
@@ -130,37 +130,37 @@ test("contrast follows WCAG and the warning shows under 4.5", () => {
   }
 });
 
-test("presets: six built-in themes and six popular palettes, each with a dark and a light version; resolveTheme merges edits on top", () => {
-  assert.deepEqual(PRESETS.map(p => p.id), ["dark", "midnight", "contrast", "neon", "terminal", "blueprint", "dracula", "nord", "catppuccin", "gruvbox", "tokyo-night", "solarized"]);
-  const by = id => PRESETS.find(p => p.id === id), col = (id, side, k) => by(id).colors[side][k];
-  assert.equal(col("dracula", "dark", "bg"), "#282a36"); assert.equal(col("nord", "dark", "bg"), "#2e3440"); assert.equal(col("nord", "light", "bg"), "#eceff4"); assert.equal(col("catppuccin", "dark", "bg"), "#1e1e2e"); assert.equal(col("catppuccin", "light", "fg"), "#4c4f69");
-  assert.equal(col("tokyo-night", "dark", "bg"), "#1a1b26"); assert.equal(col("solarized", "dark", "bg"), "#002b36"); assert.equal(col("solarized", "light", "bg"), "#fdf6e3"); assert.equal(col("gruvbox", "dark", "fg"), "#ebdbb2");
+test("presets: seven real pairs and five dark-only themes, 12 dark tiles and 7 light; resolveTheme merges a tile's own edits on top", () => {
+  assert.deepEqual(PRESETS.filter(p => p.side === "dark").map(p => p.id), ["dark", "solarized", "catppuccin", "gruvbox", "tokyo-night", "nord", "contrast", "terminal", "dracula", "neon", "midnight", "blueprint"]);
+  assert.deepEqual(PRESETS.filter(p => p.side === "light").map(p => p.name), ["Default Light", "Solarized Light", "Catppuccin Latte", "Gruvbox Light", "Tokyo Day", "Nord Snow Storm", "Contrast Light"]);
+  assert.ok(PRESETS.every(p => sideOf(p) === p.side), "the side a tile is filed under is the one its background shows");
+  const by = id => PRESETS.find(p => p.id === id), col = (id, k) => by(id).look.colors[k];
+  assert.equal(col("dracula", "bg"), "#282a36"); assert.equal(col("nord", "bg"), "#2e3440"); assert.equal(col("nord-light", "bg"), "#eceff4"); assert.equal(col("catppuccin", "bg"), "#1e1e2e"); assert.equal(col("catppuccin-latte", "fg"), "#4c4f69");
+  assert.equal(col("tokyo-night", "bg"), "#1a1b26"); assert.equal(col("solarized", "bg"), "#002b36"); assert.equal(col("solarized-light", "bg"), "#fdf6e3"); assert.equal(col("gruvbox", "fg"), "#ebdbb2");
   assert.equal(by("terminal").look.shape.family, "terminal"); assert.equal(by("terminal").look.shape.scan, true); assert.equal(by("terminal").look.text.number.font, "jetbrains-mono");
-  assert.ok(PRESETS.every(p => !p.look.colors && p.colors.dark && p.colors.light), "colours live per side, never in the shared look");
-  const r = resolveTheme([], "midnight", { colors: { dark: { acc: "#123456" } } });
+  const r = resolveTheme([], "midnight", { midnight: { colors: { acc: "#123456" } } });
   assert.equal(r.look.colors.acc, "#123456"); assert.equal(r.look.colors.bg, "#05070f"); assert.equal(r.theme.name, "Midnight");
-  assert.equal(resolveTheme([], "midnight", { colors: { dark: { acc: "#123456" } } }, "light").look.colors.acc, "#2a52c9", "a dark edit does not touch the light version");
   assert.equal(resolveTheme([], "gone", {}).theme, null);
-  const mine = makeTheme([], "  Evening ", bake(r.theme, { colors: { dark: { acc: "#123456" } } }));
+  const mine = makeTheme([], "  Evening ", bake(r.theme, { colors: { acc: "#123456" } }));
   assert.equal(mine.id, "my-evening"); assert.equal(mine.name, "Evening"); assert.equal(makeTheme([mine], "Evening", {}).id, "my-evening-2"); assert.equal(makeTheme([], "  ", {}).name, "My theme");
-  assert.equal(mine.colors.dark.acc, "#123456"); assert.equal(mine.colors.light.acc, "#2a52c9", "the other version is the base theme's twin");
+  assert.equal(mine.look.colors.acc, "#123456"); assert.equal(mine.side, "dark");
   assert.deepEqual(cleanSaved([mine, { id: "dark", name: "x" }, { name: "no id" }, 5]).map(t => t.id).slice(0, 1), ["my-evening"]);
   assert.deepEqual(cleanSaved("x"), []);
-  assert.equal(themeTitle(by("nord"), false), "Nord"); assert.equal(themeTitle(by("nord"), true), "Custom (based on Nord)"); assert.equal(themeTitle(null, true), "Custom (based on Dark)");
+  assert.equal(themeTitle(by("nord"), false), "Nord Polar Night"); assert.equal(themeTitle(by("nord"), true), "Custom (based on Nord Polar Night)"); assert.equal(themeTitle(null, true), "Custom (based on Default Dark)");
   assert.equal(isCustom({}), false); assert.equal(isCustom(r.look), true);
 });
 
 test("export then parse gives the same theme back; bad files get a friendly error", () => {
-  const t = normTheme({ id: "a", name: "Night", colors: { dark: { acc: "#101010" }, light: { acc: "#202020" } }, look: { graph: { style: "step" }, shape: { family: "soft" } } });
+  const t = normTheme({ id: "a", name: "Night", side: "light", look: { colors: { acc: "#101010" }, graph: { style: "step" }, shape: { family: "soft" } } });
   const back = parseTheme(exportTheme(t));
-  assert.equal(back.ok, true); assert.deepEqual({ ...back.theme, id: "a" }, t);
+  assert.equal(back.ok, true); assert.deepEqual({ ...back.theme, id: "a" }, t); assert.equal(back.themes.length, 1); assert.equal(t.side, "light");
   const old = normTheme({ id: "o", name: "Old", base: "light", look: { colors: { acc: "#101010" }, graph: { style: "step" } } });
-  assert.deepEqual(old.colors, { dark: {}, light: { acc: "#101010" } }); assert.equal(old.look.colors, undefined);
-  assert.equal(parseTheme(JSON.stringify({ "xsm-theme": 2, name: "Old", base: "light", look: { colors: { bg: "#fafafa" } } })).theme.colors.light.bg, "#fafafa");
+  assert.equal(old.side, "light"); assert.equal(old.look.colors.acc, "#101010");
+  assert.equal(parseTheme(JSON.stringify({ "xsm-theme": 2, name: "Old", base: "light", look: { colors: { bg: "#fafafa" } } })).theme.look.colors.bg, "#fafafa");
   for (const [text, re] of [["", /Paste/], ["{nope", /not valid JSON/], ["[]", /not a theme/], ['{"xsm-theme":9,"look":{"cb":true}}', /not a theme/], ['{"xsm-theme":2,"look":{"x":1}}', /nothing in it/], ["x".repeat(1600000), /too long/], [null, /Paste/]]) {
     const r = parseTheme(text); assert.equal(r.ok, false); assert.match(r.error, re);
   }
-  assert.deepEqual(normTheme(null), { id: "", name: "Untitled", look: {}, colors: { dark: {}, light: {} } });
+  assert.deepEqual(normTheme(null), { id: "", name: "Untitled", side: "dark", look: {} });
   assert.equal(normTheme({ name: "x".repeat(99) }).name.length, 40);
   assert.equal(newId("!!!", []), "my-theme");
 });

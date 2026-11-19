@@ -81,5 +81,4 @@ input[type=color]{width:var(--sz-32);height:var(--sz-20);padding:0;border:1px so
 @media (max-width:760px){:root{--panel-w:100vw}html[data-panel="open"] #root{display:none}}
 @media (prefers-reduced-motion:reduce){.cpanel,.flash{animation:none}html[data-panel="open"] #root{transition:none}.carat{transition:none}}
 .ctname{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
-.cdual{flex:none;width:12px;height:12px;border-radius:50%;border:1px solid var(--line2)}
 .cnow .chint{flex-basis:100%;margin:0}

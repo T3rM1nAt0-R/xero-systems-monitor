@@ -1,4 +1,3 @@
-import { SIDES, colorsOf, noColors } from "./modes.js";
 import { FIELDS, TEXT_LEVELS, WEIGHTS, flatten, getPath, mergeLook, setPath, unflatten, valueOf } from "./model.js";
 // An edit is kept only when it changes what the theme shows. Choosing what the theme already has is no edit; choosing the plain value where the theme says
 // otherwise (the plain "Rounded" on a theme with its own family, "off" for a switch the theme turns on, 100% text size on a theme that enlarges text) is a real one. Pure.
@@ -11,15 +10,8 @@ function shown(look, path) {
   if (v !== undefined || path[0] !== "text") return v;
   return { font: "system", size: SIZES[path[1]], weight: PLAIN_WEIGHT }[path[2]];
 }
-// Edits kept only where they differ from the theme: shared settings as below, colours against the theme's colours for each side.
-export function pruneAll(theme, edits) {
-  const kept = pruneEdits(theme?.look, noColors(edits)), colors = {};
-  for (const s of SIDES) {
-    const left = Object.fromEntries(Object.entries(colorsOf(edits?.colors?.[s])).filter(([k, v]) => theme?.colors?.[s]?.[k] !== v));
-    if (Object.keys(left).length) colors[s] = left;
-  }
-  return Object.keys(colors).length ? { ...kept, colors } : kept;
-}
+// Edits kept only where they differ from the theme they sit on.
+export const pruneAll = (theme, edits) => pruneEdits(theme?.look, edits);
 // `edits` without the ones that change nothing on top of the theme's look.
 export function pruneEdits(themeLook, edits) {
   const all = flatten(edits), drop = all.filter(([k, v]) => {
