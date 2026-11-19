@@ -4,6 +4,8 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-19
+
 - Added: admin shells on This PC. The Terminal tab has "Admin shell…" with three ways: in this tab through Windows 11 sudo (only when sudo is set to Inline; otherwise shown off with how to turn it on), a separate admin window (Windows Terminal, else PowerShell), or Restart Xero as admin. An elevated app shows a red Admin badge on every This PC tab. The More menu has "Restart as admin" (reads "Running as admin" when already elevated) and an "Always start as admin" tick (off by default; it relaunches elevated before the window shows, never twice, and says "Started without admin (cancelled)" if you say no to Windows).
 - Changed: every built-in theme now has a dark and a light version, designed by hand, and an Appearance switch (Dark, Light, Windows) at the top of Customize picks which one you see. Windows follows your system setting live. Picking a theme keeps the mode; the gallery shows the version for the current mode with a small half-and-half swatch of both. Colours are edited and saved per version (the Colours section says which one you are editing, with a switch to edit the other); shape, text, graphs, layout and motion are shared. Save as new keeps both versions. The separate Light theme, Solarized Dark / Light and Catppuccin Mocha / Latte are now one theme each (Dark, Solarized, Catppuccin). Your current look is carried over: a light theme becomes mode Light, Match Windows becomes mode Windows, and your colour edits move to the version you were seeing. Match Windows in Surfaces is now "Use Windows accent colour". Exported themes are version 3 (older files still import).
 
