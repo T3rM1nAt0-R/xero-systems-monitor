@@ -30,13 +30,14 @@ function toTiles({ themes, themeId, edits, mode }) {
   const v = versionsOf(themeId, saved), pick = s => v[s] || v.dark || v.light, editsBy = {};
   for (const s of SIDES) {
     const tid = v[s], t = [...PRESETS, ...tiles].find(x => x.id === tid); if (!tid) continue;
-    const kept = pruneAll(t, normLook({ ...noColors(edits), ...(edits?.colors?.[s] ? { colors: edits.colors[s] } : {}) }));
+    const kept = pruneAll(t, normLook(edits?.colors?.[s] ? { colors: edits.colors[s] } : {}));
     if (flatten(kept).length) editsBy[tid] = kept;
   }
-  if (mode === "system") return { themes: tiles, appearance: "system", themeId: pick("dark"), slots: { light: v.light || DEFAULT_SLOTS.light, dark: v.dark || DEFAULT_SLOTS.dark }, editsBy };
-  return { themes: tiles, appearance: "one", themeId: pick(mode), slots: { ...DEFAULT_SLOTS }, editsBy };
+  const shared = noColors(normLook(edits));
+  if (mode === "system") return { themes: tiles, appearance: "system", themeId: pick("dark"), slots: { light: v.light || DEFAULT_SLOTS.light, dark: v.dark || DEFAULT_SLOTS.dark }, editsBy, shared };
+  return { themes: tiles, appearance: "one", themeId: pick(mode), slots: { ...DEFAULT_SLOTS }, editsBy, shared };
 }
-// Whatever an older version saved (`themes`, `themeId`, `edits`, and maybe `theme`, `size`, `mode`), as { themes, appearance, themeId, slots, editsBy }. Done once, so nobody loses their look.
+// Whatever an older version saved (`themes`, `themeId`, `edits`, and maybe `theme`, `size`, `mode`), as { themes, appearance, themeId, slots, editsBy (colours per tile), shared (the other edits) }. Done once, so nobody loses their look.
 // The earlier Large text switch becomes the text scale, Match Windows also stays the accent colour. `sysLight` is whether the system was set to light.
 export function migratePrefs({ themes, themeId, edits, theme, size, mode, sysLight = false }) {
   const raw = Array.isArray(themes) ? themes.find(t => t?.id === themeId) : null, os = getPath(edits, ["surface", "os"]) === true || theme === "system";

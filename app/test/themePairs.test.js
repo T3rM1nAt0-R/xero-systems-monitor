@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PRESETS, PAIR_LIGHT, resolveTheme, makeTheme, bake, cleanEditsBy, bySide } from "../src/theme/presets.js";
+import { PRESETS, PAIR_LIGHT, resolveTheme, makeTheme, cleanEditsBy, bySide, cleanShared, pruneShared } from "../src/theme/presets.js";
 import { migratePrefs } from "../src/theme/legacy.js";
-import { sideOf, cleanSlots, fillSlot, activeId, cleanAppearance, DEFAULT_SLOTS, lookFor } from "../src/theme/appearance.js";
+import { sideOf, cleanSlots, fillSlot, activeId, cleanAppearance, DEFAULT_SLOTS, lookFor, bake, foldShared } from "../src/theme/appearance.js";
 import { pruneAll } from "../src/theme/edits.js";
 import { startHistory, record, undo } from "../src/theme/history.js";
 import { parseTheme } from "../src/theme/files.js";
@@ -22,7 +22,7 @@ test("real pairs and dark-only themes: every pair has a dark and a light tile, t
 
 test("every tile keeps readable text, a visible accent and the faint floor", () => {
   for (const p of PRESETS) {
-    const look = lookFor(p, {}), c = fullColors(look, p.side), id = p.id;
+    const look = lookFor(p, {}, {}), c = fullColors(look, p.side), id = p.id;
     assert.equal(sideOf(p), p.side, id + " is filed where its background says");
     assert.equal(contrastWarning(look, p.side), "", id);
     assert.ok(contrast(c.acc, c.bg) >= 3, id + " accent");
@@ -37,7 +37,7 @@ test("slots: a light tile cannot go in the Dark slot and a dark tile cannot go i
   assert.deepEqual(fillSlot(slots, "dark", by("nord")), { light: "default-light", dark: "nord" });
   assert.equal(fillSlot(slots, "dark", by("nord-light")), slots); assert.equal(fillSlot(slots, "light", by("dracula")), slots);
   assert.equal(fillSlot(slots, "dark", undefined), slots); assert.equal(fillSlot(slots, "middle", by("nord")), slots);
-  const mine = makeTheme([], "Mine", bake(by("dark"), { colors: { bg: "#fafafa" } }));
+  const mine = makeTheme([], "Mine", bake(by("dark"), { colors: { bg: "#fafafa" } }, {}));
   assert.equal(mine.side, "light", "a saved theme's side is decided by its background");
   assert.equal(fillSlot(slots, "light", mine).light, mine.id);
   assert.deepEqual(cleanSlots({ light: "dracula", dark: "nord-light" }, PRESETS), DEFAULT_SLOTS, "wrong side or gone: the default");
@@ -56,7 +56,7 @@ test("the active tile follows the system in Follow Windows and is the chosen one
 
 test("edits are kept per tile and pruned against that tile", () => {
   const editsBy = { nord: { colors: { acc: "#112233" } }, "nord-light": { colors: { acc: "#4f6f98" } }, gone: { graph: { style: "bars" } } };
-  assert.equal(resolveTheme([], "nord", editsBy).look.colors.acc, "#112233");
+  assert.equal(resolveTheme([], "nord", editsBy, {}).look.colors.acc, "#112233");
   assert.equal(resolveTheme([], "nord-light", editsBy).look.colors.acc, "#4f6f98");
   assert.equal(resolveTheme([], "solarized", editsBy).look.colors.acc, "#268bd2", "another tile does not see them");
   assert.deepEqual(cleanEditsBy(editsBy, PRESETS), { nord: { colors: { acc: "#112233" } } }, "choosing the tile's own value is no edit; a gone tile drops out");
@@ -87,17 +87,41 @@ test("migration: mode Windows becomes Follow Windows with the theme's light and 
   assert.equal(migratePrefs({ ...none, theme: "system" }).appearance, "system");
 });
 
-test("migration: colour edits made per mode move onto the matching tiles; shared ones go on both", () => {
+test("migration: colour edits made per mode move onto the matching tiles; the others become the shared set", () => {
   const edits = { colors: { dark: { acc: "#112233" }, light: { acc: "#445566" } }, graph: { style: "bars" } };
   const m = migratePrefs({ ...none, themeId: "nord", edits, mode: "system" });
-  assert.deepEqual(m.editsBy.nord, { colors: { acc: "#112233" }, graph: { style: "bars" } });
-  assert.deepEqual(m.editsBy["nord-light"], { colors: { acc: "#445566" }, graph: { style: "bars" } });
+  assert.deepEqual(m.editsBy.nord, { colors: { acc: "#112233" } }); assert.deepEqual(m.editsBy["nord-light"], { colors: { acc: "#445566" } });
+  assert.deepEqual(m.shared, { graph: { style: "bars" } });
   const dark = migratePrefs({ ...none, themeId: "dracula", edits, mode: "dark" });
   assert.deepEqual(Object.keys(dark.editsBy), ["dracula"], "a dark-only theme has no light tile to hold the light edits");
   const again = migratePrefs({ ...none, themeId: "nord", edits: { colors: { acc: "#88c0d0" } }, mode: "dark" });
   assert.deepEqual(again.editsBy, {}, "an edit equal to the tile's own value is dropped");
   const flat = migratePrefs({ ...none, themeId: "solarized-light", edits: { colors: { acc: "#0000aa" } } });
   assert.equal(flat.editsBy["solarized-light"].colors.acc, "#0000aa", "old flat colours went with the version that was showing");
+});
+
+test("shared edits: the system going dark keeps text size and density; colours stay per tile; Terminal keeps its mono font", () => {
+  const shared = { scale: 1.2, layout: { density: "spacious" }, surface: { os: true } }, editsBy = { "solarized-light": { colors: { acc: "#0000aa" } } };
+  const slots = { light: "solarized-light", dark: "terminal" }, all = PRESETS;
+  const at = sys => resolveTheme([], activeId({ appearance: "system", themeId: "dark", slots }, sys, all), editsBy, shared).look;
+  const light = at(true), dark = at(false);
+  for (const l of [light, dark]) { assert.equal(l.scale, 1.2); assert.equal(l.layout.density, "spacious"); assert.equal(l.surface.os, true); }
+  assert.equal(light.colors.acc, "#0000aa"); assert.notEqual(dark.colors.acc, "#0000aa", "colour edits do not follow");
+  assert.equal(dark.text.number.font, "jetbrains-mono", "the tile's own look is the base"); assert.equal(dark.shape.family, "terminal");
+  assert.equal(light.text, undefined);
+  const font = { text: { number: { font: "inter" } } };
+  assert.equal(resolveTheme([], "terminal", {}, font).look.text.number.font, "inter", "a font the person picked wins");
+  assert.equal(resolveTheme([], "terminal", {}, font).look.text.machine.font, "jetbrains-mono", "only what was set is overridden");
+});
+
+test("shared edits are pruned against the tile showing, and folded from per-tile edits with the showing tile winning", () => {
+  assert.deepEqual(pruneShared(by("dark"), { shape: { family: "rounded" }, scale: 1 }), {}, "no change stays empty");
+  assert.deepEqual(pruneShared(by("terminal"), { shape: { family: "rounded" } }), { shape: { family: "rounded" } }, "Rounded is a real choice on Terminal");
+  assert.deepEqual(cleanShared({ colors: { acc: "#fff" }, graph: { style: "bars" } }), { graph: { style: "bars" } });
+  const by2 = { nord: { colors: { acc: "#112233" }, scale: 1.1, graph: { style: "bars" } }, "nord-light": { scale: 1.3, layout: { density: "compact" } } };
+  assert.deepEqual(foldShared(by2, "nord-light"), { scale: 1.3, graph: { style: "bars" }, layout: { density: "compact" } });
+  assert.deepEqual(foldShared(by2, "nord").scale, 1.1); assert.deepEqual(foldShared({}, "x"), {});
+  assert.deepEqual(bake(by("nord"), { colors: { acc: "#123456" } }, { shape: { family: "soft" } }).look.shape, { family: "soft" });
 });
 
 test("migration: saved themes (one version, or both) become tiles", () => {
