@@ -36,7 +36,7 @@ import { unseenFailures } from "./events.js";
 import { RANGES, snapRange, KEYS, NONE, NO_HOT } from "./consts.js";
 import { trackMachines } from "./calm.js";
 import { load, save, usePersisted } from "./store.js";
-import { foldAll, anyCardOpen, CARD } from "./fold.js";
+import { foldAll, useAnyCardOpen, CARD } from "./fold.js";
 import useAlerts from "./useAlerts.js";
 import useCollectorData from "./useCollectorData.js";
 import useUpdates from "./useUpdates.js";
@@ -61,7 +61,7 @@ export default function App() {
   const [expanded, setExpanded] = useState(() => new Set()), [evSeen, setEvSeen] = useState(() => load("evseen", 0));
   const [alertPrefs, setAlertPrefs] = useState(() => ({ ...DEFAULT_PREFS, ...load("alerts", {}) }));
   const [calmFold, setCalmFold] = usePersisted("calmFold", false), [folded, setFolded] = useState(false);
-  const foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
+  const anyOpen = useAnyCardOpen(), foldMachines = useCallback(o => { setFolded(!o); foldAll(o, CARD); }, []);   // true = open them all, false = fold them all
   const toggleCompact = useCallback(() => { const n = nextCompact(compact, mini); setCompact(n.compact); if (mini) toggleMini(); }, [compact, mini, setCompact, toggleMini]);   // C works from Mini too
   const [miniSize, forgetMini] = useMiniSize(mini);
   const appRef = useRef(null), seen = useRef({ hot: {}, lastOk: {} });
@@ -101,7 +101,7 @@ export default function App() {
     goMachine(n); setTimeout(() => revealGroup(n + "." + k), 120);
   }, [goMachine]);
   const dragProps = useCardDrag((from, to) => setOrder(o => moveTo(applyOrder(all, o).map(m => m.name), from, to)));
-  const cmds = useMemo(() => buildCommands({ machines: vms, hiddenNames: hidden, showMachine, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, mini, toggleCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), onCustomize: at => setCustDlg(at || ""), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: effCompact ? undefined : fold => foldMachines(!fold), allFolded: pal && !effCompact && !anyCardOpen() }), [vms, hidden, showMachine, hist, foldMachines, goMachine, goGroup, pin, compact, mini, effCompact, pal, toggleCompact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, toggleMini, setQuiet, setSnoozeUntil]);
+  const cmds = useMemo(() => buildCommands({ machines: vms, hiddenNames: hidden, showMachine, groupsOf: m => groupsFor(m.d, hist[m.name]), goMachine, goGroup, ranges: RANGES, setRange, refreshOptions: REFRESH, setRefresh, pin, setPin, compact, mini, toggleCompact, toggleMini, alertPrefs, setAlert: (k, on) => setAlertPrefs(p => ({ ...p, [k]: on })), onLimits: () => setLimDlg(true), onCustomize: at => setCustDlg(at || ""), quietOn: !!quiet.on, setQuietOn: on => setQuiet(q => ({ ...DEFAULT_QUIET, ...q, on })), snooze1h: () => setSnoozeUntil(Date.now() + 3600000), onMachines: () => setDlg(true), onCheck: checkNow, foldAll: effCompact ? undefined : fold => foldMachines(!fold), allFolded: pal && !effCompact && !anyOpen }), [anyOpen, vms, hidden, showMachine, hist, foldMachines, goMachine, goGroup, pin, compact, mini, effCompact, pal, toggleCompact, alertPrefs, quiet.on, checkNow, setRange, setRefresh, setPin, toggleMini, setQuiet, setSnoozeUntil]);
   const unseen = useMemo(() => unseenFailures(events, evSeen), [events, evSeen]);
   useTrayStatus(vms, limitsOf, unseen);
   const markSeen = () => { const x = Date.now() / 1000; setEvSeen(x); save("evseen", x); };

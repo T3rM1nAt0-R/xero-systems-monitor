@@ -38,7 +38,7 @@ export default function MachineBody({ m, h, h2, rows, fc, range, now, gone, limi
   const pc = useRef(); pc.current = { P, h2, t0, t1, span, live, name: m.name, loading: !h, graphs: settings.graphs, onOverview: tab === "overview", marks, d, week, now };
   const Pn = useRef(p => { const c = pc.current; if (c.onOverview && !graphShown(c.graphs, p.k)) return null;   // the "Graphs on Overview" choice
     const un = UNUSUAL_KEYS.includes(p.k) ? unusualNow(c.d[p.k], c.week?.[p.k], c.now) : null;
-    return <Panel {...p} cls={(p.cls || "") + " " + graphClass(c.graphs, p.k)} mk={p.mk || c.marks} usual={un ? Math.round(un.usual) : null} pts={c.P(p.k)} old={c.h2?.[p.k]} t0={c.t0} t1={c.t1} range={c.span} live={c.live} loading={c.loading} group={c.name} />; }).current;
+    return <Panel {...p} cls={(p.cls || "") + " " + graphClass(c.graphs, p.k)} mk={p.mk || c.marks} usual={un ? Math.round(un.usual) : UNUSUAL_KEYS.includes(p.k) ? "" : null} pts={c.P(p.k)} old={c.h2?.[p.k]} t0={c.t0} t1={c.t1} range={c.span} live={c.live} loading={c.loading} group={c.name} />; }).current;
   // What a section can read: the machine, its numbers and history, the time window, and the helpers above.
   const x = { m, d, h, h2, rows, fc, range, now, gone, limits, settings, t0, t1, span, live, P, Pn, marks, day, full };
   return (

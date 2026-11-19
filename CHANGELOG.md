@@ -4,6 +4,11 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+- Fixed: the View menu now says "Unfold all" whenever every machine card is folded, and "Fold all" otherwise; it is read live from the cards, and so is the Ctrl+K "Fold all cards" entry.
+- Fixed: the window no longer gets a sideways scrollbar (the title-bar spacer poked 12 px past the edge and the card body could grow wider than the window).
+- Fixed: machine cards no longer lift or move when the pointer is over them; only the border and shadow change.
+- Fixed: things no longer jump when a machine goes between "All calm" and busy: the status text has a fixed slot, "up ..." and "Restart needed" sit after the details icon, live numbers use fixed-width digits, and the "Unusual for this time" line keeps its space.
+
 ## [0.4.1] - 2026-11-19
 
 - Added: admin shells on This PC. The Terminal tab has "Admin shell…" with three ways: in this tab through Windows 11 sudo (only when sudo is set to Inline; otherwise shown off with how to turn it on), a separate admin window (Windows Terminal, else PowerShell), or Restart Xero as admin. An elevated app shows a red Admin badge on every This PC tab. The More menu has "Restart as admin" (reads "Running as admin" when already elevated) and an "Always start as admin" tick (off by default; it relaunches elevated before the window shows, never twice, and says "Started without admin (cancelled)" if you say no to Windows).

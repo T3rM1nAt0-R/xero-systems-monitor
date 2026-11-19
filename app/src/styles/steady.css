@@ -1,0 +1,13 @@
+/* Steady layout: nothing in the header or the graphs moves when a value or a status changes. Status text sits in a fixed slot (cut with "…" when too long),
+   live numbers are tabular, the things that come and go sit after the details icon, so the right-hand buttons never shift. */
+.app{font-variant-numeric:tabular-nums}
+.chead .state{flex:0 1 var(--sz-150);min-width:0}
+.chead .up{flex:0 1 auto;min-width:0}
+.chead .restart,.chead .info{flex:none}
+.chead .grow,.chead .meta{min-width:0}
+.chead .mmenu,.chead .open,.chead .grp-menu{flex:none}
+.ph .now{display:inline-block;min-width:3.2ch;text-align:right}
+.ph .now small{display:inline-block;min-width:1.2ch}
+.ph .unusual.none{visibility:hidden;border-bottom-color:transparent}
+.cnums .cn{display:inline-block;min-width:max-content}
+.card,.tile{overflow-anchor:none}

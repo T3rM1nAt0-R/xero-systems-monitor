@@ -2,9 +2,9 @@
    Everything stops for people who ask for less motion (the reduced-motion block at the end). */
 
 /* Folds: height and opacity together. The grid row goes from 0fr to 1fr, so no height is measured in script. */
-.collapse{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--dur) var(--ease),opacity var(--dur) var(--ease)}
+.collapse{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--dur) var(--ease),opacity var(--dur) var(--ease)}
 .collapse.open{grid-template-rows:1fr;opacity:1}
-.collapse-in{min-height:0}
+.collapse-in{min-height:0;min-width:0}
 .collapse.busy>.collapse-in{overflow:hidden}
 
 /* Tab row and the panel that cross-fades when the tab changes */

@@ -2,7 +2,7 @@
 .top{padding-right:0;-webkit-app-region:no-drag;user-select:none;-webkit-user-select:none}
 .top .menu{bottom:auto;top:calc(100% + var(--sp-6))}
 .winbtns{position:fixed;top:0;right:0;z-index:40;display:flex;height:var(--sz-38)}
-.winspace{flex:none;width:calc(3 * var(--sz-46));align-self:stretch;margin-right:calc(-1 * var(--sp-12))}
+.winspace{flex:none;width:calc(3 * var(--sz-46) - var(--sp-12));align-self:stretch}   /* ends exactly at the window edge, so it never pokes out and starts a sideways scroll */
 .mini .winspace{width:var(--sz-32)}
 .mini ~ .winbtns,.winbtns:has(.close:only-child){height:var(--sz-32)}
 /* The bar never wraps: the middle shrinks, the clock goes first, then the "Live, updated" text (the Customize panel takes 380px of the width). */
