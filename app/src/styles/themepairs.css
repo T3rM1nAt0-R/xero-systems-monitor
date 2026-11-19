@@ -1,0 +1,15 @@
+/* Theme pairs: the Light and Dark slots of Follow Windows, the LIGHT / DARK badges on tiles, and the group headings with their counts. */
+.cslots{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-8);width:100%}
+.cslot{display:flex;flex-direction:column;gap:var(--sp-2);text-align:left;padding:var(--sp-6) var(--sp-8);background:var(--bg);border-radius:var(--r-8)}
+.cslot small{font-size:var(--fs-10);text-transform:uppercase;letter-spacing:.08em;color:var(--dim);display:flex;justify-content:space-between}
+.cslot small b{color:var(--acc);font-weight:600;letter-spacing:.04em}
+.cslot span{font-size:var(--fs-12-5);color:var(--fg);display:flex;align-items:center;gap:var(--sp-6)}
+.cslot span i{width:10px;height:10px;border-radius:50%;border:1px solid var(--line2);flex:none}
+.cslot span u{margin-left:auto;text-decoration:none;color:var(--dim);font-size:var(--fs-10)}
+.cslot.pick{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.cbadge{position:absolute;top:var(--sp-4);left:var(--sp-4);font-size:var(--fs-10);font-weight:700;letter-spacing:.04em;padding:1px var(--sp-6);border-radius:var(--r-99);background:var(--acc);color:var(--on-acc);line-height:1.4}
+.cbadge.idle{background:var(--s1);color:var(--dim);border:1px solid var(--line2)}
+.ctile.held{border-color:var(--line2);box-shadow:0 0 0 1px var(--line2)}
+.chd{display:flex;justify-content:space-between;text-transform:uppercase}
+.chd i{font-style:normal}
+.chd + .chint{margin-bottom:var(--sp-4)}
